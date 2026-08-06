@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sharing-knowledge — AI Agentic Knowledge Base</title>
+<meta name="description" content="Curated, deeply-summarized notes on AI agentic systems — talks, papers and engineering write-ups rebuilt as self-contained HTML explainers.">
+<style>
+  :root{
+    --cream:#FDF3E7; --cream2:#FBE8D3; --paper:#FFFBF5;
+    --ink:#2B2622; --ink2:#5A5049; --line:#E0CDB4;
+    --orange:#E8511F; --orange-soft:#FBDCC9;
+    --blue:#2F6BD8; --green:#1B8A54; --red:#D0392B; --purple:#6B4FBB;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--cream); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16.5px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px; margin:0 auto; padding:0 22px 90px}
+
+  header{background:var(--ink); color:#F7ECDD; padding:52px 0 46px; margin-bottom:34px}
+  header .wrap{padding-bottom:0}
+  .kicker{font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--orange); font-weight:700}
+  header h1{font-size:clamp(29px,5vw,44px); line-height:1.14; margin:12px 0 12px; letter-spacing:-.025em}
+  header p.sub{margin:0; color:#BFB2A2; font-size:15.5px; max-width:660px}
+  .ghlink{display:inline-flex; align-items:center; gap:9px; margin-top:22px; background:#3B342E;
+          border:1px solid #574C43; border-radius:10px; padding:10px 15px; text-decoration:none;
+          color:#FFD3B8; font-size:14px; font-weight:600}
+  .ghlink:hover{background:#463D36}
+  .stats{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px}
+  .chip{background:#3B342E; border:1px solid #4E453D; color:#E6D9C8; font-size:12.5px; padding:5px 11px; border-radius:999px}
+  .chip b{color:#FFC9A8}
+
+  h2{font-size:clamp(20px,2.8vw,26px); letter-spacing:-.01em; margin:48px 0 6px; line-height:1.25}
+  h2 .num{color:var(--orange); font-variant-numeric:tabular-nums; margin-right:10px}
+  h2:first-of-type{margin-top:0}
+  p{margin:10px 0}
+  a{color:var(--orange)}
+  .dots{display:flex; gap:5px; margin:0 0 16px}
+  .dots i{width:9px; height:9px; display:block; border-radius:2px}
+  .dots i:nth-child(1){background:#F6C4A6} .dots i:nth-child(2){background:#F08A55} .dots i:nth-child(3){background:var(--orange)}
+  hr.rule{border:0; border-top:1px solid var(--line); margin:46px 0 0}
+
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin:18px 0}
+  .lead{background:var(--cream2)}
+  .lead p{margin:0}
+  .lead p + p{margin-top:10px}
+
+  /* ---- filter bar ---- */
+  .filters{display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 6px}
+  .fbtn{font:inherit; font-size:13px; font-weight:700; cursor:pointer; padding:6px 13px; border-radius:999px;
+        background:var(--paper); border:1px solid var(--line); color:var(--ink2); transition:.13s}
+  .fbtn:hover{border-color:#CBB392; color:var(--ink)}
+  .fbtn[aria-pressed="true"]{background:var(--ink); border-color:var(--ink); color:#FFD3B8}
+  .fnote{font-size:13px; color:var(--ink2); margin:10px 0 0}
+
+  /* ---- entry cards ---- */
+  .entry{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:22px 24px; margin:16px 0}
+  .entry[hidden]{display:none}
+  .entry .top{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:4px}
+  .entry .idx{font-size:12.5px; font-weight:800; color:var(--orange); font-variant-numeric:tabular-nums; letter-spacing:.06em}
+  .entry .topic{font-size:11.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+                padding:3px 9px; border-radius:999px; background:var(--orange-soft); color:#A83408}
+  .entry h3{font-size:20px; margin:4px 0 6px; letter-spacing:-.015em; line-height:1.3}
+  .entry h3 a{text-decoration:none; color:var(--ink)}
+  .entry h3 a:hover{color:var(--orange)}
+  .entry .byline{font-size:13.5px; color:var(--ink2); margin:0 0 10px}
+  .entry .byline b{color:var(--ink); font-weight:600}
+  .entry .desc{font-size:15px; margin:0 0 14px}
+  .tags{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 16px}
+  .tags span{font-size:11.5px; background:var(--cream2); border:1px solid var(--line);
+             color:var(--ink2); padding:3px 9px; border-radius:999px}
+  .btns{display:flex; flex-wrap:wrap; gap:9px}
+  .btn{display:inline-flex; align-items:center; gap:7px; text-decoration:none; font-size:13.5px; font-weight:700;
+       padding:8px 14px; border-radius:9px; border:1px solid var(--line); background:#fff; color:var(--ink)}
+  .btn:hover{border-color:#CBB392}
+  .btn.primary{background:var(--orange); border-color:var(--orange); color:#fff}
+  .btn.primary:hover{background:#D24619; border-color:#D24619}
+  .btn svg{flex:none}
+
+  /* ---- topic grid ---- */
+  .topicgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(252px,1fr)); gap:12px; margin:18px 0 0}
+  .topiccard{background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:15px 17px;
+             text-decoration:none; color:var(--ink); display:block; transition:.13s}
+  .topiccard:hover{border-color:#CBB392; background:#fff}
+  .topiccard .n{font-size:15px; font-weight:700; letter-spacing:-.01em; display:flex; justify-content:space-between; align-items:center; gap:8px}
+  .topiccard .c{font-size:11.5px; font-weight:800; color:#A83408; background:var(--orange-soft);
+                border-radius:999px; padding:2px 8px; flex:none}
+  .topiccard.empty .c{color:var(--ink2); background:var(--cream2)}
+  .topiccard .d{font-size:13px; color:var(--ink2); margin-top:5px; line-height:1.5}
+
+  ul.clean{padding-left:20px} ul.clean li{margin:8px 0}
+  code{background:var(--cream2); border:1px solid var(--line); border-radius:5px; padding:1px 5px; font-size:13.5px}
+  footer{border-top:1px solid var(--line); margin-top:52px; padding-top:20px; font-size:13.5px; color:var(--ink2)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">Knowledge Base · AI Agentic Systems</div>
+    <h1>sharing-knowledge</h1>
+    <p class="sub">Research on AI agentic systems, read properly and rewritten as explainers you can
+    actually finish. Every entry is one self-contained page: the argument, redrawn diagrams, and a
+    direct line back to the original source.</p>
+    <a class="ghlink" href="https://github.com/aicaruss/sharing-knowledge" target="_blank" rel="noopener">
+      <svg width="17" height="17" viewBox="0 0 16 16" fill="#FFD3B8" aria-hidden="true">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/>
+      </svg>
+      View the repository on GitHub
+    </a>
+    <div class="stats">
+      <span class="chip"><b>1</b> entry</span>
+      <span class="chip"><b>7</b> topics</span>
+      <span class="chip">Self-contained HTML</span>
+      <span class="chip">Last updated 2026-08-06</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="card lead">
+  <p><b>What this is.</b> A personal, slowly-growing library on how agentic AI systems are built,
+  trained, evaluated and run. Sources are conference talks, papers and engineering write-ups; each one
+  is condensed into a single HTML page with a TL;DR, a vocabulary section, hand-drawn SVG diagrams, and
+  timestamps or page references that link straight back to the original.</p>
+  <p><b>What it is not.</b> Not a link dump, and not a substitute for the source. Every entry names its
+  origin prominently and is built to send you there better prepared.</p>
+</div>
+
+<h2><span class="num">01</span>Catalog</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<div class="filters" role="group" aria-label="Filter entries by topic">
+  <button class="fbtn" data-filter="all" aria-pressed="true">All</button>
+  <button class="fbtn" data-filter="post-training" aria-pressed="false">Post-training</button>
+</div>
+<p class="fnote" id="fnote">Showing all 1 entry.</p>
+
+<article class="entry" data-topic="post-training">
+  <div class="top">
+    <span class="idx">01</span>
+    <span class="topic">post-training</span>
+  </div>
+  <h3><a href="topics/post-training/learning-on-the-job/">Learning on the Job: The Future of Post-Training</a></h3>
+  <p class="byline"><b>Raymond Feng</b> — Applied Compute · AI Engineer World's Fair 2026, Track 9 ·
+  Conference talk, 18m20s · added 2026-08-06</p>
+  <p class="desc">Post-training as a school ladder: single-turn Q&amp;A, then simulated multi-step
+  environments, then an "internship" inside the customer's real production harness, then an agent that
+  improves itself. Covers why simulated environments breed reward hacking — with two candid failures
+  from their own training runs — and what "Bring Your Own Harness" costs you once the data stops being
+  replayable and GRPO no longer applies.</p>
+  <div class="tags">
+    <span>post-training</span><span>reinforcement-learning</span><span>grpo</span>
+    <span>reward-hacking</span><span>agentic-harness</span><span>byoh</span>
+  </div>
+  <div class="btns">
+    <a class="btn primary" href="topics/post-training/learning-on-the-job/">Read the explainer →</a>
+    <a class="btn" href="https://github.com/aicaruss/sharing-knowledge/tree/main/topics/post-training/learning-on-the-job" target="_blank" rel="noopener">Notes &amp; metadata</a>
+    <a class="btn" href="https://www.youtube.com/watch?v=k35LeKZEhiE" target="_blank" rel="noopener">
+      <svg width="17" height="12" viewBox="0 0 20 14" aria-hidden="true">
+        <rect x="0" y="0" width="20" height="14" rx="3.4" fill="#FF0000"/>
+        <path d="M8 4 L13.4 7 L8 10 Z" fill="#fff"/>
+      </svg>
+      Source talk
+    </a>
+  </div>
+</article>
+
+<hr class="rule">
+
+<h2><span class="num">02</span>Topics</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>Seven topics, chosen so every entry has exactly one obvious home. Counts update as the library grows.</p>
+
+<div class="topicgrid">
+  <a class="topiccard" href="https://github.com/aicaruss/sharing-knowledge/tree/main/topics/post-training" target="_blank" rel="noopener">
+    <div class="n">Post-training <span class="c">1</span></div>
+    <div class="d">RL, fine-tuning, reward design, training environments, custom models.</div>
+  </a>
+  <a class="topiccard empty" href="https://github.com/aicaruss/sharing-knowledge/tree/main/topics/agent-architecture" target="_blank" rel="noopener">
+    <div class="n">Agent architecture <span class="c">0</span></div>
+    <div class="d">The agent loop, planning, memory, multi-agent topologies.</div>
+  </a>
+  <a class="topiccard empty" href="https://github.com/aicaruss/sharing-knowledge/tree/main/topics/tool-use-and-protocols" target="_blank" rel="noopener">
+    <div class="n">Tool use &amp; protocols <span class="c">0</span></div>
+    <div class="d">Function calling, MCP, computer use, agent-to-agent protocols.</div>
+  </a>
+  <a class="topiccard empty" href="https://github.com/aicaruss/sharing-knowledge/tree/main/topics/context-engineering" target="_blank" rel="noopener">
+    <div class="n">Context engineering <span class="c">0</span></div>
+    <div class="d">Prompting, RAG, retrieval, context-window budgeting.</div>
+  </a>
+  <a class="topiccard empty" href="https://github.com/aicaruss/sharing-knowledge/tree/main/topics/evaluation-and-observability" target="_blank" rel="noopener">
+    <div class="n">Evaluation &amp; observability <span class="c">0</span></div>
+    <div class="d">Evals, benchmarks, tracing, guardrails, cost accounting.</div>
+  </a>
+  <a class="topiccard empty" href="https://github.com/aicaruss/sharing-knowledge/tree/main/topics/infrastructure" target="_blank" rel="noopener">
+    <div class="n">Infrastructure <span class="c">0</span></div>
+    <div class="d">Serving, inference, sandboxes, latency and cost.</div>
+  </a>
+  <a class="topiccard empty" href="https://github.com/aicaruss/sharing-knowledge/tree/main/topics/applied-and-case-studies" target="_blank" rel="noopener">
+    <div class="n">Applied &amp; case studies <span class="c">0</span></div>
+    <div class="d">Real deployments, post-mortems, enterprise patterns.</div>
+  </a>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">03</span>How an entry is built</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>Every entry follows the same shape, so reading the second one is faster than reading the first:</p>
+<ul class="clean">
+  <li><b>TL;DR first</b> — the whole argument in five to seven points. Stop there and you still have the thesis.</li>
+  <li><b>Vocabulary before jargon</b> — the handful of terms you need, defined in the source's own sense.</li>
+  <li><b>Diagrams redrawn as inline SVG</b> — never screenshots. They stay sharp, searchable, and free of
+      redistributed slide imagery.</li>
+  <li><b>Honest about the unresolved</b> — where the source says "we don't know yet", the explainer says so too.</li>
+  <li><b>A way back to the original</b> — deep-linked timestamps for talks, section references for papers.</li>
+</ul>
+<p>Want to add one? The conventions and the step-by-step are in
+<a href="https://github.com/aicaruss/sharing-knowledge/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">CONTRIBUTING.md</a>,
+and there are ready-made skeletons in
+<a href="https://github.com/aicaruss/sharing-knowledge/tree/main/templates" target="_blank" rel="noopener"><code>templates/</code></a>.</p>
+
+<footer>
+  <p>Summaries and diagrams here are original work. <b>All credit for the underlying ideas belongs to the
+  original authors</b>, who are named and linked on every entry. If you are an author and want an entry
+  changed or removed, open an issue on the repository.</p>
+  <p>Maintained by <a href="https://github.com/aicaruss" target="_blank" rel="noopener">aicaruss</a> ·
+  <a href="https://github.com/aicaruss/sharing-knowledge" target="_blank" rel="noopener">github.com/aicaruss/sharing-knowledge</a></p>
+</footer>
+
+</div>
+
+<script>
+  // Topic filter. Progressive enhancement: without JS every entry stays visible.
+  (function () {
+    var buttons = document.querySelectorAll('.fbtn');
+    var entries = document.querySelectorAll('.entry');
+    var note = document.getElementById('fnote');
+
+    function apply(filter) {
+      var shown = 0;
+      entries.forEach(function (el) {
+        var match = filter === 'all' || el.dataset.topic === filter;
+        el.hidden = !match;
+        if (match) shown++;
+      });
+      buttons.forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.filter === filter));
+      });
+      note.textContent = 'Showing ' + shown + ' ' + (shown === 1 ? 'entry' : 'entries') +
+        (filter === 'all' ? '.' : ' in ' + filter + '.');
+    }
+
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () { apply(b.dataset.filter); });
+    });
+  })();
+</script>
+
+</body>
+</html>

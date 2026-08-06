@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  EXPLAINER TEMPLATE — sharing-knowledge
+  ----------------------------------------------------------------------------
+  Copy this file to  topics/<topic>/<slug>/index.html  and fill it in.
+  Replace every {{PLACEHOLDER}}. Delete the component blocks you don't use.
+
+  Two rules that keep this repo coherent:
+    1. SELF-CONTAINED. No external CSS, JS, fonts, or images. Everything inline.
+       Diagrams are hand-written inline <svg>, never screenshots.
+    2. DON'T EDIT THE :root PALETTE. It is the shared design system. Component
+       classes below cover almost everything; add new ones rather than
+       redefining the colours.
+  ============================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{SHORT TITLE}} — Detailed Explainer</title>
+<style>
+  /* ---- design system: do not edit ------------------------------------- */
+  :root{
+    --cream:#FDF3E7; --cream2:#FBE8D3; --paper:#FFFBF5;
+    --ink:#2B2622; --ink2:#5A5049; --line:#E0CDB4;
+    --orange:#E8511F; --orange-soft:#FBDCC9;
+    --blue:#2F6BD8; --green:#1B8A54; --red:#D0392B; --purple:#6B4FBB;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--cream); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16.5px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px; margin:0 auto; padding:0 22px 90px}
+
+  header{background:var(--ink); color:#F7ECDD; padding:46px 0 40px; margin-bottom:34px}
+  header .wrap{padding-bottom:0}
+  .kicker{font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--orange); font-weight:700}
+  header h1{font-size:clamp(27px,4.6vw,40px); line-height:1.18; margin:12px 0 10px; letter-spacing:-.02em}
+  header p.sub{margin:0; color:#BFB2A2; font-size:15px}
+  .srclink{display:inline-flex; align-items:center; gap:9px; margin-top:20px; background:#3B342E;
+           border:1px solid #574C43; border-radius:10px; padding:10px 15px; text-decoration:none;
+           color:#FFD3B8; font-size:14px; font-weight:600}
+  .srclink:hover{background:#463D36}
+  .srclink svg{flex:none}
+  .srclink span.u{color:#9E9184; font-weight:400; font-size:13px}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px}
+  .chip{background:#3B342E; border:1px solid #4E453D; color:#E6D9C8; font-size:12.5px; padding:5px 11px; border-radius:999px}
+
+  h2{font-size:clamp(21px,3vw,27px); letter-spacing:-.01em; margin:52px 0 6px; line-height:1.25}
+  h2 .num{color:var(--orange); font-variant-numeric:tabular-nums; margin-right:10px}
+  h3{font-size:18px; margin:30px 0 6px; letter-spacing:-.01em}
+  p{margin:10px 0}
+  a{color:var(--orange)}
+  hr.rule{border:0; border-top:1px solid var(--line); margin:46px 0 0}
+  .dots{display:flex; gap:5px; margin:0 0 14px}
+  .dots i{width:9px; height:9px; display:block; border-radius:2px}
+  .dots i:nth-child(1){background:#F6C4A6} .dots i:nth-child(2){background:#F08A55} .dots i:nth-child(3){background:var(--orange)}
+
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin:18px 0}
+  .tldr{background:var(--ink); color:#F3E8D8; border:0}
+  .tldr h3{margin-top:0; color:#fff}
+  .tldr ol{margin:10px 0 0; padding-left:22px}
+  .tldr li{margin:9px 0; color:#E4D7C5}
+  .tldr b{color:#FFC9A8}
+  .note{border-left:4px solid var(--orange); background:#FFF6EC; border-radius:0 12px 12px 0; padding:14px 18px; margin:18px 0}
+  .note .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--orange)}
+  .warn{border-left-color:var(--red); background:#FFF1EF}
+  .warn .lbl{color:var(--red)}
+  .quote{background:var(--cream2); border:1px solid var(--line); border-radius:14px; padding:26px 28px; margin:24px 0}
+  .quote p{font-size:19px; line-height:1.5; font-weight:600; margin:0}
+  .quote cite{display:block; margin-top:14px; font-size:14px; color:var(--ink2); font-style:italic}
+
+  figure{margin:22px 0}
+  figure svg{width:100%; height:auto; display:block; background:var(--paper); border:1px solid var(--line); border-radius:14px}
+  figcaption{font-size:13.5px; color:var(--ink2); margin-top:9px; padding-left:2px}
+  figcaption b{color:var(--ink)}
+
+  table{width:100%; border-collapse:collapse; margin:18px 0; font-size:14.5px; background:var(--paper);
+        border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  th,td{padding:11px 13px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top}
+  th{background:var(--cream2); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink2)}
+  tr:last-child td{border-bottom:0}
+  td.ts{font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:700}
+  td.ts a{color:var(--orange); text-decoration:none; border-bottom:1px dotted #E8A67F}
+
+  code{background:var(--cream2); border:1px solid var(--line); border-radius:5px; padding:1px 5px; font-size:13.5px}
+  .tag{display:inline-block; font-size:11.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+       padding:3px 9px; border-radius:999px; background:var(--orange-soft); color:#A83408; margin-right:6px}
+  ul.clean{padding-left:20px} ul.clean li{margin:8px 0}
+  .analogy{background:#F3F7FF; border:1px solid #CFDDF7; border-radius:12px; padding:14px 18px; margin:14px 0}
+  .analogy .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--blue)}
+  .srcbox{background:var(--paper); border:1px solid var(--line); border-left:4px solid var(--orange);
+          border-radius:0 12px 12px 0; padding:18px 20px; margin:34px 0 0}
+  .srcbox .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--orange)}
+  .srcbox p{margin:8px 0 0; font-size:14.5px}
+  .srcbox a{word-break:break-all}
+  text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
+</style>
+</head>
+<body>
+
+<!-- ========================= HEADER ========================= -->
+<header>
+  <div class="wrap">
+    <div class="kicker">{{EVENT OR PUBLICATION}} · {{DATE}}</div>
+    <h1>{{FULL TITLE}}</h1>
+    <p class="sub">{{AUTHOR}} — {{ORGANISATION}} · {{DURATION OR LENGTH}}</p>
+
+    <!-- Source button. Swap the SVG for a generic link glyph if the source isn't a video. -->
+    <a class="srclink" href="{{SOURCE_URL}}" target="_blank" rel="noopener">
+      <svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true">
+        <rect x="0" y="0" width="20" height="14" rx="3.4" fill="#FF0000"/>
+        <path d="M8 4 L13.4 7 L8 10 Z" fill="#fff"/>
+      </svg>
+      {{Watch / read the source}} <span class="u">{{short-url}}</span>
+    </a>
+
+    <!-- Same values as `tags:` in the entry README, title-cased. Aim for 4–6. -->
+    <div class="meta">
+      <span class="chip">{{Tag 1}}</span>
+      <span class="chip">{{Tag 2}}</span>
+      <span class="chip">{{Tag 3}}</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ===================== TL;DR (required) =====================
+     The whole thing in 5–7 numbered points. Written so that a reader who
+     stops here still leaves with the argument, not just the topic list. -->
+<div class="card tldr">
+  <h3>The whole {{talk / paper}} in {{N}} points</h3>
+  <ol>
+    <li><b>{{The claim:}}</b> {{one or two sentences}}</li>
+    <li><b>{{The mechanism:}}</b> {{one or two sentences}}</li>
+    <li><b>{{The problem:}}</b> {{one or two sentences}}</li>
+    <li><b>{{The fix:}}</b> {{one or two sentences}}</li>
+    <li><b>{{What it costs:}}</b> {{one or two sentences}}</li>
+  </ol>
+</div>
+
+<hr class="rule">
+
+<!-- ============ SECTION 0 — vocabulary (recommended) ============
+     If the source is jargon-dense, define the 3–5 terms the reader needs
+     BEFORE they need them. This is what makes a dense talk readable. -->
+<h2><span class="num">0</span>Vocabulary first</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>{{Why these terms and no others.}}</p>
+
+<table>
+  <thead><tr><th style="width:26%">Term</th><th>What it means here</th></tr></thead>
+  <tbody>
+    <tr><td><b>{{Term}}</b></td><td>{{Definition in this source's specific sense, not the textbook one.}}</td></tr>
+    <tr><td><b>{{Term}}</b></td><td>{{Definition.}}</td></tr>
+  </tbody>
+</table>
+
+<hr class="rule">
+
+<!-- ===================== BODY SECTION ===================== -->
+<h2><span class="num">1</span>{{Section title}}</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>{{Body text. Explain the reasoning, don't just report the conclusion.}}</p>
+
+<h3>{{Sub-heading}}</h3>
+<ul class="clean">
+  <li><b>{{Point}}</b> — {{explanation}}</li>
+  <li><b>{{Point}}</b> — {{explanation}}</li>
+</ul>
+
+<!-- ---------- FIGURE: hand-drawn SVG, never a screenshot ----------
+     Define arrow markers once (ids must be unique across the page), then
+     reuse them. Keep viewBox width at 900 to match the .wrap column.
+     The figcaption should say what the figure ADDS, not repeat the labels. -->
+<figure>
+<svg viewBox="0 0 900 260" role="img" aria-label="{{Accessible description of the diagram}}">
+  <defs>
+    <marker id="mInk" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2B2622"/></marker>
+    <marker id="mBlue" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2F6BD8"/></marker>
+    <marker id="mGreen" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1B8A54"/></marker>
+    <marker id="mRed" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#D0392B"/></marker>
+  </defs>
+
+  <rect x="60" y="90" width="200" height="76" rx="11" fill="#FFF2E4" stroke="#E8511F" stroke-width="1.8"/>
+  <text x="160" y="126" font-size="14" font-weight="700" fill="#B7420F" text-anchor="middle">{{Box A}}</text>
+  <text x="160" y="146" font-size="11.5" fill="#8A5A3A" text-anchor="middle">{{caption}}</text>
+
+  <rect x="640" y="90" width="200" height="76" rx="11" fill="#FFFFFF" stroke="#2B2622" stroke-width="1.6"/>
+  <text x="740" y="126" font-size="14" font-weight="700" fill="#2B2622" text-anchor="middle">{{Box B}}</text>
+  <text x="740" y="146" font-size="11.5" fill="#5A5049" text-anchor="middle">{{caption}}</text>
+
+  <path d="M264 116 L634 116" stroke="#2F6BD8" stroke-width="1.7" marker-end="url(#mBlue)"/>
+  <text x="450" y="106" font-size="12" font-weight="700" fill="#2F6BD8" text-anchor="middle">{{request}}</text>
+  <path d="M636 148 L266 148" stroke="#1B8A54" stroke-width="1.7" marker-end="url(#mGreen)"/>
+  <text x="450" y="170" font-size="12" font-weight="700" fill="#1B8A54" text-anchor="middle">{{response}}</text>
+</svg>
+<figcaption><b>Figure 1.</b> {{What this figure shows, and what changed versus the previous one.}}</figcaption>
+</figure>
+
+<!-- ---------- CALLOUT: the point you most want remembered ---------- -->
+<div class="note">
+  <div class="lbl">{{Label — e.g. "The single most important point"}}</div>
+  <p style="margin:6px 0 0">{{Text.}}</p>
+</div>
+
+<!-- ---------- CALLOUT: risk, trap, failure mode ---------- -->
+<div class="note warn">
+  <div class="lbl">{{Label — e.g. "Why this fails"}}</div>
+  <p style="margin:6px 0 0">{{Text.}}</p>
+</div>
+
+<!-- ---------- ANALOGY: concrete image for an abstract mechanism ---------- -->
+<div class="analogy">
+  <div class="lbl">Analogy</div>
+  <p style="margin:6px 0 0">{{The analogy. Prefer the author's own if they gave one — and say so.}}</p>
+</div>
+
+<!-- ---------- PULL QUOTE: verbatim only. Paraphrases must be labelled. ---------- -->
+<div class="quote">
+  <p>"{{Verbatim quote.}}"</p>
+  <cite>— {{attribution, timestamp or page}}</cite>
+</div>
+
+<!-- ---------- NUMBERED LIST CARD ---------- -->
+<div class="card">
+  <p style="margin:0 0 8px"><span class="tag">1</span> <b>{{Item}}</b> — {{explanation}}</p>
+  <p style="margin:0 0 8px"><span class="tag">2</span> <b>{{Item}}</b> — {{explanation}}</p>
+  <p style="margin:0"><span class="tag">3</span> <b>{{Item}}</b> — {{explanation}}</p>
+</div>
+
+<hr class="rule">
+
+<!-- ============ SYNTHESIS TABLE (recommended) ============
+     One table that lets a reader compare everything at a glance. Usually the
+     most re-read part of an explainer. -->
+<h2><span class="num">9</span>One table: {{what it compares}}</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<table>
+  <thead><tr><th style="width:19%">Aspect</th><th>{{Option A}}</th><th>{{Option B}}</th><th>{{Option C}}</th></tr></thead>
+  <tbody>
+    <tr><td><b>{{Aspect}}</b></td><td>{{…}}</td><td>{{…}}</td><td>{{…}}</td></tr>
+    <tr><td><b>{{Aspect}}</b></td><td>{{…}}</td><td>{{…}}</td><td>{{…}}</td></tr>
+  </tbody>
+</table>
+
+<hr class="rule">
+
+<!-- ============ NAVIGATION INDEX ============
+     For video sources: timestamps deep-linked with &t=NNNs.
+     For papers: section or page numbers. Delete if the source has no useful
+     internal addressing. -->
+<h2><span class="num">10</span>Timestamp index — jump straight to a section</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>Every timestamp links into the source.</p>
+<table>
+  <thead><tr><th style="width:14%">Time</th><th>Section</th></tr></thead>
+  <tbody>
+    <tr><td class="ts"><a href="{{SOURCE_URL}}&t=0s" target="_blank" rel="noopener">0:00</a></td><td>{{Section}}</td></tr>
+    <tr><td class="ts"><a href="{{SOURCE_URL}}&t={{N}}s" target="_blank" rel="noopener">{{m:ss}}</a></td><td>{{Section}}</td></tr>
+  </tbody>
+</table>
+
+<!-- ============ SOURCE BOX (required) ============
+     Full attribution. Never leave this out — the repo's whole legitimacy
+     rests on pointing clearly back at the original. -->
+<div class="srcbox">
+  <div class="lbl">Source</div>
+  <p><b>{{Full title}}</b> — {{Author}}, {{Organisation}}.<br>
+  {{Venue / publication}}, {{date}}. {{Channel or publisher}}. {{Runtime or length}}.</p>
+  <p><a href="{{SOURCE_URL}}" target="_blank" rel="noopener">{{SOURCE_URL}}</a></p>
+  <p style="color:var(--ink2); font-size:13.5px">Also referenced: {{related works cited by the source}}.</p>
+</div>
+
+<!-- Method note: say how the summary was produced and that figures are redrawn. -->
+<p style="margin-top:26px; font-size:13px; color:#5A5049; border-top:1px solid var(--line); padding-top:18px">
+{{How this was compiled — e.g. "Compiled from the video's full transcript and screen captures of the
+speaker's original slides. Every figure here is a redrawn reconstruction of a slide diagram, not a
+screenshot."}}
+</p>
+
+</div>
+</body>
+</html>
