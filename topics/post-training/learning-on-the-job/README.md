@@ -12,7 +12,7 @@ source_url: https://www.youtube.com/watch?v=k35LeKZEhiE
 source_author: Raymond Feng
 source_org: Applied Compute
 source_event: "AI Engineer World's Fair 2026 — Track 9: Posttraining & Midtraining"
-source_published: 2026-07-01
+source_published: 2026-07-31
 source_duration: 18m20s
 tags:
   - post-training
@@ -119,3 +119,8 @@ The explainer was compiled from the video's full transcript (137 segments, 0:12�
 captures of the speaker's slides. **Every figure in it is a redrawn SVG reconstruction of a slide
 diagram, not a screenshot** — so the file stays self-contained and text-searchable, and no copyrighted
 slide imagery is redistributed.
+
+> **Correction, 2026-08-11.** `source_published` originally read **2026-07-01**. That is the date the
+> talk was *delivered*, not the date the video was *published* — YouTube reports an upload date of
+> **2026-07-31**, now recorded above. The delivery date remains in `source_event`, which is where it
+> belongs. Two different dates had been collapsed into one field, putting this entry 30 days out.

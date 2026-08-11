@@ -7,11 +7,11 @@ language: en
 status: published
 added: 2026-08-11
 source_type: conference-talk
-source_title: "Loop Engineering VS Graph Engineering, Buzzwords Clearly Explained"
+source_title: "You Can Learn AI Agent Graph Engineering In 21 Min | Loop, Harness, System Design, Waku Agent"
 source_url: https://www.youtube.com/watch?v=IMLwvK08JVc
 source_author: Shen Sean Chen
 source_org: "Sean's AI Stories (YouTube channel)"
-source_published: 2026-08-02
+source_published: 2026-08-01
 source_duration: 21m31s
 tags:
   - loop-engineering
@@ -142,3 +142,11 @@ lengths convey relative duration, not measurements.
 Note on presentation: this explainer carries its own palette and its own components (`.hero`, `.rung`,
 `.ladder`) rather than the house cream-and-orange set, and it is the first entry here that supports
 dark mode. See [Design system](../../../README.md#design-system).
+
+> **Correction, 2026-08-11.** Two metadata fields were wrong and have been fixed against the source.
+> `source_title` read *"Loop Engineering VS Graph Engineering, Buzzwords Clearly Explained"* — a title
+> inherited from the intermediate artifact this entry was written from, and not the video's own. The
+> canonical title is now recorded above. `source_published` read **2026-08-02**, derived from a relative
+> "9 days ago" reading rather than the exact date; YouTube reports **2026-08-01**. The body of the
+> explainer was checked against the transcript and needed no change — the error was confined to
+> attribution.

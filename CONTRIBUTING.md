@@ -122,7 +122,11 @@ behave the same.
 - [ ] Front matter is valid YAML, `title` is quoted, `tags` is a list
 - [ ] `topic` matches the folder it sits in
 - [ ] `slug` matches the folder name
-- [ ] `source_published` is the original's date; `added` is today
+- [ ] Every `source_*` field was read **off the source itself**, not copied from a draft, a summary, or
+      an intermediate artifact — see [Metadata comes from the source](#metadata-comes-from-the-source)
+- [ ] `source_published` is the date the **source was published**, not the date a talk was delivered.
+      A delivery date belongs in `source_event`
+- [ ] `added` is today
 - [ ] `status: published`
 - [ ] Tags reuse existing vocabulary where one already fits
 
@@ -137,6 +141,27 @@ behave the same.
 ---
 
 ## Conventions worth knowing
+
+### Metadata comes from the source
+
+Open the source and read the fields off it. Do not copy them from a draft, a summary, an earlier
+explainer, or any other intermediate artifact — even one that looks authoritative.
+
+This is not a hypothetical. Three of the first four entries here shipped with a wrong `source_*` field,
+and every one of them was written by reading a pre-made artifact instead of the source: one inherited a
+paraphrased title that was not the video's own, one derived a publication date from a relative "9 days
+ago" and landed a day off, and one omitted a publication date on the stated grounds that the source did
+not give one — when the source gave it plainly. Each error is small, each was invisible from inside the
+draft, and each misattributes a named person's work on a public page.
+
+For a video, the fields are one command away and require no browser:
+
+```bash
+python -m yt_dlp --skip-download --print "%(title)s|%(uploader)s|%(upload_date)s|%(duration)s" "<url>"
+```
+
+Two dates are not one date. `source_published` is when the **source** went out; a conference talk's
+**delivery** date goes in `source_event`. Collapsing them put one entry 30 days out.
 
 **Tags.** Four to eight, kebab-case. Reuse before you invent — grep the existing entries first. Tags
 are for cross-cutting themes that don't deserve their own topic (`grpo`, `reward-hacking`, `mcp`,

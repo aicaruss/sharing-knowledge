@@ -11,6 +11,7 @@ source_url: https://www.youtube.com/watch?v=9HbzAWnKbo4
 source_author: Jason Lopatecki
 source_org: Arize AI
 source_event: "AI Engineer (talk)"
+source_published: 2026-07-24
 source_duration: 20m35s
 tags:
   - observability
@@ -139,7 +140,11 @@ outline. **Figure 3 reproduces the structure and wording of the talk's own "anat
 figures are diagrams built to explain the architecture described in the transcript — illustrations of the
 argument, not reproductions of specific slides.**
 
-Two gaps to be aware of. First, **the source material does not state a publication date**, so
-`source_published` is omitted from the front matter rather than guessed — the talk is from the AI
-Engineer channel but the date was not recorded. Second, quotations carry approximate timestamps as given
-in the talk ("around 3:30", "around 13:27") rather than exact ones.
+One gap to be aware of: quotations carry approximate timestamps as given in the talk ("around 3:30",
+"around 13:27") rather than exact ones.
+
+> **Correction, 2026-08-11.** This entry originally omitted `source_published`, on the stated grounds
+> that "the source material does not state a publication date". That was wrong. The *intermediate
+> artifact* this entry was written from did not state one; the **source** does — YouTube reports an
+> upload date of **2026-07-24** for this video, now recorded above. The claim has been removed rather
+> than softened, because it was not a gap in the source but a gap in how the source was read.
