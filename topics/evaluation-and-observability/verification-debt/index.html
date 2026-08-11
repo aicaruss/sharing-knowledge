@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verification Debt: Guide, Verify, Solve — Detailed Explainer</title>
+<style>
+  :root{
+    --bg:#F1F5F5; --paper:#FFFFFF; --panel:#F8FBFB;
+    --ink:#12211F; --ink2:#4E6360; --line:#D5E2E0;
+    --teal:#0E7C74; --teal-soft:#DFF1EE; --teal-deep:#0B5F59;
+    --blue:#2563EB; --green:#15803D; --red:#DC2626; --amber:#B45309;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16.5px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px; margin:0 auto; padding:0 22px 90px}
+
+  header{background:#0C1F1D; color:#E4F0EE; padding:46px 0 40px; margin-bottom:34px;
+         background-image:radial-gradient(900px 300px at 15% 0%, #17433D 0%, #0C1F1D 70%)}
+  header .wrap{padding-bottom:0}
+  .kicker{font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:#5FD0BE; font-weight:700}
+  header h1{font-size:clamp(26px,4.5vw,39px); line-height:1.18; margin:12px 0 10px; letter-spacing:-.02em}
+  header p.sub{margin:0; color:#93AFAB; font-size:15px}
+  .srclink{display:inline-flex; align-items:center; gap:9px; margin-top:20px; background:#153733;
+           border:1px solid #245049; border-radius:10px; padding:10px 15px; text-decoration:none;
+           color:#BFE3DD; font-size:14px; font-weight:600}
+  .srclink:hover{background:#1B443E}
+  .srclink svg{flex:none}
+  .srclink span.u{color:#7F9C98; font-weight:400; font-size:13px}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px}
+  .chip{background:#153733; border:1px solid #245049; color:#C6E2DE; font-size:12.5px; padding:5px 11px; border-radius:999px}
+
+  h2{font-size:clamp(21px,3vw,27px); letter-spacing:-.01em; margin:52px 0 6px; line-height:1.25}
+  h2 .num{color:var(--teal); font-variant-numeric:tabular-nums; margin-right:10px}
+  h3{font-size:18px; margin:30px 0 6px; letter-spacing:-.01em}
+  p{margin:10px 0}
+  a{color:var(--teal-deep)}
+  hr.rule{border:0; border-top:1px solid var(--line); margin:46px 0 0}
+  .dots{display:flex; gap:5px; margin:0 0 14px}
+  .dots i{width:9px; height:9px; display:block; border-radius:2px}
+  .dots i:nth-child(1){background:#B7DFD9} .dots i:nth-child(2){background:#5FB3A8} .dots i:nth-child(3){background:var(--teal)}
+
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin:18px 0}
+  .tldr{background:#0C1F1D; color:#DDEDEA; border:0;
+        background-image:radial-gradient(700px 240px at 85% 0%, #16413B 0%, #0C1F1D 70%)}
+  .tldr h3{margin-top:0; color:#fff}
+  .tldr ol{margin:10px 0 0; padding-left:22px}
+  .tldr li{margin:9px 0; color:#D2E5E2}
+  .tldr b{color:#7FDCC9}
+  .note{border-left:4px solid var(--teal); background:#EAF6F4; border-radius:0 12px 12px 0; padding:14px 18px; margin:18px 0}
+  .note .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--teal)}
+  .warn{border-left-color:var(--amber); background:#FFF8EC}
+  .warn .lbl{color:var(--amber)}
+  .quote{background:var(--teal-soft); border:1px solid #B7DFD9; border-radius:14px; padding:22px 26px; margin:22px 0}
+  .quote p{font-size:18px; line-height:1.5; font-weight:600; margin:0}
+  .quote cite{display:block; margin-top:13px; font-size:14px; color:var(--ink2); font-style:italic}
+  .slidequote{background:#F4F2FB; border:1px solid #D7D1EF; border-radius:14px; padding:20px 24px; margin:22px 0}
+  .slidequote p{margin:0; font-size:16.5px; line-height:1.55}
+  .slidequote cite{display:block; margin-top:12px; font-size:13.5px; color:var(--ink2); font-style:italic}
+
+  figure{margin:22px 0}
+  .scroller{overflow-x:auto; -webkit-overflow-scrolling:touch}
+  figure svg{width:100%; min-width:680px; height:auto; display:block; background:var(--panel);
+             border:1px solid var(--line); border-radius:14px}
+  figcaption{font-size:13.5px; color:var(--ink2); margin-top:9px; padding-left:2px}
+  figcaption b{color:var(--ink)}
+
+  table{width:100%; min-width:480px; border-collapse:collapse; margin:0; font-size:14.5px; background:var(--paper);
+        border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  .scroller.tbl{margin:18px 0}
+  th,td{padding:11px 13px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top}
+  th{background:var(--teal-soft); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:#0B5F59}
+  tr:last-child td{border-bottom:0}
+  td.ts{font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:700}
+  td.ts a{color:var(--teal-deep); text-decoration:none; border-bottom:1px dotted #7FC0B8}
+
+  code{background:#E9F2F1; border:1px solid var(--line); border-radius:5px; padding:1px 5px; font-size:13.5px}
+  .tag{display:inline-block; font-size:11.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+       padding:3px 9px; border-radius:999px; background:var(--teal-soft); color:#0B5F59; margin-right:6px}
+  ul.clean{padding-left:20px} ul.clean li{margin:8px 0}
+  .analogy{background:#EEF5FF; border:1px solid #CFDEF7; border-radius:12px; padding:14px 18px; margin:14px 0}
+  .analogy .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--blue)}
+  .srcbox{background:var(--paper); border:1px solid var(--line); border-left:4px solid var(--teal);
+          border-radius:0 12px 12px 0; padding:18px 20px; margin:34px 0 0}
+  .srcbox .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--teal)}
+  .srcbox p{margin:8px 0 0; font-size:14.5px}
+  .srcbox a{word-break:break-all}
+  text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">AI Engineer World's Fair 2026 · Talk · 22 min 31 sec</div>
+    <h1>Verification Debt:<br>Guide, Verify, Solve</h1>
+    <p class="sub">Anirban Chatterjee — product marketing, Sonar</p>
+    <a class="srclink" href="https://www.youtube.com/watch?v=03l29gJXpCE" target="_blank" rel="noopener">
+      <svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true">
+        <rect x="0" y="0" width="20" height="14" rx="3.4" fill="#FF0000"/>
+        <path d="M8 4 L13.4 7 L8 10 Z" fill="#fff"/>
+      </svg>
+      Watch the source talk on YouTube <span class="u">youtube.com/watch?v=03l29gJXpCE</span>
+    </a>
+    <div class="meta">
+      <span class="chip">Verification</span>
+      <span class="chip">Quality gates</span>
+      <span class="chip">Static analysis</span>
+      <span class="chip">Code review</span>
+      <span class="chip">CI/CD</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="card tldr">
+  <h3>The whole talk in six points</h3>
+  <ol>
+    <li><b>The finding underneath everything.</b> A Carnegie Mellon study of GitHub projects that adopted Cursor found a productivity spike that <b>faded after about three months</b>, while static-analysis warnings, duplicated lines and complexity kept climbing. The speed is temporary; the mess is not. He calls the shortfall <b>verification debt</b>.</li>
+    <li><b>The gap scales with criticality.</b> An agent's default quality is flat; the quality you <i>need</i> rises with how critical the software is. A short-lived internal tool absorbs the gap. A long-lived large codebase with adversarial users cannot.</li>
+    <li><b>Human review is a leaky backstop, and there is a number on it.</b> In a Wharton study, people followed AI advice 92.7% of the time when it was right — and <b>79.8% of the time when it was deliberately, confidently wrong</b>.</li>
+    <li><b>Code is provable; software is not.</b> Every function can be correct while requirements, component interactions and real users make the whole unprovable. So the check has to stand, not happen once.</li>
+    <li><b>The best idea in the talk: verify with a <i>different</i> method than the one that wrote the code.</b> A model grading its own output inherits its own blind spots. Then layer methods — bounded by the false-positive rate of the worst layer.</li>
+    <li><b>Run that check twice.</b> Once <b>inside</b> the generation loop, so defects are fixed before they propagate into later loops; once in CI, where a failing gate routes to a <b>fix agent</b> rather than to a person.</li>
+  </ol>
+</div>
+
+<div class="note warn">
+  <div class="lbl">Disclosure, stated once</div>
+  <p style="margin:6px 0 0">The speaker is <b>Anirban Chatterjee, product marketing at Sonar</b> — self-stated at <b>0:18</b>, and not an engineering role. This is a vendor talk, and about <b>six of the twenty-two minutes are a catalogue of Sonar products</b>: the leaderboard, the static-analysis platform, an acquisition, two GA announcements, a demo, adoption statistics and an analyst placement. He says he is out of time three times, each time with substantive material left uncovered. <b>This explainer covers the fourteen or so minutes of transferable argument and does not reproduce the catalogue.</b> Where a claim rests on Sonar's own instrumentation or data, it is flagged where it appears.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">0</span>Vocabulary first</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<div class="scroller tbl">
+<table>
+  <thead><tr><th style="width:26%">Term</th><th>What it means in this talk</th></tr></thead>
+  <tbody>
+    <tr><td><b>Verification debt</b></td><td>His term. The distance between the quality an agent produces by default and the quality the application needs — work somebody does before shipping, whether or not it was budgeted.</td></tr>
+    <tr><td><b>Zero trust</b> (verification)</td><td>Check the code the same way regardless of who or what wrote it, using a <i>different methodology</i> than the one that generated it.</td></tr>
+    <tr><td><b>Multilayered</b></td><td>Several independent checking techniques stacked, because no single one catches everything. The two layers he names aloud are <i>computational</i> (deterministic rule-based analysis) and <i>reasoning-based</i> (LLM review). The slide adds the constraint that makes stacking survivable: each layer needs very low false positives.</td></tr>
+    <tr><td><b>Quality gate</b></td><td>A pass/fail decision against written-down criteria, sitting in CI. On the slide: "Consistent, precise pass/fail against eval criteria."</td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">1</span>The evidence, and the gap it opens</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>The talk opens on someone else's data — the strongest thirty seconds in it. The slide carries the full paper title, which the speaker never reads out: <b>"Does AI-Assisted Coding Deliver? A Difference-in-Differences Study of Cursor's Impact on Software Projects"</b> — Carnegie Mellon. Public GitHub projects are sorted by whether an AI tool wrote the code, then five outcomes tracked against a control from six months before adoption to six after. <b>Commits</b> and <b>Lines Added</b> stay flat near zero; <b>Static Analysis Warnings</b>, <b>Duplicated Lines Density</b> and <b>Code Complexity</b> trend up after month zero, with filled dots marking significance at p &lt; 0.05. Spoken over it: a productivity spike, <i>"but it lasted about 3 months and then it went back down"</i> (2:10), while the warnings and complexity <i>"persisted well into the future"</i> (2:33).</p>
+
+<div class="note warn">
+  <div class="lbl">Read this study with one eye open</div>
+  <p style="margin:6px 0 0">The code-quality data was collected with <b>SonarQube</b> — the speaker's own company's product. That does not make the finding wrong, and the study is independent of Sonar. But the metric that shows the damage is the metric his employer sells. He states the instrument plainly; he does not remark on the coincidence.</p>
+</div>
+
+<p>The next slide turns "AI code has quality problems" into a decision you make per project. Two lines: the quality an agent gives you <b>by default</b> is roughly constant, because it does not know what the code is for, while the quality you <b>need</b> is not constant at all. It is the <i>gap</i>, not the absolute quality level, that tells you how much verification to buy.</p>
+
+<figure>
+<div class="scroller">
+<svg viewBox="0 0 900 448" role="img" aria-label="Line chart. The horizontal axis is software criticality and the vertical axis is required quality standard. A red curve labelled needed quality level rises slowly then steeply from left to right, while a flat blue dashed line labelled agent default quality level stays constant, so the shaded gap between the two widens sharply towards the right. Below the chart, two anchor boxes describe the internal non-critical end and the enterprise mission-critical end.">
+  <defs>
+    <marker id="vdAx" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#4E6360"/></marker>
+    <marker id="vdTealA" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C74"/></marker>
+    <marker id="vdTealB" markerWidth="8" markerHeight="8" refX="1.5" refY="4" orient="auto"><path d="M8,0 L0,4 L8,8 z" fill="#0E7C74"/></marker>
+  </defs>
+
+  <path d="M112 250 C 250 244 340 228 456 204 S 706 132 846 66 L846 258 L112 258 Z" fill="#DC2626" opacity="0.10"/>
+
+  <path d="M100 292 V44" stroke="#4E6360" stroke-width="1.6" fill="none" marker-end="url(#vdAx)"/>
+  <path d="M100 292 H862" stroke="#4E6360" stroke-width="1.6" fill="none" marker-end="url(#vdAx)"/>
+  <text transform="translate(36,238) rotate(-90)" font-size="12.5" fill="#4E6360">Required quality standard</text>
+  <text x="481" y="318" font-size="12.5" fill="#4E6360" text-anchor="middle">Software criticality</text>
+
+  <path d="M112 258 H846" stroke="#2563EB" stroke-width="2.2" stroke-dasharray="7 5" fill="none"/>
+  <text x="116" y="278" font-size="13" font-weight="700" fill="#2563EB">Agent default quality level</text>
+
+  <path d="M112 250 C 250 244 340 228 456 204 S 706 132 846 66" stroke="#DC2626" stroke-width="2.6" fill="none"/>
+  <text x="846" y="52" font-size="13" font-weight="700" fill="#DC2626" text-anchor="end">Needed quality level</text>
+
+  <text x="124" y="230" font-size="12" fill="#B45309">small gap — you can live with it</text>
+
+  <path d="M763 110 V252" stroke="#0E7C74" stroke-width="2" marker-start="url(#vdTealB)" marker-end="url(#vdTealA)"/>
+  <text x="751" y="176" font-size="12.5" font-weight="700" fill="#0E7C74" text-anchor="end">the verification debt</text>
+  <text x="751" y="194" font-size="12.5" fill="#0E7C74" text-anchor="end">somebody has to pay</text>
+
+  <path d="M112 292 V336" stroke="#D5E2E0" stroke-width="1.4" stroke-dasharray="3 4"/>
+  <path d="M846 292 V336" stroke="#D5E2E0" stroke-width="1.4" stroke-dasharray="3 4"/>
+
+  <rect x="100" y="340" width="364" height="94" rx="11" fill="#FFFFFF" stroke="#D5E2E0"/>
+  <text x="118" y="364" font-size="11.5" font-weight="800" letter-spacing="1.1" fill="#4E6360">INTERNAL / NON-CRITICAL</text>
+  <text x="118" y="386" font-size="12.5" fill="#12211F">Simple, &lt; 50K LOCs</text>
+  <text x="118" y="404" font-size="12.5" fill="#12211F">Short lived, will run for months not years</text>
+  <text x="118" y="422" font-size="12.5" fill="#12211F">Limited number of users, all friendly</text>
+
+  <path d="M470 387 H490" stroke="#4E6360" stroke-width="1.4" marker-end="url(#vdAx)"/>
+
+  <rect x="498" y="340" width="364" height="94" rx="11" fill="#FFF6F6" stroke="#EFC9C9"/>
+  <text x="516" y="364" font-size="11.5" font-weight="800" letter-spacing="1.1" fill="#B04141">ENTERPRISE / MISSION-CRITICAL</text>
+  <text x="516" y="386" font-size="12.5" fill="#12211F">Complex — a large codebase</text>
+  <text x="516" y="404" font-size="12.5" fill="#12211F">Long lived, will run for years</text>
+  <text x="516" y="422" font-size="12.5" fill="#12211F">Many, potentially adversarial users</text>
+</svg>
+</div>
+<figcaption><b>Figure 1. Redrawn from the slide "The growing quality gap"</b> (around 3:05) — a reconstruction, not a reproduction. Axis titles and both anchor boxes carry the slide's own wording. Two fidelity notes: the enterprise anchor's line count reads as roughly <b>500K LOCs</b> but its comparison operator is not legible in the captured frame, so the box says <i>a large codebase</i> rather than quoting a threshold that might point the wrong way; and neither axis carries measured values, so the curve conveys a profile, not data.</figcaption>
+</figure>
+
+<div class="quote">
+  <p>"the quality level you need is quite a bit higher than the quality level you're getting by default from these AI tools. And that's where this verification debt comes in."</p>
+  <cite>— Anirban Chatterjee, 3:34 (auto-generated transcript)</cite>
+</div>
+
+<p>The triage rule this implies is never stated in the talk, so here it is as my inference: <b>place the project on that axis before deciding how much verification it gets</b>. One gate for a prototype and a payments service wastes money at one end and gives false comfort at the other.</p>
+
+<hr class="rule">
+
+<h2><span class="num">2</span>Why the gap exists, and why review doesn't close it</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<ul class="clean">
+  <li><b>Models still make mistakes.</b> <i>"None of these models are ever going to be perfect."</i> (6:14)</li>
+  <li><b>Models are missing context</b> — not the rest of the codebase, the business, or <i>"what happened in the meeting you had with somebody else 2 weeks ago that's going to influence the code you're writing today"</i> (4:33). This is the argument for the Guide phase.</li>
+  <li><b>No two models are wrong in the same way.</b> Switching model changes <i>which</i> defects you ship, not just how many, so a regime tuned to one model's habits is miscalibrated for the next.</li>
+</ul>
+
+<p>His evidence for that third point is Sonar's own benchmark — the slide subtitle reads <i>"we benchmark the code that models produce on 4000+ tasks."</i> A six-axis radar: <b>Correctness</b> and <b>Unsolved Tasks</b> as percentages, <b>Security</b>, <b>Reliability</b> and <b>Maintainability</b> per million lines of code, <b>Low Complexity</b> per thousand. Two model polygons plus a dashed "best per metric" outline; the legend names <b>Claude Opus 4.6 Thinking</b> and <b>Claude Sonnet 4.6 Thinking</b>.</p>
+
+<div class="note warn">
+  <div class="lbl">What this explainer will not tell you</div>
+  <p style="margin:6px 0 0">Each axis shows a <b>pair</b> of numbers and, at the captured resolution, it is not possible to tell which belongs to which model. So no per-axis score is attributed here — only the speaker's spoken summary. The benchmark is also <b>the vendor's own</b>, scored on the vendor's own metrics.</p>
+</div>
+
+<p>Aloud, he says Sonnet 4.6 rates well on correctness and on completing tasks (the transcript drops a word at 5:42), then: <i>"if you're requiring higher levels of maintainability or higher levels of security ... you might benefit from switching to Opus for tasks like that"</i> (5:48). Take the transferable form rather than the ranking, which will be stale in weeks: <b>model choice is a quality trade-off, not only a cost one</b>.</p>
+
+<h3>The backstop leaks</h3>
+
+<p>The obvious answer to "the model is imperfect" is "so a person reads the code". The counter cites a study whose full reference is printed on the slide but never read aloud: <b>Shaw &amp; Nave (2026), Wharton — "Thinking Fast, Slow, and Artificial"</b>. Participants got tasks and an AI tool that, unknown to them, was instructed to confidently lie some of the time. They followed its advice <b style="color:#15803D">92.7%</b> of the time when it was correct and <b style="color:#DC2626">79.8%</b> of the time when it was wrong. Thirteen points of scepticism — far less than the word "review" implies. He rounds the second figure to "nearly 80%" aloud (7:07). The slide also carries a pull quote whose own author is not visible in the captured frame:</p>
+
+<div class="slidequote">
+  <p>"Whereas cognitive offloading is a strategic delegation of deliberation, using a tool to aid one's own reasoning, <b>cognitive surrender is an uncritical abdication of reasoning itself</b>."</p>
+  <cite>— text on the "Human review is compromised" slide, around 7:10. The emphasis is the slide's own.</cite>
+</div>
+
+<p>The leap from that study to code review is <b>his inference, not the study's finding</b> — Wharton measured following AI advice in general, not pull requests. His reasoning is a workload argument: more code, from more agents in parallel, arriving faster than anyone can read it. Hence <i>"there's a lot of rubber stamping that I'm sure is happening in all of your organizations"</i> (7:32) — asserted, note, not measured.</p>
+
+<h3>And why one check is never enough</h3>
+
+<p>The pleasure of code is determinism: write the function correctly and it behaves the same way every time. But code is written against human requirements, requirements bring externalities, components interact unpredictably as the codebase grows, and users do things you did not design for.</p>
+
+<div class="quote">
+  <p>"software is not provable in the same way that code is provable. Software can break in interesting and novel ways"</p>
+  <cite>— Anirban Chatterjee, 8:32 (auto-generated transcript)</cite>
+</div>
+
+<p>If software were provable you would verify once. Because it is not, verification has to be something the pipeline does continuously.</p>
+
+<hr class="rule">
+
+<h2><span class="num">3</span>What "verification" actually means here</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>Two properties, nine criteria, one slide — the densest in the deck and the reason this entry exists.</p>
+
+<figure>
+<div class="scroller">
+<svg viewBox="0 0 900 400" role="img" aria-label="Two panels side by side. The left panel, headed Zero trust with a padlock icon, lists six criteria, with the second one highlighted: uses a different methodology than what was used to generate the code. The right panel, headed Multilayered with a layers icon, lists three criteria, the third of which is highlighted and marked as appearing on the slide only.">
+  <rect x="26" y="34" width="414" height="300" rx="14" fill="#FFFFFF" stroke="#D5E2E0" stroke-width="1.6"/>
+  <rect x="460" y="34" width="414" height="300" rx="14" fill="#F8FBFB" stroke="#D5E2E0" stroke-width="1.6"/>
+
+  <rect x="52" y="58" width="20" height="15" rx="3" fill="#0E7C74"/>
+  <path d="M56 58 v-5 a6 6 0 0 1 12 0 v5" fill="none" stroke="#0E7C74" stroke-width="2.6"/>
+  <text x="86" y="72" font-size="16" font-weight="700" fill="#12211F">Zero trust</text>
+
+  <rect x="44" y="105" width="5" height="5" fill="#0E7C74"/>
+  <text x="60" y="112" font-size="12.8" fill="#12211F">Works the same no matter how the code was written</text>
+
+  <rect x="42" y="124" width="382" height="50" rx="9" fill="#DFF1EE" stroke="#8FCFC6"/>
+  <text x="58" y="147" font-size="12.8" font-weight="700" fill="#0B5F59">Uses a different methodology than what was used</text>
+  <text x="58" y="165" font-size="12.8" font-weight="700" fill="#0B5F59">to generate the code</text>
+
+  <rect x="44" y="191" width="5" height="5" fill="#0E7C74"/>
+  <text x="60" y="198" font-size="12.8" fill="#12211F">Has a clear segregation of duties</text>
+  <rect x="44" y="217" width="5" height="5" fill="#0E7C74"/>
+  <text x="60" y="224" font-size="12.8" fill="#12211F">Completely auditable</text>
+  <rect x="44" y="243" width="5" height="5" fill="#0E7C74"/>
+  <text x="60" y="250" font-size="12.8" fill="#12211F">Perfectly explainable</text>
+  <rect x="44" y="269" width="5" height="5" fill="#0E7C74"/>
+  <text x="60" y="276" font-size="12.8" fill="#12211F">Algorithmic and repeatable</text>
+
+  <text x="44" y="312" font-size="11.5" font-style="italic" fill="#4E6360">Six criteria, wording taken from the slide.</text>
+
+  <rect x="486" y="66" width="22" height="6" rx="2" fill="#0E7C74" opacity=".4"/>
+  <rect x="486" y="57" width="22" height="6" rx="2" fill="#0E7C74" opacity=".7"/>
+  <rect x="486" y="48" width="22" height="6" rx="2" fill="#0E7C74"/>
+  <text x="520" y="72" font-size="16" font-weight="700" fill="#12211F">Multilayered</text>
+
+  <rect x="478" y="105" width="5" height="5" fill="#0E7C74"/>
+  <text x="494" y="112" font-size="12.8" fill="#12211F">No one approach expected to catch every</text>
+  <text x="494" y="130" font-size="12.8" fill="#12211F">single problem</text>
+
+  <rect x="478" y="151" width="5" height="5" fill="#0E7C74"/>
+  <text x="494" y="158" font-size="12.8" fill="#12211F">Instead, a combination of different approaches</text>
+  <text x="494" y="176" font-size="12.8" fill="#12211F">catch more than any one alone</text>
+
+  <rect x="476" y="196" width="382" height="68" rx="9" fill="#FFF6E6" stroke="#E8C88A"/>
+  <text x="492" y="219" font-size="12.8" font-weight="700" fill="#8A5A0B">Each approach must have very low false</text>
+  <text x="492" y="237" font-size="12.8" font-weight="700" fill="#8A5A0B">positives and high true positives</text>
+  <text x="492" y="256" font-size="10.5" font-weight="800" letter-spacing="1" fill="#B45309">ON THE SLIDE ONLY — NEVER SAID ALOUD</text>
+
+  <text x="478" y="312" font-size="11.5" font-style="italic" fill="#4E6360">Three criteria, wording taken from the slide.</text>
+
+  <rect x="26" y="352" width="848" height="34" rx="9" fill="#0C1F1D"/>
+  <text x="450" y="374" font-size="12.5" fill="#BFE3DD" text-anchor="middle">"We think there's two core elements to successful automated verification when it comes to AI coding." — 9:18</text>
+</svg>
+</div>
+<figcaption><b>Figure 2. Redrawn from the slide "Verification should be zero trust and multilayered"</b> (built up on screen between 9:20 and 10:20) — a reconstruction. The nine bullet texts reproduce the slide's wording; layout, icons and highlighting are mine. Two criteria here are absent from the spoken talk: <b>segregation of duties</b>, and the false-positive requirement.</figcaption>
+</figure>
+
+<p>Of the nine criteria, one does real work:</p>
+
+<div class="quote">
+  <p>"Use a different methodology to review the code that was used to write the code."</p>
+  <cite>— Anirban Chatterjee, 10:00. On the slide: "Uses a different methodology than what was used to generate the code."</cite>
+</div>
+
+<p>His stated reason is coverage — different tools catch different classes of issue. There is a stronger argument he does not quite make, and I mark it as mine: <b>a model asked to check its own output is not an independent test</b>. The blind spot that produced the defect is the blind spot inspecting for it. A check is only evidence to the extent the checker can fail in ways the writer cannot. That has an uncomfortable edge for where the industry is heading: "have a second agent review the first agent's PR" satisfies <i>multilayered</i> but not obviously <i>zero trust</i>, since two frontier models trained on overlapping data are not independent instruments. The talk does not address it, and it is the question I would most want answered.</p>
+
+<p>The false-positive requirement is the operational half, and easy to miss because it was never spoken. Layering multiplies alerts; if each layer emits noise, the stack becomes something engineers learn to click past — reproducing the rubber-stamping problem the argument was built to solve. Put the other way round: <b>the number of layers you can afford is set by the false-positive rate of the worst one</b>. His own framing for why one method is not enough (10:23): you will never find every problem <i>"by just using one or two methods"</i>.</p>
+
+<hr class="rule">
+
+<h2><span class="num">4</span>The loop, and the check that runs twice</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>The shape he hangs all of this on is a circle with <b>Generate</b> in the middle and three arcs around it — Sonar calls it ACDC, expanded on the slide as <b>Agent Centric Development Cycle</b>. Treat the name as a vendor label; the content is the ordering and what each phase owns.</p>
+
+<div class="scroller tbl">
+<table>
+  <thead><tr><th style="width:15%">Phase</th><th style="width:40%">The slide's callout</th><th>Its job</th></tr></thead>
+  <tbody>
+    <tr><td><b>Guide</b></td><td>"DEFINE CONTEXT &amp; CONSTRAINTS: Provide agents with guardrails and the most relevant context."</td><td>Attacks the <i>missing context</i> cause. Explicitly not a dump of the whole codebase — over-stuffing means <i>"thrashing and exploring and burning tokens"</i> (17:25).</td></tr>
+    <tr><td><b>Verify</b></td><td>"REVIEW AND VALIDATE CODE: Multilayer verification: computational, reasoning-based, and runtime — across quality, security, and compliance."</td><td>Note <b>three</b> layers here against the two named aloud: the slide adds <i>runtime</i>.</td></tr>
+    <tr><td><b>Solve</b></td><td>"FIX ISSUES: Automated debugging and remediation based on verification feedback."</td><td>The half people skip. A finding in a report is a to-do; a finding routed to something that fixes it closes the loop.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>He calls Verify the fastest to implement and <i>"the most important piece"</i> (11:04) — fair, and it is also the only phase you can add without changing how anyone works.</p>
+
+<p>The last substantive three minutes narrate that loop as one dense diagram, the most transferable artifact in the talk. Strip the product names off the nodes and an architecture claim remains: <b>the same check runs in two places, for two different reasons</b>.</p>
+
+<figure>
+<div class="scroller">
+<svg viewBox="0 0 900 580" role="img" aria-label="Two-band flow diagram. The upper band is the inner agentic loop: specs and evals feed context and constraints, then initiate coding agent, then generate, then in-loop verification, whose fail edge returns into the loop — drawn here back to the coding agent — and whose pass edge drops to the lower band. The lower band is the CI verification loop: PR flow agent fans out to code review and verification, both feeding a fix agent, then a quality gate whose fail edge returns to the fix agent and whose pass edge proceeds to test, build and deploy.">
+  <defs>
+    <marker id="vlInk" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#4E6360"/></marker>
+    <marker id="vlRed" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#DC2626"/></marker>
+    <marker id="vlGrn" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#15803D"/></marker>
+  </defs>
+
+  <path d="M520 30 H548" stroke="#15803D" stroke-width="2"/>
+  <text x="554" y="34" font-size="11.5" fill="#4E6360">Pass</text>
+  <path d="M596 30 H624" stroke="#DC2626" stroke-width="2"/>
+  <text x="630" y="34" font-size="11.5" fill="#4E6360">Fail</text>
+  <rect x="676" y="22" width="16" height="16" rx="4" fill="#DFF1EE" stroke="#0E7C74" stroke-width="2"/>
+  <text x="700" y="34" font-size="11.5" fill="#4E6360">Verification step</text>
+
+  <rect x="26" y="54" width="848" height="246" rx="14" fill="none" stroke="#A9BFBC" stroke-width="1.4" stroke-dasharray="7 6"/>
+  <text x="44" y="78" font-size="11.5" font-weight="800" letter-spacing="1.4" fill="#4E6360">INNER — AGENTIC LOOP</text>
+
+  <rect x="44" y="94" width="142" height="62" rx="10" fill="#F0F1FB" stroke="#C3C8EE"/>
+  <text x="115" y="118" font-size="13" font-weight="700" fill="#12211F" text-anchor="middle">Specs</text>
+  <text x="115" y="136" font-size="10.8" fill="#4E6360" text-anchor="middle">Explicit and tacit</text>
+  <text x="115" y="150" font-size="10.8" fill="#4E6360" text-anchor="middle">requirements</text>
+
+  <rect x="44" y="168" width="142" height="62" rx="10" fill="#F0F1FB" stroke="#C3C8EE"/>
+  <text x="115" y="192" font-size="13" font-weight="700" fill="#12211F" text-anchor="middle">Evals</text>
+  <text x="115" y="210" font-size="10.8" fill="#4E6360" text-anchor="middle">Quality profiles and</text>
+  <text x="115" y="224" font-size="10.8" fill="#4E6360" text-anchor="middle">acceptance criteria</text>
+
+  <path d="M186 125 H193 V158 H196" stroke="#4E6360" stroke-width="1.5" fill="none" marker-end="url(#vlInk)"/>
+  <path d="M186 199 H193 V170 H196" stroke="#4E6360" stroke-width="1.5" fill="none" marker-end="url(#vlInk)"/>
+
+  <rect x="200" y="126" width="150" height="76" rx="10" fill="#F0F1FB" stroke="#C3C8EE"/>
+  <text x="275" y="150" font-size="12.5" font-weight="700" fill="#12211F" text-anchor="middle">Context and</text>
+  <text x="275" y="165" font-size="12.5" font-weight="700" fill="#12211F" text-anchor="middle">Constraints</text>
+  <text x="275" y="181" font-size="10.8" fill="#4E6360" text-anchor="middle">Codebase understanding</text>
+  <text x="275" y="194" font-size="10.8" fill="#4E6360" text-anchor="middle">and guardrails</text>
+
+  <path d="M350 164 H360" stroke="#4E6360" stroke-width="1.5" marker-end="url(#vlInk)"/>
+
+  <rect x="364" y="126" width="150" height="76" rx="10" fill="#EAF1FE" stroke="#B7CFF5"/>
+  <text x="439" y="150" font-size="12.5" font-weight="700" fill="#12211F" text-anchor="middle">Initiate Coding</text>
+  <text x="439" y="165" font-size="12.5" font-weight="700" fill="#12211F" text-anchor="middle">Agent</text>
+  <text x="439" y="181" font-size="10.8" fill="#4E6360" text-anchor="middle">LLM-backed code</text>
+  <text x="439" y="194" font-size="10.8" fill="#4E6360" text-anchor="middle">generation</text>
+
+  <path d="M514 164 H524" stroke="#4E6360" stroke-width="1.5" marker-end="url(#vlInk)"/>
+
+  <rect x="528" y="126" width="124" height="76" rx="10" fill="#EAF1FE" stroke="#B7CFF5"/>
+  <text x="590" y="157" font-size="13" font-weight="700" fill="#12211F" text-anchor="middle">Generate</text>
+  <text x="590" y="176" font-size="10.8" fill="#4E6360" text-anchor="middle">Generated</text>
+  <text x="590" y="190" font-size="10.8" fill="#4E6360" text-anchor="middle">source code</text>
+
+  <path d="M652 164 H662" stroke="#4E6360" stroke-width="1.5" marker-end="url(#vlInk)"/>
+
+  <rect x="666" y="126" width="150" height="76" rx="10" fill="#DFF1EE" stroke="#0E7C74" stroke-width="2"/>
+  <text x="741" y="150" font-size="12.5" font-weight="700" fill="#0B5F59" text-anchor="middle">In-loop</text>
+  <text x="741" y="165" font-size="12.5" font-weight="700" fill="#0B5F59" text-anchor="middle">Verification</text>
+  <text x="741" y="181" font-size="10.8" fill="#3D6C67" text-anchor="middle">Real-time scan &amp;</text>
+  <text x="741" y="194" font-size="10.8" fill="#3D6C67" text-anchor="middle">detect issues</text>
+
+  <path d="M741 202 V256 H439 V206" stroke="#DC2626" stroke-width="1.8" fill="none" marker-end="url(#vlRed)"/>
+  <rect x="572" y="247" width="36" height="18" rx="5" fill="#FEE9E9" stroke="#F0B4B4"/>
+  <text x="590" y="260" font-size="11" font-weight="700" fill="#DC2626" text-anchor="middle">Fail</text>
+
+  <path d="M816 164 H848 V308 H115 V350" stroke="#15803D" stroke-width="1.8" fill="none" marker-end="url(#vlGrn)"/>
+  <rect x="430" y="299" width="44" height="18" rx="5" fill="#E6F5EC" stroke="#A9DCBD"/>
+  <text x="452" y="312" font-size="11" font-weight="700" fill="#15803D" text-anchor="middle">Pass</text>
+
+  <rect x="26" y="316" width="848" height="246" rx="14" fill="none" stroke="#A9BFBC" stroke-width="1.4" stroke-dasharray="7 6"/>
+  <text x="856" y="340" text-anchor="end" font-size="11.5" font-weight="800" letter-spacing="1.4" fill="#4E6360">OUTER — CI VERIFICATION LOOP</text>
+
+  <rect x="44" y="354" width="142" height="62" rx="10" fill="#FFFFFF" stroke="#D5E2E0"/>
+  <text x="115" y="378" font-size="12.5" font-weight="700" fill="#12211F" text-anchor="middle">PR Flow Agent</text>
+  <text x="115" y="396" font-size="10.8" fill="#4E6360" text-anchor="middle">Initiate process</text>
+  <text x="115" y="409" font-size="10.8" fill="#4E6360" text-anchor="middle">to merge</text>
+
+  <path d="M186 378 H193 V373 H196" stroke="#4E6360" stroke-width="1.5" fill="none" marker-end="url(#vlInk)"/>
+  <path d="M186 392 H193 V443 H196" stroke="#4E6360" stroke-width="1.5" fill="none" marker-end="url(#vlInk)"/>
+
+  <rect x="200" y="344" width="150" height="58" rx="10" fill="#FFFFFF" stroke="#D5E2E0"/>
+  <text x="275" y="368" font-size="12.5" font-weight="700" fill="#12211F" text-anchor="middle">Code Review</text>
+  <text x="275" y="386" font-size="10.8" fill="#4E6360" text-anchor="middle">Superhuman review</text>
+
+  <rect x="200" y="414" width="150" height="58" rx="10" fill="#DFF1EE" stroke="#0E7C74" stroke-width="2"/>
+  <text x="275" y="438" font-size="12.5" font-weight="700" fill="#0B5F59" text-anchor="middle">Verification</text>
+  <text x="275" y="456" font-size="10.8" fill="#3D6C67" text-anchor="middle">Multi-layered</text>
+
+  <path d="M350 373 H357 V400 H360" stroke="#4E6360" stroke-width="1.5" fill="none" marker-end="url(#vlInk)"/>
+  <path d="M350 443 H357 V420 H360" stroke="#4E6360" stroke-width="1.5" fill="none" marker-end="url(#vlInk)"/>
+
+  <rect x="364" y="379" width="140" height="62" rx="10" fill="#FFF3E3" stroke="#E5C08F"/>
+  <text x="434" y="403" font-size="12.5" font-weight="700" fill="#12211F" text-anchor="middle">Fix Agent</text>
+  <text x="434" y="421" font-size="10.8" fill="#4E6360" text-anchor="middle">Solve identified</text>
+  <text x="434" y="434" font-size="10.8" fill="#4E6360" text-anchor="middle">problems</text>
+
+  <path d="M504 410 H514" stroke="#4E6360" stroke-width="1.5" marker-end="url(#vlInk)"/>
+
+  <rect x="518" y="372" width="140" height="76" rx="10" fill="#0C1F1D"/>
+  <text x="588" y="396" font-size="12.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">Quality Gate</text>
+  <text x="588" y="414" font-size="10.8" fill="#A9CFC9" text-anchor="middle">Consistent, precise</text>
+  <text x="588" y="427" font-size="10.8" fill="#A9CFC9" text-anchor="middle">pass/fail against</text>
+  <text x="588" y="440" font-size="10.8" fill="#A9CFC9" text-anchor="middle">eval criteria</text>
+
+  <path d="M658 414 H684" stroke="#15803D" stroke-width="1.8" marker-end="url(#vlGrn)"/>
+  <text x="671" y="401" font-size="10.5" font-weight="700" fill="#15803D" text-anchor="middle">Pass</text>
+
+  <rect x="690" y="379" width="166" height="62" rx="10" fill="#E6F5EC" stroke="#A9DCBD"/>
+  <text x="773" y="404" font-size="12.5" font-weight="700" fill="#12211F" text-anchor="middle">Test, Build,</text>
+  <text x="773" y="421" font-size="12.5" font-weight="700" fill="#12211F" text-anchor="middle">and Deploy</text>
+
+  <path d="M588 448 V500 H434 V445" stroke="#DC2626" stroke-width="1.8" fill="none" marker-end="url(#vlRed)"/>
+  <rect x="494" y="491" width="36" height="18" rx="5" fill="#FEE9E9" stroke="#F0B4B4"/>
+  <text x="512" y="504" font-size="11" font-weight="700" fill="#DC2626" text-anchor="middle">Fail</text>
+</svg>
+</div>
+<figcaption><b>Figure 3. Redrawn from the slide "The critical verification loops of the Agent Centric Development Cycle"</b> (narrated 15:46–19:00) — a reconstruction, and the one place this explainer deliberately departs from the original. Two disclosed changes: the source printed <b>vendor product names against individual nodes</b>, which are removed here because the transferable content is the topology; and the source draws the two loops <b>side by side</b>, in blue/purple and red, where this version stacks them and reserves red for failure edges. Node names and sub-labels are the slide's own wording, and no edge was removed. One endpoint is inferred: the source shows the in-loop <b>Fail</b> edge returning into the loop without naming what it returns to, and it is drawn here to the coding agent, following the narration at 17:41–17:59 (<i>"those issues can then be fixed immediately by the agent"</i>).</figcaption>
+</figure>
+
+<p>The inner verification step is not merely an earlier CI check. Its purpose is containment:</p>
+
+<div class="quote">
+  <p>"those issues can then be fixed immediately by the agent so they don't propagate into future agentic loops that are going to run in order to fully build out the software project that you're doing."</p>
+  <cite>— Anirban Chatterjee, 17:49 (auto-generated transcript)</cite>
+</div>
+
+<p>A defect generated in loop three is not a static fact — it becomes context for loops four through twenty, because the agent reads its own prior output and extends the pattern. Catching it inside the loop beats catching it in CI by more than the usual shift-left factor, since you also prevent the multiplication.</p>
+
+<p>Three things to notice in the outer loop. <b>Review and verification are separate, parallel nodes</b> — zero trust made structural: two instruments arriving at the same gate. <b>A failing gate routes to a fix agent, not to a person</b>, which keeps the loop closed and removes the human whose review the Wharton study just discredited — elegant or circular depending on how much you trust the gate. And <b>the gate is the only thing between the loop and production</b>, which makes the acceptance criteria in the Evals box at top left the highest-leverage artifact in the diagram, and the one the talk spends least time on.</p>
+
+<div class="note">
+  <div class="lbl">The one line that carries the architecture</div>
+  <p style="margin:6px 0 0">"The verification needs to run in both the inner agentic loop and also in the outer loop for CICD." — <b>18:56</b>. ("CICD" is the auto-transcript's rendering of CI/CD.)</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">5</span>What to actually take away</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<div class="scroller tbl">
+<table>
+  <thead><tr><th style="width:32%">The shift</th><th>From → To</th></tr></thead>
+  <tbody>
+    <tr><td><b>What AI coding costs you</b></td><td>A one-off review burden → a persistent debt that outlives the productivity gain</td></tr>
+    <tr><td><b>How much verification to buy</b></td><td>One standard for everything → sized to where the project sits on the criticality axis</td></tr>
+    <tr><td><b>Who checks the output</b></td><td>The thing that wrote it → an instrument that can fail differently from the writer</td></tr>
+    <tr><td><b>How many checks</b></td><td>One good one → layered, bounded by the worst layer's false-positive rate</td></tr>
+    <tr><td><b>Where the check runs</b></td><td>At the pull request → inside the generation loop <i>and</i> at the pull request</td></tr>
+    <tr><td><b>What a failure does</b></td><td>Files a ticket for a human → routes to a fix agent and re-enters the gate</td></tr>
+    <tr><td><b>Model choice</b></td><td>A cost decision → also a quality decision, with a different defect profile per model</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+  <div class="lbl">The one sentence to remember</div>
+  <p style="margin:6px 0 0">A check is only evidence to the extent that <b>it can fail in ways the writer cannot</b> — which is why "have the model review its own code" feels like verification and mostly isn't.</p>
+</div>
+
+<div class="note warn">
+  <div class="lbl">Two things not to take away</div>
+  <p style="margin:6px 0 0"><b>Cost is never mentioned.</b> Layered verification on every inner-loop iteration has a token bill and a latency cost, and neither is quantified — the same silence <a href="../signal-to-pr/">signal-to-pr</a> has around "trace 10× more". <b>And the closing takeaway is a purchase.</b> "Standardize on a single independent multi-layered verification platform ... across all projects, across all teams, across all developers, and all AI coding tools" (21:47) is a real engineering argument and, precisely, a request to buy one vendor's product. The fuller list of objections is in the <a href="README.md">entry notes</a>.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">6</span>Timestamp index</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<div class="scroller tbl">
+<table>
+  <thead><tr><th style="width:14%">Time</th><th>Section</th></tr></thead>
+  <tbody>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=0s" target="_blank" rel="noopener">0:00</a></td><td>Who is speaking, and the framing: experimentation → engineering</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=105s" target="_blank" rel="noopener">1:45</a></td><td><b>Carnegie Mellon: the spike fades, the warnings don't</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=166s" target="_blank" rel="noopener">2:46</a></td><td><b>The quality gap scales with criticality</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=235s" target="_blank" rel="noopener">3:55</a></td><td>Why the gap exists: mistakes and missing context</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=286s" target="_blank" rel="noopener">4:46</a></td><td>Models differ: the coding-personalities leaderboard</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=386s" target="_blank" rel="noopener">6:26</a></td><td><b>Human review as backstop, and the Wharton result</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=462s" target="_blank" rel="noopener">7:42</a></td><td>Code is provable; software is not</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=552s" target="_blank" rel="noopener">9:12</a></td><td><b>Zero trust and multilayered, defined</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=638s" target="_blank" rel="noopener">10:38</a></td><td>ACDC: Guide → Verify → Solve</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=724s" target="_blank" rel="noopener">12:04</a></td><td>Four drivers customers cite for adopting verification</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=811s" target="_blank" rel="noopener">13:31</a></td><td>Product catalogue begins — not covered here</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=946s" target="_blank" rel="noopener">15:46</a></td><td><b>The two-loop chart, narrated in detail</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=1147s" target="_blank" rel="noopener">19:07</a></td><td>Video demo of the inner loop</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=03l29gJXpCE&amp;t=1273s" target="_blank" rel="noopener">21:13</a></td><td>Key takeaways</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="srcbox">
+  <div class="lbl">Source</div>
+  <p><b>Guide, Verify, Solve</b> — Anirban Chatterjee, Sonar (product marketing). Channel: AI Engineer. Runtime 22:31. Video published 2026-08-09; the talk was delivered <b>2026-07-02</b>, read off the slide furniture ("TRACK 8 • JULY 2, 2026 / Agentic Engineering").</p>
+  <p><a href="https://www.youtube.com/watch?v=03l29gJXpCE" target="_blank" rel="noopener">https://www.youtube.com/watch?v=03l29gJXpCE</a></p>
+  <p style="color:var(--ink2); font-size:13.5px"><b>Works cited on the slides — neither study is read out aloud.</b> "Does AI-Assisted Coding Deliver? A Difference-in-Differences Study of Cursor's Impact on Software Projects" — Carnegie Mellon; data collected with SonarQube. · Shaw &amp; Nave (2026), Wharton — "Thinking Fast, Slow, and Artificial"; 92.7% / 79.8%.</p>
+  <p style="color:var(--ink2); font-size:13.5px"><b>Not from a slide.</b> The benchmark slide is titled "Models have diverse quality issues" and its footer carries only the bare URL <code>sonar.com/leaderboard</code>; aloud he calls it "the LLM leaderboard" (4:59). The report title "The Coding Personalities of Leading LLMs" comes from the page linked in the video description.</p>
+  <p style="color:var(--ink2); font-size:13.5px"><b>Related.</b> <a href="../signal-to-pr/">From Signal to PR</a> — same topic, opposite ends of the lifecycle: this gates before shipping, that repairs after. · <a href="../../agent-architecture/loop-vs-graph/">Loop Engineering vs Graph Engineering</a> — partially answers its open question on guardrails for a non-deterministic flow. · <a href="../../post-training/learning-on-the-job/">Learning on the Job</a> — the same fair, one day earlier (Track 9); that one closes the loop with weights, this one with a gate.</p>
+</div>
+
+<p style="margin-top:26px; font-size:13px; color:var(--ink2); border-top:1px solid var(--line); padding-top:18px">
+<b>Provenance.</b> Compiled from the <b>yt-dlp auto-generated (ASR) English transcript</b> — 340 merged segments, 0:01–22:29 — plus factual descriptions of <b>8 slide frames</b> captured from the video for reference. No screenshot is stored or redistributed: <b>all three figures are hand-drawn inline SVG reconstructions</b> built from those descriptions, and each caption states what was changed.
+Four caveats. <b>(1)</b> The transcript garbles proper nouns — SonarQube as "SonarCube", Antigravity as "Any Gravity" (19:50), the acquired company inconsistently — so <b>no proper noun is quoted on the strength of the transcript alone</b>. Every product, model and paper name here is corroborated by a slide, with two exceptions, both named as such: the leaderboard report's title, which comes from the video description, and <b>Antigravity</b> in this sentence, which rests on the transcript alone. The acquired company is left unnamed because the two sources disagree on its spelling. <b>(2)</b> Quoted timestamps are the start of the segment containing the quote, accurate to a few seconds. <b>(3)</b> The event name is inferred from on-slide track branding plus references to a keynote "yesterday". <b>(4)</b> Two things could not be reported fully: the leaderboard radar's per-axis numbers cannot be assigned to a model at the captured resolution, and on the quality-gap slide the enterprise anchor's line count reads as roughly 500K LOCs but its comparison operator is not legible, so the figure is described rather than quoted. Both are marked where they occur rather than filled in.
+</p>
+
+</div>
+</body>
+</html>

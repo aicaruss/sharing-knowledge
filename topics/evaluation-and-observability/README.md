@@ -14,6 +14,7 @@ the serving stack the traces come from → see [`infrastructure`](../infrastruct
 | Entry | Source | Format | Added |
 | --- | --- | --- | --- |
 | [**From Signal to PR: Anatomy of a Self-Improving Agent**](signal-to-pr/) — observability stops being a dashboard and becomes machine input. Traces written to the repo as files, an agent that investigates before you wake up, and why you should now log ten times more. [_read_](https://aicaruss.github.io/sharing-knowledge/topics/evaluation-and-observability/signal-to-pr/) | Jason Lopatecki · Arize AI | Talk explainer · 20m35s | 2026-08-11 |
+| [**Verification Debt: Guide, Verify, Solve**](verification-debt/) — the productivity spike expires in about three months; the static-analysis warnings and complexity do not. Why the quality gap scales with criticality, why human review is a leaky backstop (people follow confidently wrong AI advice 79.8% of the time), and the one criterion worth taking away: verify with a *different* methodology than the one that generated the code. A vendor talk, read with that disclosed. [_read_](https://aicaruss.github.io/sharing-knowledge/topics/evaluation-and-observability/verification-debt/) | Anirban Chatterjee · Sonar | Talk explainer · 22m31s | 2026-08-11 |
 
 ## Wanted
 
