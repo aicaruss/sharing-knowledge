@@ -13,7 +13,9 @@ that sits inside the loop → see [`post-training`](../post-training/).
 
 ## Entries
 
-_No entries yet._ See [CONTRIBUTING.md](../../CONTRIBUTING.md) to add the first one.
+| Entry | Source | Format | Added |
+| --- | --- | --- | --- |
+| [**Loop Engineering vs Graph Engineering**](loop-vs-graph/) — the five-rung ladder from prompts to graphs, why loops and graphs are not competitors, and the three things that make an agent graph more than a 2023 DAG. [_read_](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/loop-vs-graph/) | Shen Sean Chen · Sean's AI Stories | Talk explainer · 21m31s | 2026-08-11 |
 
 ## Wanted
 
@@ -21,6 +23,11 @@ _No entries yet._ See [CONTRIBUTING.md](../../CONTRIBUTING.md) to add the first 
   multiplies cost and failure surface.
 - Memory architectures compared on something other than vibes.
 - What "planning" concretely buys over letting a strong model improvise inside a good loop.
+- **What guardrails on a non-deterministic graph actually look like.** The loop-vs-graph entry
+  establishes that they become mandatory once nodes and routing stop being deterministic, but stops
+  short of designing them.
+- **A threshold for "the pattern has settled."** "Consolidate a repeating loop into a graph" is good
+  advice without a number attached.
 
 ---
 

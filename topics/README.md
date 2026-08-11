@@ -6,10 +6,10 @@ exactly one obvious home. Each topic folder states its own scope and lists its e
 | Topic | What lands here | Entries |
 | --- | --- | --- |
 | [**post-training**](post-training/) | RL, fine-tuning, reward design, training environments, custom models | 1 |
-| [**agent-architecture**](agent-architecture/) | The agent loop, planning, memory, multi-agent topologies | 0 |
+| [**agent-architecture**](agent-architecture/) | The agent loop, planning, memory, multi-agent topologies | 1 |
 | [**tool-use-and-protocols**](tool-use-and-protocols/) | Function calling, MCP, computer use, agent protocols | 0 |
 | [**context-engineering**](context-engineering/) | Prompting, RAG, retrieval, context-window budgeting | 0 |
-| [**evaluation-and-observability**](evaluation-and-observability/) | Evals, benchmarks, tracing, guardrails, cost accounting | 0 |
+| [**evaluation-and-observability**](evaluation-and-observability/) | Evals, benchmarks, tracing, guardrails, cost accounting | 1 |
 | [**infrastructure**](infrastructure/) | Serving, inference, sandboxes, latency and cost | 0 |
 | [**applied-and-case-studies**](applied-and-case-studies/) | Real deployments, post-mortems, enterprise patterns | 0 |
 

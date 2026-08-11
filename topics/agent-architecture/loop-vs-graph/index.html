@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loop vs Graph Engineering — Visual Summary</title>
+<style>
+  :root{
+    color-scheme: light;
+    --page:#f9f9f7; --surface:#fcfcfb;
+    --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+    --line:#e1e0d9; --ring:rgba(11,11,11,0.10);
+    --blue:#2a78d6; --orange:#eb6834; --aqua:#1baf7a; --yellow:#eda100; --violet:#4a3aa7;
+    --blue-soft:rgba(42,120,214,.10); --orange-soft:rgba(235,104,52,.10);
+    --node:#ffffff; --node-br:#d7d6cd; --edge:#898781;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])){
+      color-scheme: dark;
+      --page:#0d0d0d; --surface:#1a1a19;
+      --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+      --line:#2c2c2a; --ring:rgba(255,255,255,0.10);
+      --blue:#3987e5; --orange:#d95926; --aqua:#199e70; --yellow:#c98500; --violet:#9085e9;
+      --blue-soft:rgba(57,135,229,.14); --orange-soft:rgba(217,89,38,.16);
+      --node:#232322; --node-br:#3a3a37; --edge:#898781;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--page); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:16px; line-height:1.65;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 20px 80px}
+  header.hero{border-bottom:1px solid var(--line);padding-bottom:24px;margin-bottom:8px}
+  .eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 10px}
+  h1{font-size:31px;line-height:1.22;margin:0 0 12px;letter-spacing:-.02em}
+  .meta{font-size:13.5px;color:var(--ink2);margin:0}
+  .meta a{color:var(--blue);text-decoration:none;border-bottom:1px solid var(--ring)}
+  h2{font-size:22px;margin:52px 0 6px;letter-spacing:-.01em;scroll-margin-top:20px}
+  h2 .num{color:var(--muted);font-weight:600;font-size:15px;margin-right:10px;font-variant-numeric:tabular-nums}
+  h3{font-size:16.5px;margin:28px 0 6px}
+  p{margin:10px 0}
+  .lede{color:var(--ink2);font-size:14.5px;margin:2px 0 16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:18px 0}
+  .tldr{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:12px;padding:18px 22px;margin:24px 0}
+  .tldr h3{margin-top:0;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .tldr p{margin:8px 0;font-size:16.5px}
+  blockquote{margin:18px 0;padding:14px 20px;border-left:3px solid var(--orange);background:var(--orange-soft);border-radius:0 10px 10px 0;font-size:16px}
+  blockquote cite{display:block;margin-top:8px;font-size:13px;color:var(--ink2);font-style:normal}
+  figure{margin:22px 0 26px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 16px 12px;overflow-x:auto}
+  figure svg{display:block;width:100%;height:auto;min-width:640px}
+  figcaption{font-size:13px;color:var(--ink2);margin-top:12px;padding:0 4px;border-top:1px solid var(--line);padding-top:10px}
+  .ladder{margin:20px 0 10px}
+  .rung{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c,var(--blue));
+        border-radius:10px;padding:13px 16px;margin:8px 0;margin-left:calc((var(--i) - 1) * 30px)}
+  .rung > b{display:block;font-size:16px;margin-bottom:2px}
+  .rung .badge{display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;border-radius:6px;
+        background:var(--c);color:#fff;font-size:12px;font-weight:700;margin-right:9px;vertical-align:2px}
+  .rung span.desc{font-size:14.5px;color:var(--ink2)}
+  .rung em{font-style:normal;color:var(--ink);background:var(--blue-soft);padding:1px 6px;border-radius:5px;font-size:13.5px}
+  @media(max-width:640px){ .rung{margin-left:calc((var(--i) - 1) * 10px)} }
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14.5px;background:var(--surface);
+        border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--page)}
+  tbody tr:last-child td{border-bottom:none}
+  td.k{font-weight:600;width:22%}
+  .swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:1px}
+  .legend{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--ink2);margin:2px 4px 6px}
+  ul{margin:10px 0;padding-left:22px} li{margin:6px 0}
+  .chapters{font-size:14px}
+  .chapters td.t{width:78px;font-variant-numeric:tabular-nums;color:var(--blue);font-weight:600}
+  .chapters a{color:inherit;text-decoration:none}
+  .chapters a:hover{text-decoration:underline}
+  .note{font-size:13.5px;color:var(--ink2);background:var(--page);border:1px dashed var(--line);border-radius:10px;padding:12px 16px;margin:16px 0}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;background:var(--page);
+       border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+  .footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+  .n-box{fill:var(--node);stroke:var(--node-br);stroke-width:1.5}
+  .n-blue{fill:var(--blue-soft);stroke:var(--blue);stroke-width:1.5}
+  .n-orange{fill:var(--orange-soft);stroke:var(--orange);stroke-width:1.5}
+  .t{fill:var(--ink);font-size:14px;font-family:system-ui,-apple-system,sans-serif}
+  .t-sm{fill:var(--ink2);font-size:11.5px;font-family:system-ui,-apple-system,sans-serif}
+  .t-lbl{fill:var(--muted);font-size:11.5px;font-family:system-ui,-apple-system,sans-serif}
+  .t-hd{fill:var(--ink);font-size:13px;font-weight:700;font-family:system-ui,-apple-system,sans-serif;letter-spacing:.04em}
+  .e{stroke:var(--edge);stroke-width:1.8;fill:none;marker-end:url(#ar)}
+  .e-dash{stroke:var(--edge);stroke-width:1.6;fill:none;stroke-dasharray:5 5}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <p class="eyebrow">Video summary · YouTube</p>
+  <h1>Loop Engineering vs Graph Engineering<br>— two AI agent buzzwords, taken slowly</h1>
+  <p class="meta">
+    Channel <b>Sean's AI Stories</b> (Shen Sean Chen) · 21 min 31 sec · published 2 August 2026 ·
+    <a href="https://www.youtube.com/watch?v=IMLwvK08JVc">open the video</a>
+  </p>
+</header>
+
+<div class="tldr">
+  <h3>The whole video in three sentences</h3>
+  <p><b>1.</b> Loops and graphs are <b>not competitors</b> — they do two different jobs, and any system worth building uses both.</p>
+  <p><b>2.</b> Reach for a <b>loop</b> when you know the <i>goal</i> but not the steps; reach for a <b>graph</b> when you already know the <i>shape</i> of the work and want those steps to move together.</p>
+  <p><b>3.</b> Yes, a graph looks like a 2023 deterministic workflow (Airflow, Step Functions) — but three things are genuinely new: a node can be an LLM call, the model itself can pick which edge to take, and the flow now needs guards.</p>
+</div>
+
+<h2><span class="num">01</span>Why is everyone suddenly arguing about this?</h2>
+<p class="lede">0:00 – 0:55</p>
+<p>Sean opens not with the technicals but with <b>where the noise came from</b>. On 18 July 2026, Peter Steinberger — the author of "OpenClaw", the project with the little lobster — threw one question onto X:</p>
+
+<blockquote>
+  "are we still talking about loops, or did we shift to graphs yet?"
+  <cite>— Peter Steinberger on X, 18 July 2026 · roughly 3 million views</cite>
+</blockquote>
+
+<p>The top reply was just someone joking that they were on vacation and would like the discourse to stop. Two weeks later the entire AI agent space was arguing over whether loop engineering was dead.</p>
+<p>Sean's point here is worth holding onto: <b>a term usually goes viral not because it suddenly became important, but because someone with reach said it out loud.</b> Exactly what happened to "context engineering". So don't panic every time a new buzzword lands — go find out what actually changed first.</p>
+
+<h2><span class="num">02</span>The AI agent engineering ladder (three years in one chart)</h2>
+<p class="lede">2:00 – 8:22 · the most valuable stretch of the video</p>
+<p>Before comparing loops and graphs, Sean draws a <b>ladder</b>: five rungs we've climbed since 2023. Each rung exists because the one below it <i>wasn't enough</i>. Once you see the order, every buzzword falls into place.</p>
+
+<div class="ladder">
+  <div class="rung" style="--i:1;--c:var(--violet)">
+    <b><span class="badge">1</span>Prompt Engineering — <em>give it a role</em></b>
+    <span class="desc">The ChatGPT 3.5 era. Sean's most accurate word for it: <i>role playing</i>. "You are the best poet, like Shakespeare — write me a poem about this view in Switzerland." You're steering <b>how the model talks</b>, and nothing else. It has no material to work from yet.</span>
+  </div>
+  <div class="rung" style="--i:2;--c:var(--aqua)">
+    <b><span class="badge">2</span>Context Engineering — <em>give it data</em></b>
+    <span class="desc">The moment LLMs moved from a consumer toy into <b>real workflows</b>, prompts stopped being enough. A customer-service bot or a sales agent has to be fed actual data: customer history sitting in Excel, Google Sheets, a CRM. The focus shifts from "how it speaks" to <b>"what information makes it into the context window"</b>.</span>
+  </div>
+  <div class="rung" style="--i:3;--c:var(--yellow)">
+    <b><span class="badge">3</span>Skills — <em>give it an SOP</em></b>
+    <span class="desc">Teaching a <b>procedure</b>. In agent-harness language this is <b>procedural memory</b>. Sean's analogy: telling a kid "when you walk home, walk on the right-hand side if you're in the US or China, the left if you're in the UK or Japan." No extra data needed — just a rule that fires when a situation comes up. Why bother? So you stop repeating yourself forever ("don't use emoji, don't use emoji…").</span>
+  </div>
+  <div class="rung" style="--i:4;--c:var(--blue)">
+    <b><span class="badge">4</span>Loop — <em>give it a goal and a toolbox</em></b>
+    <span class="desc">Sometimes you have a <b>goal</b> but no idea of the exact steps. So you tell the model: "here's your goal — fix the bug this customer reported; here's a pile of tools: web search, the GitHub API, Gmail APIs, Google Calendar, MCP servers. Use them. Loop until the goal is done." This is where Anthropic's MCP starts paying off.</span>
+  </div>
+  <div class="rung" style="--i:5;--c:var(--orange)">
+    <b><span class="badge">5</span>Graph — <em>give it a route map</em></b>
+    <span class="desc">A procedure that is <b>decided in advance</b>. Plenty of people push back that this isn't new — since 2023 we've had Airflow and Step Functions for deterministic workflows, precisely so that not every decision gets handed to the model. Because for a lot of tasks we <i>do</i> know the steps; there's already an SOP.</span>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">What Sean concludes from the ladder</h3>
+  <p style="margin-bottom:6px">The arc isn't "the new thing replaces the old thing" — it's <b>a pendulum that swings out and settles in the middle</b>:</p>
+  <p style="margin:6px 0"><b>Skills</b> = follow a strict procedure → <b>Loop</b> = "agent, go figure it out yourself" → <b>Graph</b> = <b>a mixture of the two</b>.</p>
+  <p style="margin-bottom:0">His practical order: <b>write the skill first</b>. When you notice the same pattern repeating across your workflows — especially in a company, say an e-commerce support desk answering logistics, refund, and sample-check questions the same way every time — <b>consolidate it into a graph</b>. Then inside that graph, keep a loop wherever the work is genuinely <b>exploratory</b>. Deep research, he notes, was one of the earliest examples of loop engineering: "go search the internet, I want a report."</p>
+</div>
+
+<h2><span class="num">03</span>What a LOOP actually looks like</h2>
+<p class="lede">8:22 – 9:23</p>
+<p>Sean's framing: <b>a loop discovers what to do next</b>. The model decides, one step at a time.</p>
+
+<figure>
+<svg viewBox="0 0 940 290" role="img" aria-label="Loop flow diagram: a user asks the LLM, the LLM decides whether a tool is needed, if yes it runs the tool and the result returns to the LLM, repeating until done, then it replies">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--edge)"/>
+    </marker>
+  </defs>
+  <rect class="n-box" x="20" y="118" width="110" height="56" rx="10"/>
+  <text class="t" x="75" y="152" text-anchor="middle">You ask</text>
+
+  <path class="e" d="M130,146 H186"/>
+
+  <rect class="n-blue" x="192" y="118" width="120" height="56" rx="10"/>
+  <text class="t" x="252" y="145" text-anchor="middle">LLM</text>
+  <text class="t-sm" x="252" y="162" text-anchor="middle">thinks</text>
+
+  <path class="e" d="M312,146 H362"/>
+
+  <polygon class="n-box" points="430,104 494,146 430,188 366,146"/>
+  <text class="t-sm" x="430" y="150" text-anchor="middle">Need a tool?</text>
+
+  <text class="t-lbl" x="512" y="138">Yes</text>
+  <path class="e" d="M494,146 H544"/>
+
+  <rect class="n-blue" x="548" y="118" width="150" height="56" rx="10"/>
+  <text class="t" x="623" y="152" text-anchor="middle">Run the tool</text>
+
+  <path class="e" d="M698,146 H748"/>
+
+  <rect class="n-box" x="752" y="118" width="140" height="56" rx="10"/>
+  <text class="t" x="822" y="145" text-anchor="middle">Result</text>
+  <text class="t-sm" x="822" y="162" text-anchor="middle">comes back</text>
+
+  <path class="e" d="M822,174 V240 H252 V178"/>
+  <text class="t-lbl" x="537" y="258" text-anchor="middle">go round again — until the model decides it has enough</text>
+
+  <text class="t-lbl" x="446" y="82">No</text>
+  <path class="e" d="M430,104 V56 H698"/>
+  <rect class="n-box" x="702" y="30" width="150" height="52" rx="10"/>
+  <text class="t" x="777" y="61" text-anchor="middle">Reply to you</text>
+</svg>
+<figcaption><b>The loop.</b> Nobody knows up front how many times this will go round — the model decides each step. <b>Sean's concrete example:</b> you ask Claude Code or Codex to "fix the bug on this pull request and tell me when it's done". The agent then reaches for web search, the GitHub CLI, checks Supabase, AWS, Google Cloud — one at a time — until it finally reports "done, the cause was A-B-C-D."</figcaption>
+</figure>
+
+<div class="note"><b>Analogy:</b> a loop is <b>taking a taxi</b>. You give the destination and nothing else. The driver decides every turn, whether to double back when traffic hits, and how long it takes. You don't know the route when you get in.</div>
+
+<h2><span class="num">04</span>What a GRAPH actually looks like</h2>
+<p class="lede">9:23 – 10:58</p>
+<p>A graph is for when you <b>already know the shape</b>. Sean's example is his morning routine — "who opened pull requests overnight, what's the latest AI agent news, what's on my calendar today". Because you know exactly what needs checking, all of it can run <b>at the same time</b> instead of queueing.</p>
+
+<figure>
+<svg viewBox="0 0 940 360" role="img" aria-label="Graph flow diagram: one question fans out into four parallel nodes (GitHub, web search, calendar, memory), which are then synthesised and checked for anything missing">
+  <rect x="214" y="26" width="202" height="292" rx="14" fill="none" stroke="var(--edge)" stroke-width="1.4" stroke-dasharray="6 5" opacity=".55"/>
+  <rect class="n-box" x="16" y="144" width="120" height="56" rx="10"/>
+  <text class="t" x="76" y="177" text-anchor="middle">Question</text>
+
+  <path class="e" d="M136,172 C 182,172 182,64 226,64"/>
+  <path class="e" d="M136,172 C 182,172 182,136 226,136"/>
+  <path class="e" d="M136,172 C 182,172 182,208 226,208"/>
+  <path class="e" d="M136,172 C 182,172 182,280 226,280"/>
+
+  <rect class="n-orange" x="230" y="40" width="170" height="48" rx="10"/>
+  <text class="t" x="315" y="70" text-anchor="middle">Check GitHub PRs</text>
+  <rect class="n-orange" x="230" y="112" width="170" height="48" rx="10"/>
+  <text class="t" x="315" y="142" text-anchor="middle">Web search</text>
+  <rect class="n-orange" x="230" y="184" width="170" height="48" rx="10"/>
+  <text class="t" x="315" y="214" text-anchor="middle">Check calendar</text>
+  <rect class="n-orange" x="230" y="256" width="170" height="48" rx="10"/>
+  <text class="t" x="315" y="286" text-anchor="middle">Pull memory</text>
+
+  <path class="e" d="M400,64 C 442,64 442,172 476,172"/>
+  <path class="e" d="M400,136 C 442,136 442,172 476,172"/>
+  <path class="e" d="M400,208 C 442,208 442,172 476,172"/>
+  <path class="e" d="M400,280 C 442,280 442,172 476,172"/>
+
+  <rect class="n-box" x="480" y="144" width="140" height="56" rx="10"/>
+  <text class="t" x="550" y="177" text-anchor="middle">Synthesise</text>
+
+  <path class="e" d="M620,172 H654"/>
+  <polygon class="n-box" points="720,128 782,172 720,216 658,172"/>
+  <text class="t-sm" x="720" y="176" text-anchor="middle">Anything left?</text>
+
+  <text class="t-lbl" x="799" y="162" text-anchor="middle">No</text>
+  <path class="e" d="M782,172 H816"/>
+  <rect class="n-box" x="820" y="144" width="105" height="56" rx="10"/>
+  <text class="t" x="872" y="177" text-anchor="middle">Reply</text>
+
+  <text class="t-lbl" x="734" y="118">Yes</text>
+  <path class="e" d="M720,128 V24 H76 V140"/>
+  <text class="t-lbl" x="400" y="16" text-anchor="middle">say what's still missing, then run it again</text>
+
+  <text class="t-lbl" x="315" y="338" text-anchor="middle">all four run at the same time (in parallel)</text>
+</svg>
+<figcaption><b>The graph.</b> You define the shape: nodes are the work, edges answer "where do we go after this one". And the part that matters most — <b>any node can itself contain a loop.</b> That "web search" node is usually a small agent loop that keeps digging until it finds something. So a graph <b>wraps</b> loops; it doesn't replace them.</figcaption>
+</figure>
+
+<div class="note"><b>Analogy:</b> a graph is <b>a metro line</b>. The track is already laid, the stations are fixed, and several trains can be moving on different lines at once. You know the shape of the journey before you board.</div>
+
+<h2><span class="num">05</span>Loop vs graph — where the difference actually is</h2>
+<table>
+  <thead>
+    <tr><th></th><th><span class="swatch" style="background:var(--blue)"></span>Loop</th><th><span class="swatch" style="background:var(--orange)"></span>Graph</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="k">Who picks the next step</td><td>The model, one step at a time</td><td>You, up front — the shape is drawn</td></tr>
+    <tr><td class="k">What you hand it</td><td>A goal plus a set of tools</td><td>A map of nodes and edges</td></tr>
+    <tr><td class="k">How it runs</td><td>Sequentially, one after another</td><td>In parallel, many branches at once</td></tr>
+    <tr><td class="k">Best for</td><td>Exploratory work with no SOP: debugging, deep research, "go find out for me"</td><td>Repeat work whose pattern has settled: morning briefs, ticket triage, support flows</td></tr>
+    <tr><td class="k">Weakness</td><td>Slow and hard to predict — it can spin longer than you'd like</td><td>Rigid — if the workflow is still changing, a graph gets in the way</td></tr>
+    <tr><td class="k">Use it when</td><td>You know the <b>goal</b>, not the route</td><td>You know the <b>shape</b>, and want it all to move together</td></tr>
+  </tbody>
+</table>
+<p><b>Sean's answer to "which one is better": neither.</b> A graph doesn't replace a loop, because the two coexist and answer different needs.</p>
+
+<h2><span class="num">06</span>The difference you actually feel: time</h2>
+<p class="lede">15:36 – 17:00</p>
+<p>This is the part that makes it click. Sean lays the two approaches on a <b>timeline</b> for the same task. The loop calls tools one at a time because every step waits on the model's next decision. The graph was told up front "you need these four tools", so all four set off together.</p>
+
+<figure>
+<div class="legend">
+  <span><span class="swatch" style="background:var(--blue)"></span>Loop — sequential</span>
+  <span><span class="swatch" style="background:var(--orange)"></span>Graph — parallel</span>
+</div>
+<svg viewBox="0 0 960 500" role="img" aria-label="Timeline comparison: the loop runs six steps one after another and finishes late, while the graph runs four steps simultaneously then synthesises and finishes sooner">
+  <text class="t-hd" x="10" y="24">LOOP — one at a time</text>
+  <line class="e-dash" x1="880" y1="34" x2="880" y2="230"/>
+  <text class="t-lbl" x="876" y="26" text-anchor="end">done</text>
+
+  <text class="t-sm" x="145" y="61" text-anchor="end">Decide next step</text>
+  <rect x="160" y="42" width="60" height="24" rx="4" fill="var(--blue)"/>
+  <text class="t-sm" x="145" y="93" text-anchor="end">Call GitHub</text>
+  <rect x="220" y="74" width="156" height="24" rx="4" fill="var(--blue)"/>
+  <text class="t-sm" x="145" y="125" text-anchor="end">Decide again</text>
+  <rect x="376" y="106" width="60" height="24" rx="4" fill="var(--blue)"/>
+  <text class="t-sm" x="145" y="157" text-anchor="end">Call GitHub again</text>
+  <rect x="436" y="138" width="120" height="24" rx="4" fill="var(--blue)"/>
+  <text class="t-sm" x="145" y="189" text-anchor="end">Check calendar</text>
+  <rect x="556" y="170" width="120" height="24" rx="4" fill="var(--blue)"/>
+  <text class="t-sm" x="145" y="221" text-anchor="end">Synthesise</text>
+  <rect x="676" y="202" width="204" height="24" rx="4" fill="var(--blue)"/>
+
+  <line x1="10" y1="256" x2="950" y2="256" stroke="var(--line)" stroke-width="1"/>
+
+  <text class="t-hd" x="10" y="286">GRAPH — all at once</text>
+  <line class="e-dash" x1="688" y1="296" x2="688" y2="456"/>
+  <text class="t-lbl" x="684" y="288" text-anchor="end">done — sooner</text>
+
+  <text class="t-sm" x="145" y="323" text-anchor="end">Check GitHub PRs</text>
+  <rect x="184" y="304" width="156" height="24" rx="4" fill="var(--orange)"/>
+  <text class="t-sm" x="145" y="355" text-anchor="end">Web search</text>
+  <rect x="184" y="336" width="324" height="24" rx="4" fill="var(--orange)"/>
+  <text class="t-sm" x="145" y="387" text-anchor="end">Check calendar</text>
+  <rect x="184" y="368" width="72" height="24" rx="4" fill="var(--orange)"/>
+  <text class="t-sm" x="145" y="419" text-anchor="end">Pull memory</text>
+  <rect x="184" y="400" width="48" height="24" rx="4" fill="var(--orange)"/>
+  <text class="t-sm" x="145" y="451" text-anchor="end">Synthesise</text>
+  <rect x="508" y="432" width="180" height="24" rx="4" fill="var(--orange)"/>
+
+  <path class="e" d="M160,474 H900"/>
+  <text class="t-lbl" x="530" y="492" text-anchor="middle">time →</text>
+</svg>
+<figcaption>Bar length = how long each step takes (illustrative, not measured). In the graph, every branch has its own duration — in Sean's demo the <b>web search took the longest</b>, while <b>the calendar check and the memory lookup were quickest</b> (memory can be near-instant, or skipped entirely if nothing needs retrieving). Synthesis only starts once the slowest branch lands — and still finishes well ahead of queueing everything one by one.</figcaption>
+</figure>
+
+<h2><span class="num">07</span>Into the code: Waku Agent</h2>
+<p class="lede">10:58 – 19:00</p>
+<p>Whiteboard done, Sean opens a terminal. <b>Waku Agent</b> is his open source project — a local-first AI assistant, sitting at 700+ GitHub stars. Setup is <code>pip install waku-agent</code>, fill in your environment keys, then launch the dashboard on <code>localhost</code> (he's on port 7777 in the demo).</p>
+
+<h3>The full harness</h3>
+<figure>
+<svg viewBox="0 0 960 300" role="img" aria-label="Waku Agent harness architecture: gateway, graph, retrieval gate, agent loop, reply, with LLM Ops underneath feeding back into the harness">
+  <text x="288" y="38" text-anchor="middle" class="t-sm" fill="var(--orange)" style="font-weight:700">graph engineering lives here</text>
+  <text x="668" y="38" text-anchor="middle" class="t-sm" fill="var(--blue)" style="font-weight:700">loop engineering lives here</text>
+
+  <rect class="n-box" x="14" y="54" width="168" height="72" rx="12"/>
+  <text class="t" x="98" y="84" text-anchor="middle">Gateway</text>
+  <text class="t-sm" x="98" y="104" text-anchor="middle">chat · Discord · WhatsApp</text>
+
+  <path class="e" d="M182,90 H200"/>
+
+  <rect class="n-orange" x="204" y="54" width="168" height="72" rx="12"/>
+  <text class="t" x="288" y="84" text-anchor="middle">Graph</text>
+  <text class="t-sm" x="288" y="104" text-anchor="middle">triage · gather</text>
+
+  <path class="e" d="M372,90 H390"/>
+
+  <rect class="n-box" x="394" y="54" width="168" height="72" rx="12"/>
+  <text class="t" x="478" y="84" text-anchor="middle">Retrieval Gate</text>
+  <text class="t-sm" x="478" y="104" text-anchor="middle">skills · semantic · episodic</text>
+
+  <path class="e" d="M562,90 H580"/>
+
+  <rect class="n-blue" x="584" y="54" width="168" height="72" rx="12"/>
+  <text class="t" x="668" y="84" text-anchor="middle">Agent Loop</text>
+  <text class="t-sm" x="668" y="104" text-anchor="middle">LLM + tool calls</text>
+
+  <path class="e" d="M752,90 H770"/>
+
+  <rect class="n-box" x="774" y="54" width="168" height="72" rx="12"/>
+  <text class="t" x="858" y="84" text-anchor="middle">Reply</text>
+  <text class="t-sm" x="858" y="104" text-anchor="middle">sent to the user</text>
+
+  <path class="e" d="M668,126 V206"/>
+  <rect x="14" y="210" width="928" height="64" rx="12" fill="none" stroke="var(--edge)" stroke-width="1.6" stroke-dasharray="6 5"/>
+  <text class="t" x="478" y="238" text-anchor="middle">LLM Ops — trace · test · ship a new prompt version</text>
+  <text class="t-sm" x="478" y="258" text-anchor="middle">and feed the result back into the harness</text>
+  <path class="e" d="M98,210 V130"/>
+  <text class="t-lbl" x="106" y="176">feedback</text>
+</svg>
+<figcaption>The flow: a message arrives at the <b>gateway</b> (chat, Discord, Telegram, WhatsApp) → the <b>graph</b> picks which workflow applies → the <b>retrieval gate</b> decides what memory to pull: <i>procedural</i> (skills), <i>semantic</i> (durable facts), <i>episodic</i> (dated events) → the <b>agent loop</b> calls the model and the tools → the reply goes out. Throughout, <b>LLM Ops</b> traces what happened, tests it, and releases an improved prompt version back into the harness.</figcaption>
+</figure>
+
+<h3>The two graphs he demos live</h3>
+<table>
+  <thead><tr><th>Graph</th><th>How it's invoked</th><th>What happens</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="k">triage</td>
+      <td><code>what's up today</code></td>
+      <td>Two branches fire together: <b>(a)</b> classify whether this needs a serious agent call, and <b>(b)</b> go straight to Google Calendar. It then drops into a loop to call <code>list events</code> / read Apple Calendar before answering.</td>
+    </tr>
+    <tr>
+      <td class="k">gather</td>
+      <td><code>/gather tell me what's up with waku agent…</code></td>
+      <td>Four tools run <b>simultaneously</b>: GitHub, web search, calendar, memory. The results are synthesised into a single <i>morning brief</i> — PRs waiting for review, a package that just shipped, plus web research findings (in the demo: Harrison Chase's writing on harnesses &amp; memory, and harness eval rankings).</td>
+    </tr>
+  </tbody>
+</table>
+<p><b>Note what this proves:</b> both graphs <b>still use loops inside them</b> — the "web search" node has to keep searching until it finds something, and the "check calendar" node has to keep digging until it knows what's there. Concrete evidence that the two concepts stack rather than compete.</p>
+
+<h3>What's inside the folder</h3>
+<ul>
+  <li><code>waku/graph/</code> — holds the <b>graph engine</b>: you <i>add nodes</i> and <i>add edges</i>. That's essentially all of it.</li>
+  <li>A <b>node</b> can be anything: a tool call, an LLM call, an agent call, an MCP server, or a router.</li>
+  <li>An <b>edge</b> answers one question: once this node finishes, where next? (After the web search, go straight to synthesis, or stop somewhere else first?)</li>
+  <li><code>waku/graph/workflows/</code> — one <code>.py</code> file per workflow: <code>triage.py</code>, <code>gather.py</code>. The contents are simple: define the nodes, define the edges, done.</li>
+</ul>
+<p>Sean closes the section with an invitation: drop your own <code>.py</code> file into <code>workflows</code>, submit it as a contribution, and once it's approved your workflow shows up when anyone types <code>/graphs</code>.</p>
+
+<h2><span class="num">08</span>The closing question: "isn't this just a 2023 DAG?"</h2>
+<p class="lede">20:26 – end</p>
+<p>Sean deliberately saves the sharpest criticism for last, then answers it. Structurally, yes — this is the same <i>directed acyclic graph</i> we've had for years. But he argues <b>three things are genuinely new</b>:</p>
+
+<table>
+  <thead><tr><th>What's new</th><th>What it means</th></tr></thead>
+  <tbody>
+    <tr><td class="k">The nodes are non-deterministic</td><td>In an old DAG, a node was a function that returned the same thing every time. Now a node can be an <b>LLM call</b> — the output can differ on every run.</td></tr>
+    <tr><td class="k">The model can pick the edge</td><td>Routing gets handed to the model as a judge (<i>LLM-as-a-judge</i>): "is this simple enough for a cheap model, or does it need the stronger one?" An old DAG could never do that.</td></tr>
+    <tr><td class="k">It needs guards</td><td>Because the nodes and the routing are uncertain, the flow needs guardrails that a deterministic pipeline never required.</td></tr>
+  </tbody>
+</table>
+
+<p>And the closing line I found the most honest: <b>these are buzzwords — but buzzwords go viral for one of two reasons: a famous person said it, or it's actually useful.</b> Telling the two apart is the job.</p>
+
+<h2><span class="num">09</span>What to take away</h2>
+<div class="card">
+  <ul style="margin:0">
+    <li><b>Don't pick a side.</b> The question isn't "loop or graph" — it's "which parts of my workflow have a settled pattern, and which parts still need exploring".</li>
+    <li><b>Start with the cheapest rung.</b> Prompt → context → skill. Only climb to a loop when the steps genuinely can't be predicted, and only to a graph once you see the same pattern coming round again and again.</li>
+    <li><b>Don't rush into a graph</b> while the workflow is still shifting. Graphs pay off once the process is stable; before that you're just relocating the complexity.</li>
+    <li><b>A graph buys you speed and predictability</b>, not intelligence. The intelligence still comes from the loops living inside the nodes.</li>
+    <li><b>For banking and enterprise contexts</b> — heavy on SOPs, heavy on audit trails — graphs are unusually relevant: the steps are traceable, the routes are auditable, and the uncertain parts stay fenced inside specific nodes.</li>
+  </ul>
+</div>
+
+<h2><span class="num">10</span>Chapter map</h2>
+<p class="lede">Click to jump straight to a section</p>
+<table class="chapters">
+<tbody>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=0s">0:00</a></td><td>Loops vs graphs — the two buzzwords everyone's arguing about</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=20s">0:20</a></td><td>The Peter Steinberger post that set it off</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=55s">0:55</a></td><td>What we're building, plus a Waku Agent preview</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=120s">2:00</a></td><td><b>The AI agent engineering ladder — three years in one chart</b></td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=174s">2:54</a></td><td>Context engineering: feeding the agent real data</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=238s">3:58</a></td><td>Skills: procedural memory in plain words</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=323s">5:23</a></td><td>Loop: goal plus tools, figure it out</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=374s">6:14</a></td><td>Graph: the predetermined shape — and why people say it isn't new</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=502s">8:22</a></td><td>What a loop actually looks like</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=563s">9:23</a></td><td>What a graph actually looks like: parallel branches</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=658s">10:58</a></td><td>Install Waku Agent and launch the dashboard</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=711s">11:51</a></td><td>The full harness: gateway, retrieval gate, memory, loop, LLM Ops</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=758s">12:38</a></td><td>Test: the <i>triage</i> graph on "what's up today"</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=829s">13:49</a></td><td>Test: <code>/gather</code> runs GitHub, web, calendar and memory in parallel</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=936s">15:36</a></td><td><b>Timeline view: sequential loop vs parallel graph</b></td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=1020s">17:00</a></td><td>In the code: graph engine, nodes, edges</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=1132s">18:52</a></td><td>Contribute your own graph workflow</td></tr>
+<tr><td class="t"><a href="https://www.youtube.com/watch?v=IMLwvK08JVc&t=1226s">20:26</a></td><td><b>Final take: isn't this just a 2023 DAG?</b></td></tr>
+</tbody>
+</table>
+
+<p class="footer">
+Compiled from the transcript of <b>"Loop Engineering VS Graph Engineering, Buzzwords Clearly Explained"</b> by Sean's AI Stories (Shen Sean Chen), published 2 August 2026.
+The diagrams here are redrawn to clarify what is explained verbally in the video — they are not screenshots of the original whiteboard.
+</p>
+
+</div>
+</body>
+</html>

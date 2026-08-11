@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From Signal to PR — Detailed Explainer</title>
+<style>
+  :root{
+    --bg:#F3F2F9; --paper:#FFFFFF; --panel:#FAF9FE;
+    --ink:#1C1930; --ink2:#565073; --line:#DDD9EC;
+    --violet:#6D4AE0; --violet-soft:#EDE7FE;
+    --blue:#2563EB; --green:#15803D; --red:#DC2626; --amber:#B45309;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16.5px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px; margin:0 auto; padding:0 22px 90px}
+
+  header{background:#161327; color:#EDEAF8; padding:46px 0 40px; margin-bottom:34px;
+         background-image:radial-gradient(900px 300px at 15% 0%, #2E2151 0%, #161327 70%)}
+  header .wrap{padding-bottom:0}
+  .kicker{font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:#A98CFF; font-weight:700}
+  header h1{font-size:clamp(26px,4.5vw,39px); line-height:1.18; margin:12px 0 10px; letter-spacing:-.02em}
+  header p.sub{margin:0; color:#9C95BE; font-size:15px}
+  .srclink{display:inline-flex; align-items:center; gap:9px; margin-top:20px; background:#2A2445;
+           border:1px solid #3E3663; border-radius:10px; padding:10px 15px; text-decoration:none;
+           color:#D7C9FF; font-size:14px; font-weight:600}
+  .srclink:hover{background:#332B52}
+  .srclink svg{flex:none}
+  .srclink span.u{color:#8B84AC; font-weight:400; font-size:13px}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px}
+  .chip{background:#2A2445; border:1px solid #3E3663; color:#CFC8E8; font-size:12.5px; padding:5px 11px; border-radius:999px}
+
+  h2{font-size:clamp(21px,3vw,27px); letter-spacing:-.01em; margin:52px 0 6px; line-height:1.25}
+  h2 .num{color:var(--violet); font-variant-numeric:tabular-nums; margin-right:10px}
+  h3{font-size:18px; margin:30px 0 6px; letter-spacing:-.01em}
+  p{margin:10px 0}
+  a{color:var(--violet)}
+  hr.rule{border:0; border-top:1px solid var(--line); margin:46px 0 0}
+  .dots{display:flex; gap:5px; margin:0 0 14px}
+  .dots i{width:9px; height:9px; display:block; border-radius:2px}
+  .dots i:nth-child(1){background:#CFC0FA} .dots i:nth-child(2){background:#9E7BF0} .dots i:nth-child(3){background:var(--violet)}
+
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin:18px 0}
+  .tldr{background:#161327; color:#E7E2F7; border:0;
+        background-image:radial-gradient(700px 240px at 85% 0%, #2C2050 0%, #161327 70%)}
+  .tldr h3{margin-top:0; color:#fff}
+  .tldr ol{margin:10px 0 0; padding-left:22px}
+  .tldr li{margin:9px 0; color:#D9D3EE}
+  .tldr b{color:#BFA3FF}
+  .note{border-left:4px solid var(--violet); background:#F5F1FF; border-radius:0 12px 12px 0; padding:14px 18px; margin:18px 0}
+  .note .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+  .warn{border-left-color:var(--amber); background:#FFF8EC}
+  .warn .lbl{color:var(--amber)}
+  .quote{background:var(--violet-soft); border:1px solid #D9CEFB; border-radius:14px; padding:24px 26px; margin:24px 0}
+  .quote p{font-size:18.5px; line-height:1.5; font-weight:600; margin:0}
+  .quote cite{display:block; margin-top:14px; font-size:14px; color:var(--ink2); font-style:italic}
+
+  figure{margin:22px 0}
+  figure svg{width:100%; height:auto; display:block; background:var(--panel); border:1px solid var(--line); border-radius:14px}
+  figcaption{font-size:13.5px; color:var(--ink2); margin-top:9px; padding-left:2px}
+  figcaption b{color:var(--ink)}
+
+  table{width:100%; border-collapse:collapse; margin:18px 0; font-size:14.5px; background:var(--paper);
+        border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  th,td{padding:11px 13px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top}
+  th{background:var(--violet-soft); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:#4A3A8C}
+  tr:last-child td{border-bottom:0}
+  td.ts{font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:700}
+  td.ts a{color:var(--violet); text-decoration:none; border-bottom:1px dotted #B49CF5}
+
+  code{background:#F0EDFA; border:1px solid var(--line); border-radius:5px; padding:1px 5px; font-size:13.5px}
+  .tag{display:inline-block; font-size:11.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+       padding:3px 9px; border-radius:999px; background:var(--violet-soft); color:#4A3A8C; margin-right:6px}
+  ul.clean{padding-left:20px} ul.clean li{margin:8px 0}
+  .analogy{background:#EEF5FF; border:1px solid #CFDEF7; border-radius:12px; padding:14px 18px; margin:14px 0}
+  .analogy .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--blue)}
+  .srcbox{background:var(--paper); border:1px solid var(--line); border-left:4px solid var(--violet);
+          border-radius:0 12px 12px 0; padding:18px 20px; margin:34px 0 0}
+  .srcbox .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+  .srcbox p{margin:8px 0 0; font-size:14.5px}
+  .srcbox a{word-break:break-all}
+  text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">AI Engineer · Talk · 20 min 35 sec</div>
+    <h1>From Signal to PR:<br>Anatomy of a Self-Improving Agent</h1>
+    <p class="sub">Jason Lopatecki — co-founder, Arize AI</p>
+    <a class="srclink" href="https://www.youtube.com/watch?v=9HbzAWnKbo4" target="_blank" rel="noopener">
+      <svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true">
+        <rect x="0" y="0" width="20" height="14" rx="3.4" fill="#FF0000"/>
+        <path d="M8 4 L13.4 7 L8 10 Z" fill="#fff"/>
+      </svg>
+      Watch the source talk on YouTube <span class="u">youtube.com/watch?v=9HbzAWnKbo4</span>
+    </a>
+    <div class="meta">
+      <span class="chip">Observability</span>
+      <span class="chip">Agent skills</span>
+      <span class="chip">Traces &amp; evals</span>
+      <span class="chip">Sandboxes</span>
+      <span class="chip">Self-healing systems</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="card tldr">
+  <h3>The whole talk in six points</h3>
+  <ol>
+    <li><b>The picture he's selling:</b> instead of getting paged at midnight and starting to dig, you wake up to an issue that has <b>already been investigated</b> — traces pulled, root cause found, and a pull request waiting for review.</li>
+    <li><b>The unlock is boring and specific: traces on a filesystem.</b> A skill pulls the relevant production traces and logs down <b>as files into the repo</b>, right next to the code. Sometimes ten megabytes of them. Coding harnesses are magical with files and hopeless with a dashboard.</li>
+    <li><b>Why that works:</b> a trace tells the agent <b>the exact code path the software actually took</b>. Without it, the agent is guessing among a million possible branches.</li>
+    <li><b>The loop gets inverted:</b> it used to be human investigates → agent helps fix. Now it's agent investigates first → human reviews. Your job moves <b>from responder to reviewer</b>.</li>
+    <li><b>The counterintuitive consequence:</b> you should now <b>trace and log ten times more</b>, not less. Humans couldn't dig through that volume — it was just noise. Agents can.</li>
+    <li><b>He is honest about the limits:</b> a one-line fix is the easy case. Bigger fixes still need a human to drive. The real win is killing the <b>cold start</b>, not full autonomy.</li>
+  </ol>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">0</span>Vocabulary first (so the rest reads easily)</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<table>
+  <thead><tr><th style="width:24%">Term</th><th>What it means in this talk</th></tr></thead>
+  <tbody>
+    <tr><td><b>Trace</b></td><td>A structured record of one request travelling through your system — every step, every call, in order. In an AI system it's usually the agent framework's record of a full run. The single most important artifact in this talk, because it reveals <i>which path the code actually took</i>.</td></tr>
+    <tr><td><b>Observability</b></td><td>The discipline of instrumenting a system so you can tell what it's doing from the outside. Traditionally: dashboards, graphs, log searches — all built for a human to look at.</td></tr>
+    <tr><td><b>Skill</b></td><td>A packaged capability you give a coding agent — instructions plus tooling for a specific job. Here: skills that talk to observability platforms and <b>fetch the right data into the repo</b>.</td></tr>
+    <tr><td><b>Harness</b></td><td>The coding-agent environment doing the work — Claude Code, Cursor, and so on. In this architecture it's a choice you make, not something Arize dictates.</td></tr>
+    <tr><td><b>Sandbox</b></td><td>An isolated running environment where the agent does its investigation. It's the thing that replaces "the agent runs on my laptop."</td></tr>
+    <tr><td><b>Eval</b></td><td>An automated judgement of quality layered on top of traces — often LLM-as-a-judge. Not a replacement for traces; extra pre-processed signal <i>attached to</i> them.</td></tr>
+  </tbody>
+</table>
+
+<hr class="rule">
+
+<h2><span class="num">1</span>Where he's coming from: their own agent "frankly sucked"</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>Lopatecki opens by placing himself as a builder, not just a founder. Arize has an in-product agent called <b>Alyx</b>. His words about the first version, from roughly two years ago when they were first in the space to ship one: it <b>"frankly sucked."</b></p>
+<p>That matters because it frames everything after it. What Arize built into <b>Signal</b> — the subject of this talk — came out of their own daily pain running Alyx in production. He is not describing a theory; he is describing the automation of chores he was already doing by hand.</p>
+
+<div class="quote" style="padding:20px 24px">
+  <p style="font-size:17px">"You can build at agent speed, but today you can't improve your systems really at that agent speed."</p>
+  <cite>— Jason Lopatecki, around 3:30</cite>
+</div>
+<p>That gap is the whole problem statement. Writing software got dramatically faster; <i>diagnosing and repairing</i> it in production did not.</p>
+
+<hr class="rule">
+
+<h2><span class="num">2</span>The core claim: observability stops being a dashboard</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>His argument is that the observability space is changing massively right now, and he frames it in three eras.</p>
+
+<figure>
+<svg viewBox="0 0 900 300" role="img" aria-label="Three eras of observability">
+  <defs>
+    <marker id="sAr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#1C1930"/></marker>
+    <marker id="sVio" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#6D4AE0"/></marker>
+    <marker id="sBlue" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2563EB"/></marker>
+    <marker id="sGreen" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#15803D"/></marker>
+    <marker id="sInk" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#565073"/></marker>
+    <marker id="sRed" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#DC2626"/></marker>
+  </defs>
+  <rect x="26" y="46" width="262" height="180" rx="13" fill="#FFFFFF" stroke="#DDD9EC"/>
+  <text x="46" y="76" font-size="12" font-weight="800" fill="#8B84AC" letter-spacing="1.2">OBSERVABILITY 1.0</text>
+  <text x="46" y="106" font-size="16" font-weight="700" fill="#1C1930">Built for humans</text>
+  <text x="46" y="136" font-size="13" fill="#565073">A UI you click.</text>
+  <text x="46" y="158" font-size="13" fill="#565073">A graph you click.</text>
+  <text x="46" y="180" font-size="13" fill="#565073">Something you look at.</text>
+  <text x="46" y="206" font-size="12.5" font-style="italic" fill="#8B84AC">the human does the digging</text>
+
+  <rect x="318" y="46" width="262" height="180" rx="13" fill="#F5F1FF" stroke="#C9B8F7" stroke-width="1.6"/>
+  <text x="338" y="76" font-size="12" font-weight="800" fill="#6D4AE0" letter-spacing="1.2">OBSERVABILITY 2.0 · TODAY</text>
+  <text x="338" y="106" font-size="16" font-weight="700" fill="#1C1930">Coding agent + skills</text>
+  <text x="338" y="136" font-size="13" fill="#4A4468">Skills for Pyroscope,</text>
+  <text x="338" y="158" font-size="13" fill="#4A4468">Google Cloud, and such</text>
+  <text x="338" y="180" font-size="13" fill="#4A4468">help <tspan font-weight="700">you</tspan> debug.</text>
+  <text x="338" y="206" font-size="12.5" font-style="italic" fill="#6D4AE0">human makes and reviews the fix</text>
+
+  <rect x="610" y="46" width="262" height="180" rx="13" fill="#161327" stroke="#161327"/>
+  <text x="630" y="76" font-size="12" font-weight="800" fill="#A98CFF" letter-spacing="1.2">WHERE IT'S GOING</text>
+  <text x="630" y="106" font-size="16" font-weight="700" fill="#FFFFFF">A continuous loop</text>
+  <text x="630" y="136" font-size="13" fill="#CFC8E8">Throw off far more traces</text>
+  <text x="630" y="158" font-size="13" fill="#CFC8E8">and logs than a human</text>
+  <text x="630" y="180" font-size="13" fill="#CFC8E8">could ever read.</text>
+  <text x="630" y="206" font-size="12.5" font-style="italic" fill="#A98CFF">agents run at it continuously</text>
+
+  <path d="M40 262 L860 262" stroke="#1C1930" stroke-width="1.6" marker-end="url(#sAr)"/>
+  <text x="40" y="286" font-size="12" fill="#565073">telemetry made for people to read</text>
+  <text x="860" y="286" font-size="12" fill="#565073" text-anchor="end">telemetry made for agents to read</text>
+</svg>
+<figcaption><b>Figure 1.</b> The three eras as Lopatecki lays them out. Note the shift on the bottom axis — that is the real thesis of the talk: telemetry stops being a human interface and becomes machine input.</figcaption>
+</figure>
+
+<h3>Why traces specifically</h3>
+<p>He gives the reason in one sentence, and it's the load-bearing sentence of the whole talk: a trace <b>tells you what path in the code it took.</b> Without that, the agent is guessing — and, in his words, <b>"there's a million paths it could have taken."</b></p>
+<p>This is why traces, not dashboards, are the substrate. A dashboard summarises. A trace is a specific, factual record of one actual execution — exactly the kind of thing a coding agent can reason over.</p>
+
+<hr class="rule">
+
+<h2><span class="num">3</span>Inverting the loop</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>The structural change Arize made to their own workflow is an inversion of who moves first.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" aria-label="Inverting the debugging loop">
+  <text x="30" y="36" font-size="12.5" font-weight="800" fill="#DC2626" letter-spacing="1.2">BEFORE — YOU MOVE FIRST</text>
+  <g>
+    <rect x="26" y="52" width="176" height="62" rx="11" fill="#FFFFFF" stroke="#DDD9EC"/>
+    <text x="114" y="80" font-size="13" font-weight="700" fill="#1C1930" text-anchor="middle">Alert fires</text>
+    <text x="114" y="99" font-size="11.5" fill="#565073" text-anchor="middle">midnight page</text>
+
+    <rect x="240" y="52" width="176" height="62" rx="11" fill="#FFFFFF" stroke="#DDD9EC"/>
+    <text x="328" y="80" font-size="13" font-weight="700" fill="#1C1930" text-anchor="middle">You start digging</text>
+    <text x="328" y="99" font-size="11.5" fill="#565073" text-anchor="middle">dashboards, logs, traces</text>
+
+    <rect x="454" y="52" width="176" height="62" rx="11" fill="#FFFFFF" stroke="#DDD9EC"/>
+    <text x="542" y="80" font-size="13" font-weight="700" fill="#1C1930" text-anchor="middle">You find the cause</text>
+    <text x="542" y="99" font-size="11.5" fill="#565073" text-anchor="middle">the expensive part</text>
+
+    <rect x="668" y="52" width="176" height="62" rx="11" fill="#FFF1F1" stroke="#F3B9B9"/>
+    <text x="756" y="80" font-size="13" font-weight="700" fill="#1C1930" text-anchor="middle">Agent helps you fix</text>
+    <text x="756" y="99" font-size="11.5" fill="#8A4B4B" text-anchor="middle">the cheap part</text>
+
+    <path d="M204 83 L236 83" stroke="#DC2626" stroke-width="1.6" marker-end="url(#sRed)"/>
+    <path d="M418 83 L450 83" stroke="#DC2626" stroke-width="1.6" marker-end="url(#sRed)"/>
+    <path d="M632 83 L664 83" stroke="#DC2626" stroke-width="1.6" marker-end="url(#sRed)"/>
+  </g>
+  <text x="30" y="150" font-size="12.5" fill="#8B84AC" font-style="italic">The human carries the whole cold start — pulling the data, forming the hypothesis.</text>
+
+  <line x1="26" y1="176" x2="874" y2="176" stroke="#DDD9EC" stroke-dasharray="6 5"/>
+
+  <text x="30" y="216" font-size="12.5" font-weight="800" fill="#15803D" letter-spacing="1.2">AFTER — THE AGENT MOVES FIRST</text>
+  <g>
+    <rect x="26" y="232" width="176" height="62" rx="11" fill="#FFFFFF" stroke="#DDD9EC"/>
+    <text x="114" y="260" font-size="13" font-weight="700" fill="#1C1930" text-anchor="middle">Trigger fires</text>
+    <text x="114" y="279" font-size="11.5" fill="#565073" text-anchor="middle">periodic or on error</text>
+
+    <rect x="240" y="232" width="176" height="62" rx="11" fill="#F1FAF4" stroke="#A9DCBD"/>
+    <text x="328" y="260" font-size="13" font-weight="700" fill="#1C1930" text-anchor="middle">Agent digs</text>
+    <text x="328" y="279" font-size="11.5" fill="#3B6B4C" text-anchor="middle">before anyone looks</text>
+
+    <rect x="454" y="232" width="176" height="62" rx="11" fill="#F1FAF4" stroke="#A9DCBD"/>
+    <text x="542" y="260" font-size="13" font-weight="700" fill="#1C1930" text-anchor="middle">Agent files an issue</text>
+    <text x="542" y="279" font-size="11.5" fill="#3B6B4C" text-anchor="middle">evidence attached, or a PR</text>
+
+    <rect x="668" y="232" width="176" height="62" rx="11" fill="#F5F1FF" stroke="#C9B8F7"/>
+    <text x="756" y="260" font-size="13" font-weight="700" fill="#1C1930" text-anchor="middle">You review</text>
+    <text x="756" y="279" font-size="11.5" fill="#5B4A9E" text-anchor="middle">or take the wheel</text>
+
+    <path d="M204 263 L236 263" stroke="#15803D" stroke-width="1.6" marker-end="url(#sGreen)"/>
+    <path d="M418 263 L450 263" stroke="#15803D" stroke-width="1.6" marker-end="url(#sGreen)"/>
+    <path d="M632 263 L664 263" stroke="#15803D" stroke-width="1.6" marker-end="url(#sGreen)"/>
+  </g>
+  <text x="30" y="330" font-size="12.5" fill="#8B84AC" font-style="italic">You wake up to work already in front of you, rather than a ticket to go grab.</text>
+
+  <rect x="26" y="348" width="848" height="36" rx="9" fill="#F5F1FF" stroke="#C9B8F7"/>
+  <text x="450" y="371" font-size="13.5" font-weight="700" fill="#4A3A8C" text-anchor="middle">Your job moves from RESPONDER to REVIEWER</text>
+</svg>
+<figcaption><b>Figure 2.</b> The inversion. Lopatecki is careful about how far it currently goes — see the honesty note below.</figcaption>
+</figure>
+
+<div class="note warn">
+  <div class="lbl">His own caveat, stated plainly</div>
+  <p style="margin:6px 0 0">"That's the reality of where we are today: there's still — maybe it's not human reviewing but human <i>driving</i> — steps two and three." In other words, the agent reliably owns step one (gathering and investigating). Steps two and three are often still yours. He returns to this later: a one- or two-line fix is the ideal case; <b>the bigger the fix, the more likely a human has to spearhead it over the line</b>.</p>
+</div>
+
+<p>He also names the real bottleneck, and it isn't code generation. Among people already using coding agents with skills, the bottleneck is <b>confidence</b>: <i>"is this fix the right one to push?"</i></p>
+
+<hr class="rule">
+
+<h2><span class="num">4</span>The anatomy: what a self-improving agent is made of</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>He breaks the loop into three parts. This is the structural heart of the talk.</p>
+
+<figure>
+<svg viewBox="0 0 900 260" role="img" aria-label="Three components of a self-improving agent">
+  <rect x="26" y="30" width="264" height="150" rx="13" fill="#FFFFFF" stroke="#C9B8F7" stroke-width="1.6"/>
+  <text x="48" y="62" font-size="12" font-weight="700" fill="#8B84AC" letter-spacing="1.1">01 · WHAT HAPPENED</text>
+  <text x="48" y="96" font-size="19" font-weight="700" fill="#1C1930">Event Evidence</text>
+  <text x="48" y="126" font-size="13.5" fill="#565073">Traces + evals</text>
+  <text x="48" y="152" font-size="12.5" fill="#8B84AC">the factual record of one run</text>
+
+  <rect x="318" y="30" width="264" height="150" rx="13" fill="#F5F1FF" stroke="#9E7BF0" stroke-width="2"/>
+  <text x="340" y="62" font-size="12" font-weight="700" fill="#6D4AE0" letter-spacing="1.1">02 · ENOUGH TO FIX IT</text>
+  <text x="340" y="96" font-size="19" font-weight="700" fill="#1C1930">Context + Skills</text>
+  <text x="340" y="126" font-size="13.5" fill="#4A4468">Logs, APM + the repo</text>
+  <text x="340" y="152" font-size="12.5" fill="#6D4AE0">skills decide what to fetch</text>
+
+  <rect x="610" y="30" width="264" height="150" rx="13" fill="#FFFFFF" stroke="#C9B8F7" stroke-width="1.6"/>
+  <text x="632" y="62" font-size="12" font-weight="700" fill="#8B84AC" letter-spacing="1.1">03 · WHEN IT RUNS</text>
+  <text x="632" y="96" font-size="19" font-weight="700" fill="#1C1930">Trigger</text>
+  <text x="632" y="126" font-size="13.5" fill="#565073">Periodic / on error</text>
+  <text x="632" y="152" font-size="12.5" fill="#8B84AC">e.g. every 5 min, or per error</text>
+
+  <rect x="26" y="204" width="848" height="34" rx="9" fill="#161327"/>
+  <text x="450" y="226" font-size="13" font-weight="600" fill="#CFC8E8" text-anchor="middle">Evidence · Context · Trigger — everything the agent needs to start without you</text>
+</svg>
+<figcaption><b>Figure 3.</b> The three components, reproducing the slide's own structure and wording. Everything else in the talk is an elaboration of one of these three boxes.</figcaption>
+</figure>
+
+<h3>An aside that tells you where the industry is</h3>
+<p>Mid-talk he polls the room. First: <i>who here has created skills?</i> — a good showing. Then: <i>who has created a skill that interfaces to an observability platform?</i> — his own read of the response was <b>"a handful."</b> That gap is essentially the market he's describing.</p>
+
+<hr class="rule">
+
+<h2><span class="num">5</span>The actual unlock: traces on a filesystem</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>If you remember one mechanism from this talk, make it this one. It is deliberately unglamorous.</p>
+<p>The skills don't hand the agent a dashboard link or an API cursor. They <b>pull the relevant traces and logs down as temp files into the repo</b> — sitting right next to the source code. Sometimes, he says, that means <b>10-megabyte files sitting in the repo.</b></p>
+
+<figure>
+<svg viewBox="0 0 900 330" role="img" aria-label="Traces on a filesystem versus a dashboard">
+  <rect x="26" y="34" width="390" height="252" rx="13" fill="#FFFFFF" stroke="#F3B9B9" stroke-width="1.6"/>
+  <text x="221" y="66" font-size="13" font-weight="800" fill="#DC2626" text-anchor="middle">HANDING THE AGENT A DASHBOARD</text>
+  <rect x="66" y="88" width="310" height="118" rx="9" fill="#FAFAFC" stroke="#DDD9EC"/>
+  <rect x="86" y="108" width="120" height="10" rx="5" fill="#E6E2F2"/>
+  <rect x="86" y="128" width="270" height="58" rx="6" fill="#F1EEF9"/>
+  <path d="M96 176 L136 152 L176 164 L216 130 L256 146 L296 122 L336 138" stroke="#B9B2D6" stroke-width="2" fill="none"/>
+  <text x="221" y="238" font-size="13.5" fill="#8A4B4B" text-anchor="middle">Summarised, aggregated, visual.</text>
+  <text x="221" y="262" font-size="13.5" font-weight="700" fill="#DC2626" text-anchor="middle">Harnesses are hopeless with this.</text>
+
+  <rect x="484" y="34" width="390" height="252" rx="13" fill="#F1FAF4" stroke="#A9DCBD" stroke-width="1.8"/>
+  <text x="679" y="66" font-size="13" font-weight="800" fill="#15803D" text-anchor="middle">PUTTING THE TRACES IN THE REPO</text>
+  <g font-size="12.5" fill="#2C4A38">
+    <rect x="524" y="88" width="310" height="118" rx="9" fill="#FFFFFF" stroke="#CDE8D8"/>
+    <text x="544" y="112" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">📁 your-repo/</text>
+    <text x="560" y="134" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">├── src/</text>
+    <text x="560" y="156" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">├── traces/session-8f21.json</text>
+    <text x="560" y="178" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">└── logs/stream-cancel.log</text>
+    <text x="736" y="200" font-size="11" fill="#5E8A70">↑ sometimes ~10 MB</text>
+  </g>
+  <text x="679" y="238" font-size="13.5" fill="#3B6B4C" text-anchor="middle">Raw, specific, sitting next to the code.</text>
+  <text x="679" y="262" font-size="13.5" font-weight="700" fill="#15803D" text-anchor="middle">Harnesses are magical with files.</text>
+
+  <path d="M424 160 L476 160" stroke="#6D4AE0" stroke-width="2" marker-end="url(#sVio)"/>
+  <text x="450" y="308" font-size="13" font-weight="700" fill="#4A3A8C" text-anchor="middle">Same data. Completely different usefulness to an agent.</text>
+</svg>
+<figcaption><b>Figure 4.</b> The central mechanism. His phrasing in the Q&amp;A: <b>"these harnesses are magical with files."</b> The design work is in the skill — finding the <i>right</i> group of traces and landing them in the repo in a good file format.</figcaption>
+</figure>
+
+<p>Combine that with the repo itself, and the agent now has both halves of the puzzle: <b>what the software actually did</b> (the trace) and <b>the code that did it</b> (the repo). That combination — right data, right file format, sitting alongside the code — is what he calls the magic.</p>
+
+<hr class="rule">
+
+<h2><span class="num">6</span>From your laptop to a sandbox</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>He points out that many people in the room already do a version of this — locally, by hand. You kick up an agent on your laptop, point it at some data, and let it work. The move he's describing is not a new capability so much as a <b>relocation</b>.</p>
+
+<figure>
+<svg viewBox="0 0 900 300" role="img" aria-label="From laptop to sandbox">
+  <rect x="26" y="46" width="300" height="180" rx="13" fill="#FFFFFF" stroke="#DDD9EC"/>
+  <text x="176" y="78" font-size="13" font-weight="800" fill="#8B84AC" text-anchor="middle">TODAY — ON YOUR LAPTOP</text>
+  <rect x="76" y="100" width="200" height="76" rx="9" fill="#FAFAFC" stroke="#DDD9EC"/>
+  <text x="176" y="130" font-size="13" fill="#1C1930" text-anchor="middle">you kick off the agent</text>
+  <text x="176" y="152" font-size="13" fill="#1C1930" text-anchor="middle">manually, one issue at a time</text>
+  <text x="176" y="206" font-size="12.5" font-style="italic" fill="#8B84AC" text-anchor="middle">works, but only when you're awake</text>
+
+  <path d="M338 136 L390 136" stroke="#6D4AE0" stroke-width="2.2" marker-end="url(#sVio)"/>
+  <text x="364" y="124" font-size="12" font-weight="700" fill="#6D4AE0" text-anchor="middle">same loop,</text>
+  <text x="364" y="164" font-size="12" font-weight="700" fill="#6D4AE0" text-anchor="middle">moved</text>
+
+  <rect x="404" y="46" width="470" height="180" rx="13" fill="#F5F1FF" stroke="#9E7BF0" stroke-width="1.8"/>
+  <text x="639" y="78" font-size="13" font-weight="800" fill="#6D4AE0" text-anchor="middle">NEXT — IN A TRIGGERED SANDBOX</text>
+  <rect x="426" y="96" width="130" height="60" rx="9" fill="#FFFFFF" stroke="#C9B8F7"/>
+  <text x="491" y="122" font-size="12.5" font-weight="700" fill="#1C1930" text-anchor="middle">Trigger</text>
+  <text x="491" y="141" font-size="11" fill="#565073" text-anchor="middle">schedule or error</text>
+  <rect x="578" y="96" width="130" height="60" rx="9" fill="#FFFFFF" stroke="#C9B8F7"/>
+  <text x="643" y="122" font-size="12.5" font-weight="700" fill="#1C1930" text-anchor="middle">Sandbox</text>
+  <text x="643" y="141" font-size="11" fill="#565073" text-anchor="middle">+ your harness</text>
+  <rect x="730" y="96" width="126" height="60" rx="9" fill="#FFFFFF" stroke="#C9B8F7"/>
+  <text x="793" y="122" font-size="12.5" font-weight="700" fill="#1C1930" text-anchor="middle">Issue / PR</text>
+  <text x="793" y="141" font-size="11" fill="#565073" text-anchor="middle">with evidence</text>
+  <path d="M558 126 L574 126" stroke="#6D4AE0" stroke-width="1.6" marker-end="url(#sVio)"/>
+  <path d="M710 126 L726 126" stroke="#6D4AE0" stroke-width="1.6" marker-end="url(#sVio)"/>
+  <text x="639" y="188" font-size="12.5" fill="#4A4468" text-anchor="middle">You pick the sandbox, the harness, the prompt, and the skills.</text>
+  <text x="639" y="208" font-size="12.5" font-style="italic" fill="#6D4AE0" text-anchor="middle">"it does the same thing you were doing locally"</text>
+
+  <rect x="26" y="248" width="848" height="34" rx="9" fill="#161327"/>
+  <text x="450" y="270" font-size="12.5" fill="#CFC8E8" text-anchor="middle">Get it working locally first — then run it on a schedule, or on every error that comes up.</text>
+</svg>
+<figcaption><b>Figure 5.</b> The laptop-to-sandbox move. Note how much of it is <i>your</i> choice: harness, sandbox, prompt, skills. He is explicit that this is deliberately not a black box.</figcaption>
+</figure>
+
+<hr class="rule">
+
+<h2><span class="num">7</span>A real fix: the Alyx "stream canceled" bug</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>He walks through a concrete case from their own product rather than a hypothetical — which is the most useful part of the talk for calibrating expectations.</p>
+<ul class="clean">
+  <li>Alyx, their in-product assistant, manages its task list through a mechanism he calls <b>to-do update</b>.</li>
+  <li>It was calling a bunch of these to-do updates in sequence and <b>erroring out</b> with a <b>stream canceled</b> event.</li>
+  <li>The question they had to answer: how do you assemble the data to debug that — and how do you do it <b>automatically</b>?</li>
+  <li>The result was a <b>one- or two-line fix</b> that the system came up with on its own.</li>
+</ul>
+
+<div class="note">
+  <div class="lbl">The honest framing</div>
+  <p style="margin:6px 0 0">He immediately qualifies it: <i>"these are ideal, but a lot of times the fixes are bigger."</i> And the bigger the fix, the more likely a human ends up spearheading it over the line. What the system reliably removes is <b>the cold start</b> — arriving at the problem with all the information already assembled, then guiding it the rest of the way.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">8</span>The counterintuitive part: trace ten times more</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>This is the recommendation most likely to surprise a platform team, because it reverses years of standard advice about log hygiene and noise reduction.</p>
+
+<figure>
+<svg viewBox="0 0 900 250" role="img" aria-label="Why to log ten times more">
+  <rect x="26" y="34" width="390" height="176" rx="13" fill="#FFFFFF" stroke="#DDD9EC"/>
+  <text x="221" y="66" font-size="13" font-weight="800" fill="#8B84AC" text-anchor="middle">WHEN A HUMAN IS THE READER</text>
+  <g>
+    <rect x="70" y="88" width="302" height="12" rx="6" fill="#EFECF8"/>
+    <rect x="70" y="88" width="52" height="12" rx="6" fill="#9E7BF0"/>
+    <text x="70" y="124" font-size="12.5" fill="#565073">signal you can actually read</text>
+    <text x="70" y="152" font-size="13" fill="#1C1930">More logging = more noise.</text>
+    <text x="70" y="176" font-size="13" font-weight="700" fill="#DC2626">So you log less. Deliberately.</text>
+  </g>
+
+  <rect x="484" y="34" width="390" height="176" rx="13" fill="#F5F1FF" stroke="#9E7BF0" stroke-width="1.8"/>
+  <text x="679" y="66" font-size="13" font-weight="800" fill="#6D4AE0" text-anchor="middle">WHEN AN AGENT IS THE READER</text>
+  <g>
+    <rect x="528" y="88" width="302" height="12" rx="6" fill="#E4D9FC"/>
+    <rect x="528" y="88" width="284" height="12" rx="6" fill="#6D4AE0"/>
+    <text x="528" y="124" font-size="12.5" fill="#4A4468">all of it is readable</text>
+    <text x="528" y="152" font-size="13" fill="#1C1930">More logging = a sharper picture</text>
+    <text x="528" y="176" font-size="13" font-weight="700" fill="#15803D">of the exact path the code took.</text>
+  </g>
+  <text x="450" y="238" font-size="13" font-weight="700" fill="#4A3A8C" text-anchor="middle">"You're going to trace 10× more. You're going to log 10× more."</text>
+</svg>
+<figcaption><b>Figure 6.</b> The inversion behind the advice. The old rule existed because of a human reading constraint — remove the constraint and the rule flips.</figcaption>
+</figure>
+
+<p>His reasoning, close to verbatim: before, you wouldn't log that much, <b>because humans can't dig through all the logs — it's just noise.</b> But by logging and tracing an order of magnitude more than we do today, you can create continuous loops that know exactly what path your software took, and can actually fix it.</p>
+
+<hr class="rule">
+
+<h2><span class="num">9</span>The product, and the deployment question</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>The middle of the talk is a live demo. The useful structural facts:</p>
+
+<table>
+  <thead><tr><th style="width:20%">Product</th><th>What it is</th></tr></thead>
+  <tbody>
+    <tr><td><b>AX</b></td><td>Their SaaS platform. Can also be deployed into a customer's VPC.</td></tr>
+    <tr><td><b>Phoenix</b></td><td>The open-source option — "if you just want to start tomorrow."</td></tr>
+    <tr><td><b>Signal</b></td><td>The self-improving agent this talk is about. Currently available only inside AX.</td></tr>
+  </tbody>
+</table>
+
+<p>The demo subject is a <b>financial trading agent</b> answering stock questions — with a dry aside that, given the previous presentation, he would not recommend building one, since they're unlikely to make you money yet. Signal surfaces issues such as <b>traces running out without a guardrail</b>, plus safety and intent issues. From a surfaced issue you can: hook it to your GitHub repo and <b>create an issue there</b>, <b>create an evaluator</b> so you catch that failure next time, or <b>add it to a dataset</b>. Evidence — traces, plus skills for Google Cloud and other logging systems — travels with the issue.</p>
+
+<h3>Why sandboxes are a real product decision, not a detail</h3>
+<p>He addresses the "this feels like a black box" objection head-on, and the answer is a deployment story:</p>
+<div class="quote" style="padding:20px 24px">
+  <p style="font-size:16.5px">"A lot of our customers don't want to connect their production systems to Anthropic … so we install in the VPC of a lot of big-name companies out there, from Uber to Booking."</p>
+  <cite>— Jason Lopatecki, around 13:27</cite>
+</div>
+<p>These sandboxes need to reach real infrastructure — to debug your database, they have to connect to it. Many large companies will not send those connections outbound, but are entirely comfortable installing something into their own VPC. So you can choose <b>cloud-managed agents</b>, <b>Arize sandboxes</b>, or a third party such as <b>Daytona</b>.</p>
+<p>On the platform side, every run is inspectable: you can <b>view the session that ran</b>, <b>download the transcript</b>, and <b>resume a Claude session locally</b> to keep debugging by hand. You choose the harness, the sandbox, the driving prompt (his examples: <i>"don't be aggressive"</i>, <i>"look for security issues"</i>), and the skills — pre-baked ones, your own, plus linked repos.</p>
+
+<hr class="rule">
+
+<h2><span class="num">10</span>The two Q&amp;A answers worth reading twice</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<h3>Q: Why not just point Claude Code at your data and let it push the PR?</h3>
+<p>His answer is not "you can't" — it's <b>"yes, absolutely, and here's the work you're signing up for."</b> To make it work well you need well-designed skills in the data space, and the design problems are specific:</p>
+<ul class="clean">
+  <li><b>Finding the right data first</b> — e.g. a group of traces relative to one session, not everything.</li>
+  <li><b>Getting that data into the repo in a good file format</b> — because harnesses are magical with files.</li>
+  <li><b>Giving the agent enough composable skills</b> to actually find issues. His examples: Pyroscope skills that find memory issues; the skill knowing how to use <b>facets</b> in Pyroscope; being able to <b>cohort by customer</b> to see whether one customer is causing an issue.</li>
+</ul>
+<p>The summary line: it works, but <b>"it's not just point Claude at the data."</b> The value Arize claims is the skill design, not the model.</p>
+
+<h3>Q: Where do evals come in, if you're reading traces anyway?</h3>
+<p>The answer clarifies a relationship people often get backwards. Evals — what he calls <b>online evals</b> — run continuously and are <b>layered onto production traces</b>. The eval result becomes <b>data on the trace itself</b>. So the agent's skills can pull both the raw trace and the aggregate eval values across many traces.</p>
+
+<figure>
+<svg viewBox="0 0 900 250" role="img" aria-label="Where evals sit relative to traces">
+  <rect x="40" y="52" width="230" height="140" rx="12" fill="#FFFFFF" stroke="#DDD9EC"/>
+  <text x="155" y="82" font-size="13.5" font-weight="700" fill="#1C1930" text-anchor="middle">Production trace</text>
+  <text x="155" y="106" font-size="12" fill="#565073" text-anchor="middle">the raw record of one run</text>
+  <rect x="62" y="122" width="186" height="26" rx="6" fill="#F1EEF9"/>
+  <text x="155" y="140" font-size="11.5" fill="#565073" text-anchor="middle">step · call · step · call · error</text>
+  <rect x="62" y="154" width="186" height="26" rx="6" fill="#EDE7FE" stroke="#C9B8F7"/>
+  <text x="155" y="172" font-size="11.5" font-weight="700" fill="#4A3A8C" text-anchor="middle">+ eval result attached here</text>
+
+  <path d="M155 42 L155 48" stroke="#6D4AE0" stroke-width="1.6"/>
+  <rect x="60" y="14" width="190" height="28" rx="8" fill="#F5F1FF" stroke="#C9B8F7"/>
+  <text x="155" y="33" font-size="12" font-weight="700" fill="#6D4AE0" text-anchor="middle">Online eval (LLM-as-a-judge)</text>
+
+  <path d="M276 122 L336 122" stroke="#6D4AE0" stroke-width="1.8" marker-end="url(#sVio)"/>
+
+  <rect x="344" y="72" width="216" height="100" rx="12" fill="#F5F1FF" stroke="#9E7BF0" stroke-width="1.6"/>
+  <text x="452" y="104" font-size="13.5" font-weight="700" fill="#1C1930" text-anchor="middle">Skill</text>
+  <text x="452" y="128" font-size="12" fill="#4A4468" text-anchor="middle">pulls raw traces AND</text>
+  <text x="452" y="148" font-size="12" fill="#4A4468" text-anchor="middle">aggregate eval values</text>
+
+  <path d="M566 122 L626 122" stroke="#6D4AE0" stroke-width="1.8" marker-end="url(#sVio)"/>
+
+  <rect x="634" y="72" width="226" height="100" rx="12" fill="#161327"/>
+  <text x="747" y="104" font-size="13.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">Signal (the agent)</text>
+  <text x="747" y="128" font-size="12" fill="#CFC8E8" text-anchor="middle">investigates with both</text>
+  <text x="747" y="148" font-size="12" fill="#CFC8E8" text-anchor="middle">raw data + pre-processed signal</text>
+
+  <text x="450" y="222" font-size="12.5" font-style="italic" fill="#565073" text-anchor="middle">Evals don't replace traces — they add pre-processed judgement on top of them.</text>
+</svg>
+<figcaption><b>Figure 7.</b> How evals fit. His framing: LLM-as-a-judge is a first-generation eval — an AI layer you run periodically to assess the system, adding a little pre-processed information onto the data.</figcaption>
+</figure>
+
+<p>He also describes the natural lifecycle: you typically <b>build an eval for a failure you've already seen</b> — prompt injection attempts you're trying to catch, or a bad response pattern from before. Find a failure that keeps recurring, create an eval, and you catch it next time. And because LLM-as-a-judge runs at scale, some customers layer it across their <b>full dataset</b>.</p>
+
+<hr class="rule">
+
+<h2><span class="num">11</span>What to actually take away</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<table>
+  <thead><tr><th style="width:32%">The shift</th><th>From → To</th></tr></thead>
+  <tbody>
+    <tr><td><b>Who observability is for</b></td><td>A human clicking a UI → an agent reading telemetry</td></tr>
+    <tr><td><b>Who moves first</b></td><td>You dig, then the agent helps → the agent digs, then you review</td></tr>
+    <tr><td><b>Your role</b></td><td>Responder → reviewer</td></tr>
+    <tr><td><b>How much you log</b></td><td>As little as a human can stand → roughly 10× more</td></tr>
+    <tr><td><b>How data reaches the agent</b></td><td>Dashboards and APIs → files in the repo, next to the code</td></tr>
+    <tr><td><b>Where the agent runs</b></td><td>Your laptop, when you're awake → a triggered sandbox, possibly in your VPC</td></tr>
+    <tr><td><b>What's genuinely solved</b></td><td>Not full autonomy — the <b>cold start</b></td></tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <div class="lbl">The one sentence to remember</div>
+  <p style="margin:6px 0 0">Observability stops being a dashboard you click and becomes <b>the smoke a system throws off for agents to read</b> — which is exactly why you now log and trace ten times more, not less.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">12</span>Timestamp index — jump straight to a section</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>Every timestamp links into the source video.</p>
+<table>
+  <thead><tr><th style="width:14%">Time</th><th>Section</th></tr></thead>
+  <tbody>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4&t=0s" target="_blank" rel="noopener">0:00</a></td><td>Arize, its agent Alyx, and why v1 sucked</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4&t=96s" target="_blank" rel="noopener">1:36</a></td><td>Observability is changing: from dashboards to telemetry for agents</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4&t=175s" target="_blank" rel="noopener">2:55</a></td><td>The goal: systems that fix themselves</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4&t=254s" target="_blank" rel="noopener">4:14</a></td><td>Inverting the loop: the agent investigates first</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4&t=368s" target="_blank" rel="noopener">6:08</a></td><td><b>Traces on a filesystem, the key unlock</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4&t=443s" target="_blank" rel="noopener">7:23</a></td><td>From your laptop to sandboxes</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4&t=493s" target="_blank" rel="noopener">8:13</a></td><td>A real fix: the Alyx stream canceled bug</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4&t=579s" target="_blank" rel="noopener">9:39</a></td><td>Why you should trace ten times more</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4&t=670s" target="_blank" rel="noopener">11:10</a></td><td>Product demo: Signal, AX, and Phoenix</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4&t=789s" target="_blank" rel="noopener">13:09</a></td><td>Sandboxes, VPC, and why customers won't call out</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4&t=980s" target="_blank" rel="noopener">16:20</a></td><td>Q&amp;A: why not just point Claude Code at your data?</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4&t=1084s" target="_blank" rel="noopener">18:04</a></td><td>Q&amp;A: where do the evals come in?</td></tr>
+  </tbody>
+</table>
+
+<div class="srcbox">
+  <div class="lbl">Source</div>
+  <p><b>From Signal to PR: Anatomy of a Self-Improving Agent</b> — Jason Lopatecki, Arize AI.<br>
+  Channel: AI Engineer. Runtime 20:35.</p>
+  <p><a href="https://www.youtube.com/watch?v=9HbzAWnKbo4" target="_blank" rel="noopener">https://www.youtube.com/watch?v=9HbzAWnKbo4</a></p>
+  <p style="color:var(--ink2); font-size:13.5px">Products and tools named in the talk: Arize <b>AX</b> (SaaS), <b>Phoenix</b> (open source), <b>Signal</b> (the agent), <b>Alyx</b> (Arize's in-product assistant), Pyroscope, Google Cloud logging, Daytona, Claude Code.</p>
+</div>
+
+<p style="margin-top:26px; font-size:13px; color:var(--ink2); border-top:1px solid var(--line); padding-top:18px">
+Compiled from the video's full transcript (153 segments, 0:01–20:12) plus the speaker's own chapter outline. Figure 3 reproduces the structure and wording of the talk's own "anatomy" slide; the remaining figures are diagrams built to explain the architecture described in the transcript — they are illustrations of the argument, not reproductions of specific slides.
+</p>
+
+</div>
+</body>
+</html>

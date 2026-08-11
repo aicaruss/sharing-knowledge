@@ -7,10 +7,10 @@
 Talks, papers and engineering write-ups — read properly, then rebuilt as
 self-contained HTML explainers you can actually finish.
 
-[![Entries](https://img.shields.io/badge/entries-1-E8511F?style=flat-square)](#catalog)
+[![Entries](https://img.shields.io/badge/entries-3-E8511F?style=flat-square)](#catalog)
 [![Topics](https://img.shields.io/badge/topics-7-2B2622?style=flat-square)](#topics)
 [![Format](https://img.shields.io/badge/format-self--contained%20HTML-5A5049?style=flat-square)](#anatomy-of-an-entry)
-[![Updated](https://img.shields.io/badge/updated-2026--08--06-1B8A54?style=flat-square)](#catalog)
+[![Updated](https://img.shields.io/badge/updated-2026--08--11-1B8A54?style=flat-square)](#catalog)
 
 **📖 [Read online → aicaruss.github.io/sharing-knowledge](https://aicaruss.github.io/sharing-knowledge/)**
 
@@ -104,6 +104,8 @@ Named `index.html` on purpose: GitHub Pages then serves the entry at a clean
 | # | Entry | Topic | Source | Format | Added |
 | :--: | --- | --- | --- | --- | --- |
 | 01 | **[Learning on the Job: The Future of Post-Training](topics/post-training/learning-on-the-job/)**<br><sub>Post-training as a school ladder — single-turn Q&A → simulated environments → an "internship" inside the customer's real harness → self-improvement. Why simulated environments breed reward hacking (two candid failures from their own runs), and what "Bring Your Own Harness" costs once data stops being replayable and GRPO no longer applies.</sub><br><sub>[📄 notes](topics/post-training/learning-on-the-job/README.md) · [📖 read](https://aicaruss.github.io/sharing-knowledge/topics/post-training/learning-on-the-job/) · [↗ source](https://www.youtube.com/watch?v=k35LeKZEhiE)</sub> | `post-training` | Raymond Feng<br><sub>Applied Compute · AI Engineer World's Fair 2026</sub> | Talk explainer<br><sub>18m20s</sub> | 2026-08-06 |
+| 02 | **[Loop Engineering vs Graph Engineering](topics/agent-architecture/loop-vs-graph/)**<br><sub>Two buzzwords, taken slowly. The five-rung ladder — prompt → context → skills → loop → graph — where each rung exists because the one below ran out of road. Loops and graphs aren't competitors: a graph wraps loops, buys speed and predictability rather than intelligence, and needs guardrails precisely because its nodes and routing stopped being deterministic.</sub><br><sub>[📄 notes](topics/agent-architecture/loop-vs-graph/README.md) · [📖 read](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/loop-vs-graph/) · [↗ source](https://www.youtube.com/watch?v=IMLwvK08JVc)</sub> | `agent-architecture` | Shen Sean Chen<br><sub>Sean's AI Stories</sub> | Talk explainer<br><sub>21m31s</sub> | 2026-08-11 |
+| 03 | **[From Signal to PR: Anatomy of a Self-Improving Agent](topics/evaluation-and-observability/signal-to-pr/)**<br><sub>Observability stops being a dashboard you click and becomes machine input. The unlock is deliberately unglamorous — production traces written into the repo as files, because harnesses are magical with files and hopeless with a dashboard. The loop inverts (agent digs, you review), and so you should now log ten times more, not less.</sub><br><sub>[📄 notes](topics/evaluation-and-observability/signal-to-pr/README.md) · [📖 read](https://aicaruss.github.io/sharing-knowledge/topics/evaluation-and-observability/signal-to-pr/) · [↗ source](https://www.youtube.com/watch?v=9HbzAWnKbo4)</sub> | `evaluation-and-observability` | Jason Lopatecki<br><sub>Arize AI</sub> | Talk explainer<br><sub>20m35s</sub> | 2026-08-11 |
 
 ---
 
@@ -115,10 +117,10 @@ scope — including what it deliberately excludes — and keeps a list of open t
 | Topic | What lands here | Entries |
 | --- | --- | :--: |
 | [**post-training**](topics/post-training/) | RL, fine-tuning, reward design, training environments, custom models | 1 |
-| [**agent-architecture**](topics/agent-architecture/) | The agent loop, planning, memory, multi-agent topologies | 0 |
+| [**agent-architecture**](topics/agent-architecture/) | The agent loop, planning, memory, multi-agent topologies | 1 |
 | [**tool-use-and-protocols**](topics/tool-use-and-protocols/) | Function calling, MCP, computer use, agent-to-agent protocols | 0 |
 | [**context-engineering**](topics/context-engineering/) | Prompting, RAG, retrieval, context-window budgeting | 0 |
-| [**evaluation-and-observability**](topics/evaluation-and-observability/) | Evals, benchmarks, tracing, guardrails, cost accounting | 0 |
+| [**evaluation-and-observability**](topics/evaluation-and-observability/) | Evals, benchmarks, tracing, guardrails, cost accounting | 1 |
 | [**infrastructure**](topics/infrastructure/) | Serving, inference, sandboxes, latency and cost | 0 |
 | [**applied-and-case-studies**](topics/applied-and-case-studies/) | Real deployments, post-mortems, enterprise patterns | 0 |
 
@@ -153,12 +155,20 @@ sharing-knowledge/
     │       └── README.md                 ← metadata + briefing
     │
     ├── agent-architecture/
-    │   └── README.md
+    │   ├── README.md
+    │   └── loop-vs-graph/
+    │       ├── index.html
+    │       └── README.md
+    │
+    ├── evaluation-and-observability/
+    │   ├── README.md
+    │   └── signal-to-pr/
+    │       ├── index.html
+    │       └── README.md
+    │
     ├── tool-use-and-protocols/
     │   └── README.md
     ├── context-engineering/
-    │   └── README.md
-    ├── evaluation-and-observability/
     │   └── README.md
     ├── infrastructure/
     │   └── README.md
@@ -253,7 +263,7 @@ a generated catalog will eventually read it, so keep it valid.
 | `source_author` |  | Person or people. Omit the field entirely if genuinely unattributed |
 | `source_org` |  | Their affiliation |
 | `source_event` |  | Conference, journal or publication |
-| `source_published` | ✔ | ISO date the *original* came out — not when you read it |
+| `source_published` | ✔* | ISO date the *original* came out — not when you read it. *\*Omit the field entirely if the source material genuinely doesn't state one, and say so in Provenance. Never guess a date.* |
 | `source_duration` |  | `18m20s` for talks, `14 pages` for papers. Omit if meaningless |
 | `tags` | ✔ | 4–8 kebab-case tags, as a YAML list |
 
@@ -263,8 +273,15 @@ Four to eight per entry, kebab-case, and **reuse before you invent** — grep th
 Tags carry cross-cutting themes that don't deserve their own topic; the topic folder already handles
 primary categorisation.
 
-In use so far: `post-training` · `reinforcement-learning` · `grpo` · `reward-hacking` ·
-`agentic-harness` · `byoh` · `rl-environments` · `self-improvement`
+In use so far — `agent-skills` · `agent-harness` · `agentic-harness` · `byoh` · `dag` · `evals` ·
+`graph-engineering` · `grpo` · `incident-response` · `llm-as-judge` · `loop-engineering` ·
+`observability` · `orchestration` · `parallelism` · `post-training` · `procedural-memory` ·
+`reinforcement-learning` · `reward-hacking` · `rl-environments` · `sandboxes` · `self-improvement` ·
+`self-improving-agents` · `traces`
+
+> **Cleanup owed.** That list already contains two near-duplicate pairs — `agent-harness` /
+> `agentic-harness`, and `self-improvement` / `self-improving-agents`. They came in from different
+> entries. Worth consolidating to one of each before the vocabulary grows further.
 
 ### Translations
 
@@ -274,21 +291,35 @@ language suffix — the URL identifies the *entry*, not the language.
 
 ### Design system
 
-Every page shares one palette and one set of component classes, defined in
-[`templates/explainer-template.html`](templates/explainer-template.html). Warm cream paper, near-black
-ink, a single orange accent, and four semantic colours used only where they carry meaning.
+What is shared across entries is the **structure and the component vocabulary**, not one fixed palette.
+[`templates/explainer-template.html`](templates/explainer-template.html) is the house style — a 900px
+column, a dark header band, then a predictable set of components:
 
-| Token | Value | Used for |
+`.tldr` · `.card` · `.note` · `.note.warn` · `.analogy` · `.quote` · `.tag` · `.chip` ·
+`figure > svg` · `.srcbox` · `.dots`
+
+Each entry then carries its **own accent palette**, declared in its own `:root`. That keeps a page
+recognisable as part of this library while letting a topic have its own identity:
+
+| Entry | Paper | Accent |
 | --- | --- | --- |
-| `--cream` / `--cream2` / `--paper` | `#FDF3E7` `#FBE8D3` `#FFFBF5` | Page, table headers, cards |
-| `--ink` / `--ink2` | `#2B2622` `#5A5049` | Body text, secondary text, dark header band |
-| `--line` | `#E0CDB4` | Every border and rule |
-| `--orange` | `#E8511F` | The single accent — links, section numbers, key callouts |
-| `--blue` / `--green` / `--red` / `--purple` | `#2F6BD8` `#1B8A54` `#D0392B` `#6B4FBB` | Requests · responses · warnings · specs, in diagrams |
+| [learning-on-the-job](topics/post-training/learning-on-the-job/) | warm cream `#FDF3E7` | orange `#E8511F` |
+| [signal-to-pr](topics/evaluation-and-observability/signal-to-pr/) | cool lilac `#F3F2F9` | violet `#6D4AE0` |
+| [loop-vs-graph](topics/agent-architecture/loop-vs-graph/) | off-white `#f9f9f7` | blue `#2a78d6` |
 
-Components available: `.tldr` `.card` `.note` `.note.warn` `.analogy` `.quote` `.tag` `.chip`
-`figure > svg` `.srcbox`. Add new classes if you need them; **don't redefine the palette** — the point
-is that fifty entries still look like one library.
+Two of the three follow the component vocabulary above. **`loop-vs-graph` is the exception** — adapted
+from a differently-structured source, it brings its own components (`.hero`, `.ladder`, `.rung`) and is
+so far the only entry that supports dark mode via `prefers-color-scheme`. That is allowed: the template
+is a starting point, not a cage.
+
+The rules that are **not** negotiable, because the repository's promises depend on them:
+
+1. **Self-contained.** No external CSS, JS, fonts, or images — inline everything.
+2. **Diagrams are inline `<svg>`, hand-written.** Never screenshots.
+3. **No horizontal overflow at 375px.** Tables and wide figures scroll inside their own container.
+
+Semantic colours stay consistent in diagrams regardless of palette: blue for requests, green for
+responses, red for failures and warnings, violet or purple for specs and skills.
 
 ---
 
