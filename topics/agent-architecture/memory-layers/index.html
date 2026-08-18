@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memory Layers for AI Agents — Detailed Explainer</title>
+<style>
+  :root{
+    --page:#F1F5F4; --paper:#FFFFFF; --band:#122220;
+    --ink:#16211F; --ink2:#4C5A57; --muted:#788682;
+    --line:#D6E2DE; --line2:#E7EFEC;
+    --teal:#0E7C6B; --teal-soft:#E1F1EE; --teal-deep:#0A5C50;
+    --blue:#2F6BD8; --green:#1B8A54; --red:#C4372B; --amber:#B26A00; --purple:#6B4FBB; --pink:#CE4D86;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--page); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16.5px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px; margin:0 auto; padding:0 22px 90px}
+
+  header{background:var(--band); color:#EAF3F1; padding:44px 0 38px; margin-bottom:32px}
+  header .wrap{padding-bottom:0}
+  .kicker{font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:#63C7B4; font-weight:700}
+  header h1{font-size:clamp(26px,4.4vw,38px); line-height:1.2; margin:12px 0 10px; letter-spacing:-.02em}
+  header p.sub{margin:0; color:#9DB3AE; font-size:15px}
+  .toplinks{display:flex; flex-wrap:wrap; gap:10px; margin-top:20px}
+  .srclink{display:inline-flex; align-items:center; gap:9px; background:#1E322F;
+           border:1px solid #33514C; border-radius:10px; padding:10px 15px; text-decoration:none;
+           color:#BDF0E4; font-size:14px; font-weight:600}
+  .srclink:hover{background:#254039}
+  .srclink svg{flex:none}
+  .srclink span.u{color:#8AA39E; font-weight:400; font-size:13px}
+  .langlink{display:inline-flex; align-items:center; gap:8px; border:1px solid #33514C; border-radius:10px;
+            padding:10px 15px; text-decoration:none; color:#9DB3AE; font-size:14px; font-weight:600}
+  .langlink:hover{color:#BDF0E4; border-color:#4B6E67}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px}
+  .chip{background:#1E322F; border:1px solid #33514C; color:#CFE3DF; font-size:12.5px; padding:5px 11px; border-radius:999px}
+
+  h2{font-size:clamp(20px,3vw,26px); letter-spacing:-.01em; margin:50px 0 6px; line-height:1.25}
+  h2 .num{color:var(--teal); font-variant-numeric:tabular-nums; margin-right:10px}
+  h3{font-size:17.5px; margin:28px 0 6px; letter-spacing:-.01em}
+  p{margin:10px 0}
+  a{color:var(--teal-deep)}
+  .lede{color:var(--ink2); font-size:14.5px; margin:2px 0 14px}
+  hr.rule{border:0; border-top:1px solid var(--line); margin:44px 0 0}
+  .dots{display:flex; gap:5px; margin:0 0 14px}
+  .dots i{width:9px; height:9px; display:block; border-radius:2px}
+  .dots i:nth-child(1){background:#A9DCD2} .dots i:nth-child(2){background:#4FB3A0} .dots i:nth-child(3){background:var(--teal)}
+
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin:18px 0}
+  .tldr{background:var(--band); color:#DFEDEA; border:0}
+  .tldr h3{margin-top:0; color:#fff}
+  .tldr ol{margin:10px 0 0; padding-left:22px}
+  .tldr li{margin:9px 0; color:#DAE9E6}
+  .tldr b{color:#8FE0CD}
+  .tldr code{background:#1E322F; border-color:#33514C; color:#BDF0E4}
+  .note{border-left:4px solid var(--teal); background:#EAF5F2; border-radius:0 12px 12px 0; padding:14px 18px; margin:18px 0}
+  .note .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--teal-deep)}
+  .note p{margin:6px 0 0}
+  .note.warn{border-left-color:var(--red); background:#FCF0EE}
+  .note.warn .lbl{color:var(--red)}
+  .analogy{background:#F1F5FE; border:1px solid #CFDDF7; border-radius:12px; padding:14px 18px; margin:16px 0}
+  .analogy .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--blue)}
+  .analogy p{margin:6px 0 0}
+  .quote{background:var(--teal-soft); border:1px solid #BFDFD8; border-radius:14px; padding:22px 26px; margin:22px 0}
+  .quote p{font-size:18px; line-height:1.5; font-weight:600; margin:0}
+  .quote cite{display:block; margin-top:12px; font-size:13.5px; color:var(--ink2); font-style:italic}
+
+  figure{margin:22px 0; background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:16px 14px 12px; overflow-x:auto}
+  figure svg{width:100%; height:auto; display:block; min-width:620px}
+  figcaption{font-size:13.5px; color:var(--ink2); margin-top:11px; padding-top:10px; border-top:1px solid var(--line2)}
+  figcaption b{color:var(--ink)}
+
+  .scroll{overflow-x:auto; margin:18px 0}
+  table{width:100%; border-collapse:collapse; margin:0; font-size:14.5px; background:var(--paper);
+        border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  .scroll table{min-width:700px}
+  th,td{padding:11px 13px; text-align:left; border-bottom:1px solid var(--line2); vertical-align:top}
+  th{background:var(--teal-soft); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--teal-deep)}
+  tr:last-child td{border-bottom:0}
+  td.ts{font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:700; width:14%}
+  td.ts a{color:var(--teal-deep); text-decoration:none; border-bottom:1px dotted #85BDB2}
+
+  code{background:var(--teal-soft); border:1px solid #C9E2DC; border-radius:5px; padding:1px 5px; font-size:13.5px;
+       font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .tag{display:inline-block; font-size:11.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+       padding:3px 9px; border-radius:999px; background:var(--teal-soft); color:var(--teal-deep); margin-right:6px}
+  ul.clean{padding-left:20px} ul.clean li{margin:8px 0}
+  .srcbox{background:var(--paper); border:1px solid var(--line); border-left:4px solid var(--teal);
+          border-radius:0 12px 12px 0; padding:18px 20px; margin:34px 0 0}
+  .srcbox .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--teal-deep)}
+  .srcbox p{margin:8px 0 0; font-size:14.5px}
+  .srcbox a{word-break:break-all}
+  .prov{margin-top:26px; font-size:13px; color:var(--ink2); border-top:1px solid var(--line); padding-top:18px}
+  .prov b{color:var(--ink)}
+  .prov ul{padding-left:20px} .prov li{margin:7px 0}
+  text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">Video explainer · Sean's AI Stories · 16 August 2026</div>
+    <h1>Memory Layers for AI Agents — what a memory is, how the agent finds it, how you keep it true</h1>
+    <p class="sub">Shen Sean Chen — Sean's AI Stories · 30 min 26 sec · whiteboard first, then a live dashboard and code walkthrough</p>
+
+    <div class="toplinks">
+      <a class="srclink" href="https://www.youtube.com/watch?v=072eNztI06k" target="_blank" rel="noopener">
+        <svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true">
+          <rect x="0" y="0" width="20" height="14" rx="3.4" fill="#FF0000"/>
+          <path d="M8 4 L13.4 7 L8 10 Z" fill="#fff"/>
+        </svg>
+        Watch the source video <span class="u">youtube.com/watch?v=072eNztI06k</span>
+      </a>
+      <a class="langlink" href="index.id.html" hreflang="id" lang="id">Baca dalam Bahasa Indonesia</a>
+    </div>
+
+    <div class="meta">
+      <span class="chip">Agent memory</span>
+      <span class="chip">Graph RAG</span>
+      <span class="chip">Vector stores</span>
+      <span class="chip">SQLite FTS5</span>
+      <span class="chip">Agent harness</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="card tldr">
+  <h3>The whole video in seven points</h3>
+  <ol>
+    <li><b>The premise:</b> the model has no memory at all. Anything that looks like recall — ChatGPT knowing your name, a coding agent knowing your repo — is a <b>memory system somebody built around the model</b>. Memory is an architecture decision, not a model feature.</li>
+    <li><b>Three questions, in this order:</b> what <i>is</i> a memory (text, a table, or a graph) · how does the agent <i>find</i> it (do nothing, keyword, RAG, Graph RAG) · how do you <i>maintain</i> it (add, delete, overwrite, noop, retire, attribute, reflect). Nearly every product argument is really an argument inside one of those three boxes.</li>
+    <li><b>The first retrieval strategy is no retrieval.</b> If the memory file is short, it is simply preloaded into the context window — which is exactly what his own harness and the Hermes harness do. No embeddings anywhere. He says this out loud in the first two minutes, against the RAG / agentic-RAG / Graph-RAG discourse.</li>
+    <li><b>Maintenance is where the design lives.</b> Deleting a superseded fact destroys history; <b>retiring</b> it — bounding the old value with a time range and adding the new one — keeps the trail you need to explain an answer later. His example is his own repo: 1,000 stars on day 25, 1,300 on day 26.</li>
+    <li><b>Five layers, concretely:</b> plain text files → SQLite <code>state.db</code> with keyword search → vector stores → mem0 (row memory and graph memory, both stored as vectors) → Zep (a temporal graph with validity windows). Plus LangMem, which is <b>a package, not a store</b>.</li>
+    <li><b>He races four contenders on a dinner party</b> — SQLite, mem0 and Zep from that list, plus LangMem — on four seeded facts, against a no-memory control. Plain text is not entered and the vector store is never tested. The sharpest design choice in the test: a <b>control group with no memory at all</b>, which <i>passes</i> a question by correctly reporting that it has no record. Sophistication does not win. Local SQLite answers in 4.6s; the temporal graph spends most of the demo seeding.</li>
+    <li><b>The conclusion:</b> the harness is flexible and replaceable, so the <b>memories</b> are the asset — and you should pick the simplest layer your use case actually needs. The graph did produce one genuinely valuable thing, an edge labelled <i>"revealed ending of"</i>, and he still calls it possible overkill for smaller use cases.</li>
+  </ol>
+</div>
+
+<div class="note warn">
+  <div class="lbl">Read the comparison with four things in mind</div>
+  <p><b>1. The author's position.</b> Shen Sean Chen wrote <b>Waku Agent</b>, the open-source harness the arena runs inside, and the plain-text approach the video ends up favouring is his own project's approach. That does not make the argument wrong; it does mean the conclusion and the product point the same way.</p>
+  <p><b>2. n=1.</b> One run per question, wall-clock timings read off a dashboard, no repetitions and no statistics. Every number below is <i>what he saw once</i>, not a measurement.</p>
+  <p><b>3. Not like-for-like.</b> SQLite runs on local disk; mem0, LangMem and Zep are network calls to hosted services. Part of every gap is round-trip latency rather than retrieval quality, and the video does not separate the two.</p>
+  <p><b>4. One store and one mode were never tested.</b> The vector store (Supabase PGVector) was left out deliberately — in his words, <i>"because we're not testing embeddings here"</i> (20:01) — and mem0's graph mode sits behind a paid tier he declined to buy. The vector-store row of any comparison here is <b>theory, not result</b>.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">0</span>Vocabulary first</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>The video reuses harness vocabulary from his earlier videos without re-explaining it. These are the terms the rest of this page leans on, defined in <i>his</i> sense rather than the textbook one.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:25%">Term</th><th>What it means here</th></tr></thead>
+  <tbody>
+    <tr><td><b>Harness</b></td><td>Everything around the model: the loop, the tools, the tracing, the memory system. His is <b>Waku Agent</b>; he refers throughout to <b>Hermes</b>, another harness with the same plain-text habits.</td></tr>
+    <tr><td><b>Working memory</b></td><td>What actually gets assembled into the context window for one agent run, drawn from the three memory types below.</td></tr>
+    <tr><td><b>Procedural / semantic / episodic memory</b></td><td>His harness's three retrieval categories: procedural = a <b>skill</b>, a stored procedure that fires on a trigger; semantic = <b>durable facts</b>; episodic = <b>dated events</b>. Named in one line at 0:40 and assumed from then on. Note that 0:40 is also the only place he says <i>"pillars"</i>, and he means <b>these</b> three; the "pillar 1/2/3" labels used on this page follow the video's own chapter titles, which apply the word to the what / find / maintain trio.</td></tr>
+    <tr><td><b>Retrieval gate</b></td><td>The step that decides <i>whether and what</i> to retrieve before the model is called. He is explicit that having one is optional: <i>"Whether or not we should have retrieval gate, that's completely up to you"</i> (12:29).</td></tr>
+    <tr><td><b>FTS5</b></td><td>SQLite's full-text search extension. Here it stands in for the whole keyword-search family: match the words, no embeddings.</td></tr>
+    <tr><td><b>Embedding / vector</b></td><td>A word or fact turned into a list of numbers so similarity can be computed. He offers <i>"1024 by 1"</i> as an illustrative shape, not a specification.</td></tr>
+    <tr><td><b>Graph RAG</b></td><td>Embedding <b>nodes and edges</b>, not just facts, so a similarity search can return a <i>relationship subgraph</i> — the agent gets "A revealed the ending of B", not two unconnected facts.</td></tr>
+    <tr><td><b>Retire / supersede</b></td><td>Marking an old fact invalid from a point in time instead of deleting it. One idea under two names: he says "retire" on the whiteboard and "supersede" when describing mem0 and Zep.</td></tr>
+    <tr><td><b>Consolidation</b></td><td>A background pass that distils raw conversation history into durable facts — in his harness, every 5–10 turns, using cheaper auxiliary models.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">1</span>Every LLM call starts with amnesia</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">0:00 – 1:52 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=0s" target="_blank" rel="noopener">jump to 0:00</a></p>
+
+<p>The opening is the load-bearing claim of the whole video, and it is worth stating precisely, because a lot of marketing depends on blurring it.</p>
+
+<div class="quote">
+  <p>"…any LLM call does not carry any weight for long terms. The reason why your ChatGPT and Claude code remembers what you talked about from the past is because it has already crafted this memory system for their own AI agent harness."</p>
+  <cite>— Shen Sean Chen, 0:03 (from the video's auto-generated caption track)</cite>
+</div>
+
+<p>So "does the model remember me?" is the wrong question. The model never remembers. Somebody chose a place to put the facts, a way to fetch them back, and a policy for what to do when they go stale. Those three choices are the video, and they are the three pillars in the next section.</p>
+
+<p>He then recaps his harness in one breath — an agent loop that calls tools and delegates sub-agents, assembling working memory from <b>procedural</b>, <b>semantic</b> and <b>episodic</b> memory — and notes Hermes builds its memory much the same way. That single line is the seam with the earlier entry in this library: <a href="../loop-vs-graph/">Loop Engineering vs Graph Engineering</a> names the retrieval gate and those three memory types in passing. This video is that line opened up.</p>
+
+<p>Then, unusually early, he plants a flag against the prevailing discourse:</p>
+
+<div class="quote">
+  <p>"Retrieval augmented generation has always been there, but there's no retrievals or embeddings in Hermes and Waku agent."</p>
+  <cite>— Shen Sean Chen, 1:02</cite>
+</div>
+
+<p>Two systems people would describe as memory-heavy agents contain <b>no</b> retrieval machinery at all. Hold that thought — it is the answer to pillar 2 arriving before the question.</p>
+
+<hr class="rule">
+
+<h2><span class="num">2</span>The three pillars</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">2:31 – 5:04 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=151s" target="_blank" rel="noopener">jump to 2:31</a></p>
+
+<p>The framework is three questions on a whiteboard, and it is the most portable thing in the video. (The video's chapter titles number them Pillar 1, 2 and 3, and this page follows that. Be aware that when he says "three main pillars" out loud at 0:40 he means the procedural / semantic / episodic trio instead.) Any memory product you are shown is answering one of them — and its pitch will usually be strongest on one and quiet on the other two.</p>
+
+<figure>
+<svg viewBox="0 0 900 300" role="img" aria-label="Whiteboard diagram: a pink box labelled AI Agent Memory with three arrows down to three green boxes reading What is it, How to find it, How to maintain it, with a bullet list under the first box reading txt md, rows in table, graph nodes edges">
+  <defs>
+    <marker id="f1ink" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#5A6B67"/></marker>
+  </defs>
+  <rect x="335" y="16" width="230" height="54" rx="12" fill="#FBE4EF" stroke="#CE4D86" stroke-width="1.8"/>
+  <text x="450" y="49" font-size="16.5" font-weight="700" fill="#A2245C" text-anchor="middle">AI Agent Memory</text>
+
+  <path d="M448 70 C 448 100, 136 96, 136 126" stroke="#5A6B67" stroke-width="1.6" fill="none" marker-end="url(#f1ink)"/>
+  <path d="M450 70 L450 126" stroke="#5A6B67" stroke-width="1.6" fill="none" marker-end="url(#f1ink)"/>
+  <path d="M452 70 C 452 100, 764 96, 764 126" stroke="#5A6B67" stroke-width="1.6" fill="none" marker-end="url(#f1ink)"/>
+
+  <rect x="18" y="130" width="236" height="52" rx="11" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.7"/>
+  <text x="136" y="162" font-size="15.5" font-weight="700" fill="#14664C" text-anchor="middle">What is it?</text>
+  <rect x="332" y="130" width="236" height="52" rx="11" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.7"/>
+  <text x="450" y="162" font-size="15.5" font-weight="700" fill="#14664C" text-anchor="middle">How to find it?</text>
+  <rect x="646" y="130" width="236" height="52" rx="11" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.7"/>
+  <text x="764" y="162" font-size="15.5" font-weight="700" fill="#14664C" text-anchor="middle">How to maintain it?</text>
+
+  <path d="M136 182 L136 204" stroke="#5A6B67" stroke-width="1.4" fill="none"/>
+  <path d="M60 210 L60 288" stroke="#B9C9C5" stroke-width="1.6" fill="none"/>
+  <text x="76" y="228" font-size="14.5" fill="#16211F">– txt, md</text>
+  <text x="76" y="258" font-size="14.5" fill="#16211F">– rows in table</text>
+  <text x="76" y="288" font-size="14.5" fill="#16211F">– graph (nodes/edges)</text>
+  <text x="332" y="232" font-size="12.5" fill="#788682">at 4:56 only pillar 1's list has been written out;</text>
+  <text x="332" y="252" font-size="12.5" fill="#788682">the other two boxes are still headings.</text>
+</svg>
+<figcaption><b>Figure 1. Redrawn from the whiteboard,</b> from a frame captured at 4:56 — the pink root box, the three green pillars and the bullet list are the source's own boxes and wording. What the original frame also shows and this redraw does not: a hand-drawn stick figure at the left edge, the speaker's live inset, and a burnt-in caption. The value of the figure is the <i>order</i>: storage first, retrieval second, maintenance third — and most tooling is sold on the middle one.</figcaption>
+</figure>
+
+<hr class="rule">
+
+<h2><span class="num">3</span>Pillar 1 — what a memory actually <i>is</i></h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">2:31 – 5:04 · three shapes, and where embeddings really sit</p>
+
+<p>Three storage shapes, each shown in a running system rather than described abstractly:</p>
+
+<ul class="clean">
+  <li><b>Text or markdown.</b> He opens Hermes' <code>.hermes/memory/memory.md</code> on camera — plain text, fed into the context window whenever you ask something. In his own harness the equivalent files sit under <code>.waku</code>, including <code>SOUL.md</code>, the system prompt and personality.</li>
+  <li><b>Rows in a table.</b> A spreadsheet, a Google Sheet, or a relational database. In Hermes that is <code>state.db</code>, a SQLite file you can open and read the schema of.</li>
+  <li><b>A graph of nodes and edges.</b> His definition is deliberately plain: a way to build connections between pieces of information. He demonstrates with Zep's relational graph view, walking a small example — a founder called Alex, a Lisbon AI meetup, a robotics startup, a product launch in May and another in June — and points out that the interest is in the interconnections, not the individual facts.</li>
+</ul>
+
+<p>Then the question a RAG-shaped audience will already be shouting, and the answer that makes the framework coherent:</p>
+
+<div class="note">
+  <div class="lbl">Embeddings are not a fourth kind of memory</div>
+  <p>Where does the vector go? <b>Into one of the three shapes above.</b> With Supabase PGVector — the setup he uses himself — the memory is still rows in a table; some of the columns just happen to hold vectors. Or it sits in a NoSQL store. Embeddings are a property of <i>how you search</i>, not a separate thing to be. That is why they belong to pillar 2, not pillar 1.</p>
+</div>
+
+<figure>
+<svg viewBox="0 0 900 340" role="img" aria-label="Three panels showing the three storage shapes: plain text files, rows in a table, and a graph of nodes and edges; below them a band explaining that embeddings are not a fourth kind but live inside the table or graph">
+  <defs>
+    <marker id="f2teal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0E7C6B"/></marker>
+  </defs>
+
+  <rect x="14" y="18" width="282" height="178" rx="13" fill="#FFFFFF" stroke="#D6E2DE" stroke-width="1.5"/>
+  <text x="34" y="46" font-size="15" font-weight="700" fill="#16211F">1 · Plain text / markdown</text>
+  <text x="34" y="72" font-size="12.5" fill="#4C5A57">memory.md · SOUL.md · skills</text>
+  <text x="34" y="92" font-size="12.5" fill="#4C5A57">hand-editable files on disk</text>
+  <text x="34" y="112" font-size="12.5" fill="#4C5A57">read straight into the context window</text>
+  <rect x="34" y="130" width="180" height="10" rx="3" fill="#E7EFEC"/>
+  <rect x="34" y="146" width="230" height="10" rx="3" fill="#E7EFEC"/>
+  <rect x="34" y="162" width="150" height="10" rx="3" fill="#E7EFEC"/>
+
+  <rect x="309" y="18" width="282" height="178" rx="13" fill="#FFFFFF" stroke="#D6E2DE" stroke-width="1.5"/>
+  <text x="329" y="46" font-size="15" font-weight="700" fill="#16211F">2 · Rows in a table</text>
+  <text x="329" y="72" font-size="12.5" fill="#4C5A57">state.db (SQLite) · a spreadsheet</text>
+  <text x="329" y="92" font-size="12.5" fill="#4C5A57">rows and columns, a schema</text>
+  <text x="329" y="112" font-size="12.5" fill="#4C5A57">also hand-editable</text>
+  <g stroke="#B9C9C5" stroke-width="1.2" fill="none">
+    <rect x="329" y="128" width="228" height="46"/>
+    <path d="M329 143 H557 M329 159 H557 M405 128 V174 M481 128 V174"/>
+  </g>
+
+  <rect x="604" y="18" width="282" height="178" rx="13" fill="#FFFFFF" stroke="#D6E2DE" stroke-width="1.5"/>
+  <text x="624" y="46" font-size="15" font-weight="700" fill="#16211F">3 · Graph: nodes and edges</text>
+  <text x="624" y="72" font-size="12.5" fill="#4C5A57">connections between facts</text>
+  <text x="624" y="92" font-size="12.5" fill="#4C5A57">"Alex → attended → Lisbon meetup"</text>
+  <text x="624" y="112" font-size="12.5" fill="#4C5A57">traversal, not just lookup</text>
+  <g fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.5">
+    <circle cx="650" cy="152" r="15"/><circle cx="745" cy="132" r="15"/><circle cx="745" cy="172" r="15"/><circle cx="840" cy="152" r="15"/>
+  </g>
+  <g stroke="#0E7C6B" stroke-width="1.4" fill="none">
+    <path d="M665 148 L730 135"/><path d="M665 157 L730 170"/><path d="M760 136 L826 148"/><path d="M760 168 L826 156"/>
+  </g>
+
+  <path d="M450 232 L450 202" stroke="#0E7C6B" stroke-width="1.6" fill="none" marker-end="url(#f2teal)"/>
+  <path d="M745 232 L745 202" stroke="#0E7C6B" stroke-width="1.6" fill="none" marker-end="url(#f2teal)"/>
+  <rect x="14" y="234" width="872" height="90" rx="13" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="36" y="264" font-size="14.5" font-weight="700" fill="#0A5C50">Embeddings are not a fourth kind — they live inside one of these.</text>
+  <text x="36" y="288" font-size="12.5" fill="#2F4A45">In Supabase PGVector the memory is still rows in a table; some of the columns are vectors. In a graph store, the nodes</text>
+  <text x="36" y="308" font-size="12.5" fill="#2F4A45">and the edges are what gets embedded. Either way the shape underneath is one of the three panels above.</text>
+</svg>
+<figcaption><b>Figure 2. Reconstructed from the spoken description</b> (2:31–5:04) — an illustration of the argument, not a reproduction of a screen. It adds the thing the whiteboard leaves implicit: the dashed band is the answer to "but where does RAG go?", and it is <i>underneath</i> pillar 1 rather than beside it.</figcaption>
+</figure>
+
+<hr class="rule">
+
+<h2><span class="num">4</span>Pillar 2 — how the agent finds it, starting with "do nothing"</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">5:04 – 7:29 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=304s" target="_blank" rel="noopener">jump to 5:04</a></p>
+
+<p>Four strategies, and the ordering is the argument: the cheapest one is not searching at all.</p>
+
+<figure>
+<svg viewBox="0 0 900 372" role="img" aria-label="Four retrieval strategies in four lanes: do nothing preloads the file into context, keyword search uses SQLite FTS5, RAG embeds the question and does similarity search, and Graph RAG embeds nodes and edges to return a relationship subgraph">
+  <defs>
+    <marker id="f3ink" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#5A6B67"/></marker>
+  </defs>
+
+  <rect x="14" y="16" width="168" height="80" rx="11" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.6"/>
+  <text x="32" y="46" font-size="14.5" font-weight="700" fill="#14664C">1 · Do nothing</text>
+  <text x="32" y="68" font-size="12" fill="#2F5F4C">no search step exists</text>
+  <text x="32" y="86" font-size="12" fill="#2F5F4C">Hermes · Waku Agent</text>
+  <text x="200" y="44" font-size="12.5" fill="#16211F">The file is short, so it is simply preloaded into the context window on every call:</text>
+  <text x="200" y="64" font-size="12.5" fill="#16211F">memory.md, plus SOUL.md, tool definitions and MCP definitions.</text>
+  <text x="200" y="84" font-size="12" fill="#788682">This is why a fresh session can already show a large context percentage used.</text>
+  <path d="M624 56 L640 56" stroke="#5A6B67" stroke-width="1.5" marker-end="url(#f3ink)"/>
+  <rect x="646" y="24" width="240" height="64" rx="10" fill="#F5FAF8" stroke="#B9C9C5" stroke-width="1.3"/>
+  <text x="664" y="50" font-size="12.5" font-weight="700" fill="#16211F">Everything, always</text>
+  <text x="664" y="70" font-size="12" fill="#4C5A57">nothing is chosen, nothing is missed</text>
+
+  <rect x="14" y="108" width="168" height="80" rx="11" fill="#EAF0FC" stroke="#2F6BD8" stroke-width="1.6"/>
+  <text x="32" y="138" font-size="14.5" font-weight="700" fill="#1E4C9E">2 · Keyword</text>
+  <text x="32" y="160" font-size="12" fill="#2A4D86">SQLite FTS5</text>
+  <text x="32" y="178" font-size="12" fill="#2A4D86">over state.db</text>
+  <text x="200" y="136" font-size="12.5" fill="#16211F">Match the words in the question against the words in the stored rows.</text>
+  <text x="200" y="156" font-size="12.5" fill="#16211F">His summary: "all you need to know is basically it's doing keyword searching".</text>
+  <text x="200" y="176" font-size="12" fill="#788682">Cheap, local, and blind to anything the words do not literally share.</text>
+  <path d="M624 148 L640 148" stroke="#5A6B67" stroke-width="1.5" marker-end="url(#f3ink)"/>
+  <rect x="646" y="116" width="240" height="64" rx="10" fill="#F5FAF8" stroke="#B9C9C5" stroke-width="1.3"/>
+  <text x="664" y="142" font-size="12.5" font-weight="700" fill="#16211F">Rows whose text matches</text>
+  <text x="664" y="162" font-size="12" fill="#4C5A57">no notion of meaning</text>
+
+  <rect x="14" y="200" width="168" height="80" rx="11" fill="#F1EDFB" stroke="#6B4FBB" stroke-width="1.6"/>
+  <text x="32" y="230" font-size="14.5" font-weight="700" fill="#4E3399">3 · RAG</text>
+  <text x="32" y="252" font-size="12" fill="#4E3399">vector similarity</text>
+  <text x="32" y="270" font-size="12" fill="#4E3399">over embeddings</text>
+  <text x="200" y="228" font-size="12.5" fill="#16211F">Embed the question, then find what sits close to it in the same space.</text>
+  <text x="200" y="248" font-size="12.5" fill="#16211F">His example: "food" lands near apple and sausages — a semantic search,</text>
+  <text x="200" y="268" font-size="12.5" fill="#16211F">not a keyword one. ("1024 by 1" is his illustrative dimension.)</text>
+  <path d="M624 240 L640 240" stroke="#5A6B67" stroke-width="1.5" marker-end="url(#f3ink)"/>
+  <rect x="646" y="208" width="240" height="64" rx="10" fill="#F5FAF8" stroke="#B9C9C5" stroke-width="1.3"/>
+  <text x="664" y="234" font-size="12.5" font-weight="700" fill="#16211F">Similar facts, ranked</text>
+  <text x="664" y="254" font-size="12" fill="#4C5A57">still facts in isolation</text>
+
+  <rect x="14" y="292" width="168" height="80" rx="11" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="32" y="322" font-size="14.5" font-weight="700" fill="#0A5C50">4 · Graph RAG</text>
+  <text x="32" y="344" font-size="12" fill="#0A5C50">embed nodes AND edges</text>
+  <text x="32" y="362" font-size="12" fill="#0A5C50">then traverse</text>
+  <text x="200" y="320" font-size="12.5" fill="#16211F">Still embeddings — but the edge is embedded too: is this a relationship,</text>
+  <text x="200" y="340" font-size="12.5" fill="#16211F">or an observation? The similarity search then walks the graph and returns</text>
+  <text x="200" y="360" font-size="12.5" fill="#16211F">a subgraph, so the agent sees how the facts hang together.</text>
+  <path d="M624 332 L640 332" stroke="#5A6B67" stroke-width="1.5" marker-end="url(#f3ink)"/>
+  <rect x="646" y="300" width="240" height="64" rx="10" fill="#F5FAF8" stroke="#B9C9C5" stroke-width="1.3"/>
+  <text x="664" y="326" font-size="12.5" font-weight="700" fill="#16211F">A relationship subgraph</text>
+  <text x="664" y="346" font-size="12" fill="#4C5A57">facts plus how they connect</text>
+</svg>
+<figcaption><b>Figure 3. Reconstructed from the spoken description</b> (5:04–7:29) — the four strategies in the order he gives them, with the right-hand column added by me to make the trade-off explicit: each step up buys a better-shaped answer and costs a search step. Not a reproduction of a screen.</figcaption>
+</figure>
+
+<p>The first lane is the one worth arguing with. "Do nothing" is not laziness; it is a claim that for a small enough memory the context window <i>is</i> the retrieval system, and that anything else adds a component that can be wrong. The cost is equally plain: it does not scale, and everything you preload competes for the same window.</p>
+
+<hr class="rule">
+
+<h2><span class="num">5</span>Pillar 3 — maintenance, where the real design lives</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">7:29 – 9:47 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=449s" target="_blank" rel="noopener">jump to 7:29</a></p>
+
+<p>He announces four ways to maintain a memory system and then delivers a decision set plus two named practices — the count does not quite line up, and I have kept his groups rather than tidying them:</p>
+
+<div class="card">
+  <p style="margin:0 0 8px"><span class="tag">1</span> <b>The decision, on every new fact</b> — add · delete · overwrite · <b>noop</b> (do nothing) · <b>retire</b>.</p>
+  <p style="margin:0 0 8px"><span class="tag">2</span> <b>Attribute</b> — record where the fact came from: the user talking to the agent, a web search, a calendar lookup. "In human language… tracing where the source comes from."</p>
+  <p style="margin:0"><span class="tag">3</span> <b>Reflect</b> — drop or merge duplicates and stale facts, as a scheduled pass rather than in the moment.</p>
+</div>
+
+<h3>Retire, not delete — the 1,000 → 1,300 stars example</h3>
+
+<p>This is the part of the video I would keep if I could keep one paragraph. His own repo had <b>1,000 stars in its first 25 days</b>. On day 26 he tells the agent it now has <b>1,300</b>. The naive move is to overwrite the old number, because the old number is wrong now. His argument is that the old number is not wrong — it was <i>true then</i>, and the fact that growth jumped 30% in one day is only visible if both values survive.</p>
+
+<figure>
+<svg viewBox="0 0 900 306" role="img" aria-label="Timeline showing the fact 1,000 stars valid for days 1 to 25 and the fact 1,300 stars valid from day 26 onward, then two panels contrasting deleting the old fact with retiring it">
+  <defs>
+    <marker id="f4ink" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#5A6B67"/></marker>
+  </defs>
+  <rect x="60" y="30" width="500" height="30" rx="8" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.6" stroke-dasharray="0"/>
+  <text x="76" y="50" font-size="13" font-weight="700" fill="#0A5C50">Waku Agent has 1,000 stars</text>
+  <text x="404" y="50" font-size="12" fill="#0A5C50">valid days 1 – 25</text>
+  <rect x="600" y="76" width="240" height="30" rx="8" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.6"/>
+  <text x="616" y="96" font-size="13" font-weight="700" fill="#14664C">now 1,300 stars</text>
+  <path d="M842 91 L876 91" stroke="#1B8A54" stroke-width="1.6" marker-end="url(#f4ink)"/>
+  <text x="600" y="126" font-size="12" fill="#14664C">valid from day 26, open-ended</text>
+  <path d="M560 45 L594 45 L594 76" stroke="#5A6B67" stroke-width="1.4" fill="none" stroke-dasharray="4 4" marker-end="url(#f4ink)"/>
+  <text x="470" y="24" font-size="11.5" fill="#788682">bounded, not erased</text>
+
+  <path d="M40 150 L876 150" stroke="#B9C9C5" stroke-width="1.5"/>
+  <g font-size="11.5" fill="#788682">
+    <path d="M60 144 L60 156 M560 144 L560 156 M600 144 L600 156" stroke="#B9C9C5" stroke-width="1.5"/>
+    <text x="60" y="172" text-anchor="middle">day 1</text>
+    <text x="560" y="172" text-anchor="middle">day 25</text>
+    <text x="612" y="172">day 26</text>
+  </g>
+
+  <rect x="14" y="196" width="428" height="98" rx="12" fill="#FCF0EE" stroke="#C4372B" stroke-width="1.5"/>
+  <text x="34" y="224" font-size="14" font-weight="700" fill="#A32C21">If you DELETE the old fact</text>
+  <text x="34" y="248" font-size="12.5" fill="#7A2A21">The 1,000 is gone. Nothing to trace back to, and any answer</text>
+  <text x="34" y="268" font-size="12.5" fill="#7A2A21">the agent already gave using it is now unexplainable.</text>
+  <text x="34" y="288" font-size="12" fill="#A32C21">The growth story disappears with it.</text>
+
+  <rect x="458" y="196" width="428" height="98" rx="12" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.5"/>
+  <text x="478" y="224" font-size="14" font-weight="700" fill="#14664C">If you RETIRE it instead</text>
+  <text x="478" y="248" font-size="12.5" fill="#1E5B45">Latest is 1.3 thousand — trace back one day to 1,000</text>
+  <text x="478" y="268" font-size="12.5" fill="#1E5B45">Both values stand, each with its window of validity.</text>
+  <text x="478" y="288" font-size="12" fill="#14664C">In his words: still important "for future tracing purposes".</text>
+</svg>
+<figcaption><b>Figure 4. Reconstructed from the spoken description</b> (7:52–8:38) — his numbers and his reasoning, drawn as a validity timeline. The box labels are diagram labels, not quotations; his own words for the retired fact are at 8:25. What it adds over the prose: the reason retire beats delete is not sentiment about old data, it is that <i>an answer you gave yesterday becomes unexplainable</i> once the fact behind it is erased.</figcaption>
+</figure>
+
+<h3>Attribute, and then reflect — including Anthropic's "dreaming"</h3>
+
+<p><b>Attribute</b> is one line in the video and cheap to implement: store the provenance of each fact — user, web search, calendar. It is the difference between "the agent believes X" and "the agent believes X because the user said so on Tuesday".</p>
+
+<p><b>Reflect</b> he admits overlaps with delete and retire, and then attaches it to a bigger idea:</p>
+
+<div class="quote">
+  <p>"…reflect sometimes can link to what Anthropic has proposed, which is dreaming. Dreaming happens when we are not working."</p>
+  <cite>— Shen Sean Chen, 9:12</cite>
+</div>
+
+<p>The mechanism he describes: while the agent is running it is busy <i>accumulating</i> — facts, dated events, procedures turning into skills. When it is idle, schedule a pass that reflects over the pile, merges duplicates and drops what no longer matters. He calls it a post-mortem or post-process step for the memory system.</p>
+
+<div class="note warn">
+  <div class="lbl">This citation cannot be followed up as given</div>
+  <p>"Dreaming" is attributed to Anthropic with <b>no paper, author, title or link</b> anywhere in the video. It is recorded here as he presents it, and it is not citable in that form — if you want to use the idea, you will need to find the primary source yourself.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">6</span>The five layers, concretely</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">9:47 – 18:16 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=587s" target="_blank" rel="noopener">jump to 9:47</a></p>
+
+<p>Each layer gets the same three questions: what is the memory, how is it found, how is it maintained.</p>
+
+<h3>Layer 1 — plain text (Hermes, Waku Agent)</h3>
+<p>Three files doing three different jobs. <code>SOUL.md</code> is the system prompt and personality — he opens his own Hermes SOUL to show that it is configured to talk like Pikachu, with "Pikapi" reserved for addressing him directly, and points out you can edit it to anything. <b>Skills</b> are procedures, loaded by trigger — the one he describes researches all the AI agent videos on the internet and then reports each morning on the latest news the channel should cover in its next video (paraphrase of 10:42). <code>memory.md</code> holds durable facts that accumulate as you talk. All three are files you can open and edit by hand.</p>
+
+<h3>Layer 2 — SQLite <code>state.db</code>, and the consolidation pipeline</h3>
+<p>Rows in a relational database, found with FTS5 keyword search, maintained either by editing it yourself or by letting the harness consolidate. Consolidation is the mechanism worth stealing regardless of which layer you pick: every conversation turn is saved into <code>state.db</code>, and every five or ten turns <b>cheaper auxiliary models</b> distil that history into durable facts in <code>memory.md</code>. Raw history stays cheap and complete; the expensive context window only ever sees the distillate.</p>
+
+<figure>
+<svg viewBox="0 0 900 322" role="img" aria-label="Pipeline diagram: a user prompt passes an optional retrieval gate to the LLM and back as a reply, every turn is appended to state.db, a consolidation step every five to ten turns using cheaper auxiliary models distils facts into memory.md, and memory.md is preloaded back into context">
+  <defs>
+    <marker id="f5blue" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2F6BD8"/></marker>
+    <marker id="f5green" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1B8A54"/></marker>
+    <marker id="f5teal" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C6B"/></marker>
+  </defs>
+
+  <rect x="14" y="26" width="140" height="56" rx="11" fill="#FFFFFF" stroke="#16211F" stroke-width="1.5"/>
+  <text x="84" y="60" font-size="13.5" font-weight="700" fill="#16211F" text-anchor="middle">You ask</text>
+  <path d="M154 54 L192 54" stroke="#2F6BD8" stroke-width="1.7" marker-end="url(#f5blue)"/>
+
+  <rect x="196" y="26" width="200" height="56" rx="11" fill="#F5FAF8" stroke="#788682" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="296" y="50" font-size="13" font-weight="700" fill="#16211F" text-anchor="middle">Retrieval gate</text>
+  <text x="296" y="70" font-size="11.5" fill="#788682" text-anchor="middle">optional — "completely up to you"</text>
+  <path d="M396 54 L434 54" stroke="#2F6BD8" stroke-width="1.7" marker-end="url(#f5blue)"/>
+
+  <rect x="438" y="26" width="140" height="56" rx="11" fill="#EAF0FC" stroke="#2F6BD8" stroke-width="1.6"/>
+  <text x="508" y="60" font-size="13.5" font-weight="700" fill="#1E4C9E" text-anchor="middle">LLM</text>
+  <path d="M578 54 L616 54" stroke="#1B8A54" stroke-width="1.7" marker-end="url(#f5green)"/>
+
+  <rect x="620" y="26" width="140" height="56" rx="11" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.6"/>
+  <text x="690" y="60" font-size="13.5" font-weight="700" fill="#14664C" text-anchor="middle">Reply</text>
+
+  <path d="M690 82 L690 108 L588 108 L588 130" stroke="#5A6B67" stroke-width="1.5" fill="none" marker-end="url(#f5teal)"/>
+  <text x="700" y="104" font-size="11.5" fill="#788682">every turn</text>
+  <rect x="438" y="134" width="300" height="56" rx="11" fill="#FFFFFF" stroke="#16211F" stroke-width="1.5"/>
+  <text x="588" y="158" font-size="13" font-weight="700" fill="#16211F" text-anchor="middle">state.db (SQLite)</text>
+  <text x="588" y="177" font-size="11.5" fill="#4C5A57" text-anchor="middle">the full conversation history, cheap to keep</text>
+
+  <path d="M588 190 L588 218" stroke="#0E7C6B" stroke-width="1.6" fill="none" marker-end="url(#f5teal)"/>
+  <rect x="438" y="222" width="300" height="62" rx="11" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="588" y="246" font-size="13" font-weight="700" fill="#0A5C50" text-anchor="middle">Consolidation, every ~5–10 turns</text>
+  <text x="588" y="266" font-size="11.5" fill="#2F4A45" text-anchor="middle">cheaper auxiliary models distil the history</text>
+
+  <path d="M438 253 L390 253" stroke="#0E7C6B" stroke-width="1.6" fill="none" marker-end="url(#f5teal)"/>
+  <rect x="60" y="222" width="326" height="62" rx="11" fill="#FFFFFF" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="223" y="246" font-size="13" font-weight="700" fill="#0A5C50" text-anchor="middle">memory.md — durable facts</text>
+  <text x="223" y="266" font-size="11.5" fill="#4C5A57" text-anchor="middle">semantic memory, hand-editable</text>
+
+  <path d="M223 222 L223 100 L246 100 L246 82" stroke="#0E7C6B" stroke-width="1.6" fill="none" marker-end="url(#f5teal)"/>
+  <text x="238" y="144" font-size="11.5" fill="#0A5C50">loaded into context by default —</text>
+  <text x="238" y="162" font-size="11.5" fill="#0A5C50">or retrieved through the gate,</text>
+  <text x="238" y="180" font-size="11.5" fill="#0A5C50">if you built one</text>
+</svg>
+<figcaption><b>Figure 5. Reconstructed from the spoken description</b> (11:12–13:13) — the consolidation loop as he narrates it, including the detail that the distilling is done by <i>cheaper</i> models. The dashed box matters: he treats the retrieval gate as optional, which is what makes layer 1 and layer 2 viable without any retrieval machinery.</figcaption>
+</figure>
+
+<h3>Layer 3 — vector stores (Supabase PGVector, Weaviate, Pinecone)</h3>
+<p>Memories stored as high-dimensional vectors plus metadata, found by similarity search, maintained by upsert and delete. He notes Supabase is a relational database and "technically not a vector store" — PGVector is the extension that makes it one. His suggestion: give a vector store the same consolidation module he showed for <code>state.db</code>, so maintenance is not just upsert-and-hope. <b>This layer is never raced</b> — see the caveat at the top of the page.</p>
+
+<h3>Layer 4 — mem0: row memory and graph memory</h3>
+<p>Two modes, and he is careful that both are stored as vectors. Row memory is a durable fact per row; he opens one in his own mem0 portal and reads it aloud — a standing fact that a German buyer requires vegan certifications on every SKU they are sold (paraphrase of his reading at 14:59; that screen was never captured, so this is what he says it says). Maintenance is add / update / delete / noop / <b>supersede</b>, and he ties supersede straight back to the stars example. Graph memory is nodes and edges with traversal.</p>
+<p>Two admissions in this section are worth more than the feature list:</p>
+<ul class="clean">
+  <li>On how retrieval actually happens in the hosted product: <i>"I don't know if they did the keyword search here or doing some embeddings or rags"</i> … <i>"I'm not sure which one they're actually using behind the scene"</i> (15:16–15:26). The open-source project exists, but he is looking at the enterprise version.</li>
+  <li>On graph-mode maintenance: <i>"I'm not too sure if it does supersede maybe it does too."</i> … <i>"For these things you should check the source code."</i> (16:12–16:21)</li>
+</ul>
+<p>And the reason graph memory never enters the race: it needs a paid tier he declines to buy, so he goes looking for an alternative — which is how Zep enters.</p>
+
+<h3>Layer 5 — Zep: temporal graph memory</h3>
+<p>Nodes, edges, and <b>validity</b>: a graph that evolves over time. Retrieval is vector search over both nodes and edges plus traversal across the graph. Maintenance is the point — it invalidates with a time range rather than deleting, so, in his framing, "you never delete it but the history survives". This is the pillar-3 idea from section 5 shipped as a product feature.</p>
+
+<h3>Plus LangMem — a package, not a store</h3>
+<p>LangChain's memory library, which he is explicit about: there are no stores of its own. It operates over whatever store you bring, extracting and resolving updates before anything is written. Worth holding onto for the race, where "LangMem has nothing" in the store viewer is not a failure — it is the correct behaviour for a library that does not own storage.</p>
+
+<hr class="rule">
+
+<h2><span class="num">7</span>The dinner party: four contenders, a control group, four facts</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">18:16 – 26:32 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1096s" target="_blank" rel="noopener">jump to 18:16</a></p>
+
+<p>The second half is a live demo of what he calls the arena — a memory-race screen in his own dashboard, whose name the captions render as "memory rays" (18:39). One scenario (planning a dinner party), one set of facts, seeded into every store, then the same questions asked of each. The video's own chapter title for this stretch says "seeding 5 stores", folding the control group in with the stores; this page counts the four contenders and the control separately. The facts as he reads them out:</p>
+
+<div class="card">
+  <p style="margin:0 0 8px"><span class="tag">1</span> <b>Jensen Huang is coming</b> — and last time, he knocked the chili oil onto the white rug.</p>
+  <p style="margin:0 0 8px"><span class="tag">2</span> <b>Elon Musk is coming</b> and said he would arrive at 7:00 — later updated: he cannot get there until 9:00 pm.</p>
+  <p style="margin:0 0 8px"><span class="tag">3</span> <b>Tom Holland is on the list</b> — he told the ending of his next film over coffee last Tuesday, and can never keep the secret of an unpublished film.</p>
+  <p style="margin:0"><span class="tag">4</span> <b>Paul Graham owes 20 quid</b> from a sourdough bet; they met in Lisbon. (He notes "quid" is British for pounds — and one question about it is asked in Chinese.)</p>
+</div>
+
+<p>The four contenders: <b>SQLite</b>, <b>mem0</b>, <b>LangMem</b> and <b>Zep</b>. Against them, in its own role, <b>Control</b> — an agent with no memory at all. Supabase is deliberately absent.</p>
+
+<div class="note">
+  <div class="lbl">The control group is the best idea in the test</div>
+  <p>Control is an agent with <b>no memory at all</b>. It is there to catch the failure mode that makes memory benchmarks worthless: an answer that looks right because the model guessed, or because the fact leaked into the prompt. And note how it <i>passes</i> — not by answering, but by correctly reporting that it has no record. When it is asked when Elon arrives it goes further: it searches memory, uses its tools to check the calendar, and reports there is no such event. A memory system has to beat <i>that</i>, not beat silence.</p>
+</div>
+
+<h3>Same facts, in plain code</h3>
+<p>While the seeding grinds away he walks <code>examples/memory_native</code> in his repo, one file per store, and the shape is nearly identical each time: a list of facts, a list of questions, a client, then add-per-fact and search. LangMem builds a memory manager and invokes a conversation per fact; mem0 uses <code>client.add</code> then a search; the Supabase example additionally has to embed and then retrieve; Zep, being a graph by default, adds each fact to a graph and queries with <code>client.graph.search</code>. Worth noticing: the code examples use their own smaller fact set (meeting Alex at a Lisbon AI meetup; a launch scheduled for May, then moved to June — superseding again), not the dinner party.</p>
+
+<h3>The results</h3>
+
+<figure>
+<svg viewBox="0 0 900 404" role="img" aria-label="Results grid: four contenders and a no-memory control against three questions, showing SQLite correct in 4.6 seconds, mem0 correct and replying in Chinese, LangMem correct in 7.5 seconds, Zep unable to answer while still seeding, and the control group correctly reporting no record">
+  <text x="14" y="30" font-size="12" font-weight="700" fill="#788682">STORE</text>
+  <rect x="170" y="12" width="230" height="60" rx="9" fill="#E1F1EE" stroke="#BFDFD8"/>
+  <text x="184" y="34" font-size="12.5" font-weight="700" fill="#0A5C50">Q1 · What did Jensen knock</text>
+  <text x="184" y="50" font-size="12.5" font-weight="700" fill="#0A5C50">onto my rug?</text>
+  <text x="184" y="66" font-size="11.5" fill="#4C5A57">asked in English · 23:15</text>
+  <rect x="406" y="12" width="230" height="60" rx="9" fill="#E1F1EE" stroke="#BFDFD8"/>
+  <text x="420" y="34" font-size="12.5" font-weight="700" fill="#0A5C50">Q2 · How much does Paul</text>
+  <text x="420" y="50" font-size="12.5" font-weight="700" fill="#0A5C50">Graham owe me?</text>
+  <text x="420" y="66" font-size="11.5" fill="#4C5A57">asked in Chinese · 24:19</text>
+  <rect x="642" y="12" width="244" height="60" rx="9" fill="#E1F1EE" stroke="#BFDFD8"/>
+  <text x="656" y="34" font-size="12.5" font-weight="700" fill="#0A5C50">Q3 · When does Elon arrive?</text>
+  <text x="656" y="50" font-size="12.5" font-weight="700" fill="#0A5C50">7:00 superseded by 9:00 pm</text>
+  <text x="656" y="66" font-size="11.5" fill="#4C5A57">24:47</text>
+
+  <rect x="14" y="80" width="150" height="48" rx="9" fill="#FFFFFF" stroke="#16211F" stroke-width="1.4"/>
+  <text x="28" y="102" font-size="13" font-weight="700" fill="#16211F">SQLite FTS5</text>
+  <text x="28" y="119" font-size="11" fill="#788682">local disk</text>
+  <text x="184" y="100" font-size="12.5" font-weight="700" fill="#14664C">correct · 4.6s</text>
+  <text x="184" y="118" font-size="11.5" fill="#4C5A57">"chili oil onto the white rug"</text>
+  <text x="420" y="100" font-size="12.5" font-weight="700" fill="#B26A00">correct — but in English · 10.3s</text>
+  <text x="420" y="118" font-size="11.5" fill="#4C5A57">the question was Chinese</text>
+  <text x="656" y="100" font-size="12.5" font-weight="700" fill="#14664C">correct</text>
+  <text x="656" y="118" font-size="11.5" fill="#4C5A57">took the 9:00 pm update</text>
+
+  <rect x="14" y="134" width="150" height="48" rx="9" fill="#FFFFFF" stroke="#16211F" stroke-width="1.4"/>
+  <text x="28" y="156" font-size="13" font-weight="700" fill="#16211F">mem0</text>
+  <text x="28" y="173" font-size="11" fill="#788682">hosted · network</text>
+  <text x="184" y="154" font-size="12.5" font-weight="700" fill="#14664C">correct · "very fast"</text>
+  <text x="184" y="172" font-size="11.5" fill="#4C5A57">slightly slower than SQLite; no number given</text>
+  <text x="420" y="154" font-size="12.5" font-weight="700" fill="#14664C">correct — and replied in Chinese</text>
+  <text x="420" y="172" font-size="11.5" fill="#4C5A57">named the bet and Lisbon</text>
+  <text x="656" y="154" font-size="12.5" font-weight="700" fill="#14664C">correct</text>
+
+  <rect x="14" y="188" width="150" height="48" rx="9" fill="#FFFFFF" stroke="#16211F" stroke-width="1.4"/>
+  <text x="28" y="210" font-size="13" font-weight="700" fill="#16211F">LangMem</text>
+  <text x="28" y="227" font-size="11" fill="#788682">package, not a store</text>
+  <text x="184" y="208" font-size="12.5" font-weight="700" fill="#B26A00">correct · 7.5s</text>
+  <text x="184" y="226" font-size="11.5" fill="#4C5A57">slowest of the three that answered</text>
+  <text x="420" y="208" font-size="12.5" font-weight="700" fill="#14664C">correct</text>
+  <text x="656" y="208" font-size="12.5" font-weight="700" fill="#14664C">correct</text>
+
+  <rect x="14" y="242" width="150" height="48" rx="9" fill="#FCF0EE" stroke="#C4372B" stroke-width="1.4"/>
+  <text x="28" y="264" font-size="13" font-weight="700" fill="#A32C21">Zep</text>
+  <text x="28" y="281" font-size="11" fill="#A32C21">temporal graph · network</text>
+  <text x="184" y="262" font-size="12.5" font-weight="700" fill="#A32C21">no answer — still seeding the graph</text>
+  <text x="184" y="280" font-size="11.5" fill="#7A2A21">he moves on twice and comes back later</text>
+  <text x="656" y="262" font-size="12.5" font-weight="700" fill="#A32C21">not in this round</text>
+  <text x="656" y="280" font-size="11.5" fill="#7A2A21">once seeded: 4.9s · 4.9s · 6.4s (29:41)</text>
+
+  <rect x="14" y="296" width="150" height="48" rx="9" fill="#F5FAF8" stroke="#788682" stroke-width="1.4" stroke-dasharray="5 4"/>
+  <text x="28" y="318" font-size="13" font-weight="700" fill="#16211F">Control</text>
+  <text x="28" y="335" font-size="11" fill="#788682">no memory at all</text>
+  <text x="184" y="316" font-size="12.5" font-weight="700" fill="#14664C">passes — reports no record</text>
+  <text x="184" y="334" font-size="11.5" fill="#4C5A57">"which the answer is correct"</text>
+  <text x="420" y="316" font-size="12.5" font-weight="700" fill="#4C5A57">nothing</text>
+  <text x="656" y="316" font-size="12.5" font-weight="700" fill="#14664C">passes — no calendar event</text>
+  <text x="656" y="334" font-size="11.5" fill="#4C5A57">searched memory, then checked the calendar</text>
+
+  <rect x="14" y="352" width="872" height="48" rx="9" fill="#FCF0EE" stroke="#C4372B" stroke-width="1.3" stroke-dasharray="6 5"/>
+  <text x="32" y="372" font-size="11.5" fill="#A32C21">n = 1 · one run per question · wall-clock timings read off his dashboard</text>
+  <text x="32" y="390" font-size="11.5" fill="#A32C21">SQLite is local disk while mem0, LangMem and Zep are network calls — part of every gap is latency, not retrieval quality.</text>
+</svg>
+<figcaption><b>Figure 6. Reconstructed from the spoken results</b> (23:15–24:47, plus the Zep timings at 29:41). Every number here is one he reads aloud; the grid layout is mine, not a copy of his dashboard's table. It is arranged to make the two things the video does not put side by side visible at once: the control group passing, and the fact that the fastest store is the least sophisticated one.</figcaption>
+</figure>
+
+<h3>The Chinese question is the most instructive result</h3>
+<p>Asked in Chinese how much Paul Graham owes, SQLite retrieves the right fact and then answers <b>in English</b>, taking 10.3s. mem0 answers correctly <i>in Chinese</i>, naming the bet and Lisbon. His reading:</p>
+
+<div class="quote">
+  <p>"I don't know. Maybe because … SQLite is a little bit too simple for keyword searching, so it doesn't really know how to search in Chinese because the memory was in English."</p>
+  <cite>— Shen Sean Chen, 24:31</cite>
+</div>
+
+<p>Note the hedge — "I don't know. Maybe" — and keep it. It is a plausible mechanism rather than a diagnosis: keyword matching has no way across a language boundary, because the words simply do not overlap, whereas an embedding of the question can land near an English fact with the same meaning. But the observed symptom was the <i>reply language</i>, not a retrieval miss, and the video does not separate "found nothing useful" from "found it and answered in the wrong language". As stated, it is exactly the kind of result worth re-running properly — which is also the honest reading of a single run.</p>
+
+<hr class="rule">
+
+<h2><span class="num">8</span>Inside Zep's graph: one real win, and a speed problem</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">26:32 – 30:04 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1592s" target="_blank" rel="noopener">jump to 26:32</a></p>
+
+<p>This is the most interesting section of the demo because it refuses to resolve cleanly. The graph is late, hard to navigate — he says plainly that he does not know where to find things in it — and once he opens the right view, it shows him something none of the other stores produced:</p>
+
+<div class="quote">
+  <p>"…you see this edge carries information because Tom Holland and his next film it means nothing. But look at this edge. This edge is saying revealed ending of."</p>
+  <cite>— Shen Sean Chen, 28:08</cite>
+</div>
+
+<p>That is the Graph RAG claim from section 4, delivered. Two nodes joined by a bare link would be noise; an edge that has been <i>summarised</i> into "revealed ending of" is a retrievable relationship. In the same view, though, other things are thinner: Paul Graham owes 20 quid (right), and also "owes" the Waku Agent Arena (which he says he does not understand), and the chili-oil relationship arrives with the stain but no guest attached to it.</p>
+
+<figure>
+<svg viewBox="0 0 900 342" role="img" aria-label="Fragment of the temporal graph: Tom Holland connected to his next film by an edge labelled revealed ending of, Paul Graham connected to twenty quid and also to Waku Agent Arena, and chili oil connected to the white rug with no guest attached">
+  <defs>
+    <marker id="f7green" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#1B8A54"/></marker>
+    <marker id="f7ink" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#5A6B67"/></marker>
+    <marker id="f7amber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#B26A00"/></marker>
+  </defs>
+
+  <rect x="40" y="48" width="170" height="46" rx="23" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="125" y="77" font-size="13.5" font-weight="700" fill="#0A5C50" text-anchor="middle">Tom Holland</text>
+  <path d="M212 71 L404 71" stroke="#1B8A54" stroke-width="2.2" fill="none" marker-end="url(#f7green)"/>
+  <rect x="232" y="46" width="156" height="24" rx="6" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.2"/>
+  <text x="310" y="63" font-size="12.5" font-weight="700" fill="#14664C" text-anchor="middle">revealed ending of</text>
+  <rect x="408" y="48" width="170" height="46" rx="23" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="493" y="77" font-size="13.5" font-weight="700" fill="#0A5C50" text-anchor="middle">his next film</text>
+  <rect x="620" y="40" width="266" height="62" rx="11" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.5"/>
+  <text x="638" y="64" font-size="12.5" font-weight="700" fill="#14664C">The edge itself carries meaning</text>
+  <text x="638" y="84" font-size="11.5" fill="#1E5B45">real summarisation, not a bare link</text>
+
+  <rect x="40" y="146" width="170" height="46" rx="23" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="125" y="175" font-size="13.5" font-weight="700" fill="#0A5C50" text-anchor="middle">Paul Graham</text>
+  <path d="M212 169 L404 169" stroke="#5A6B67" stroke-width="1.7" fill="none" marker-end="url(#f7ink)"/>
+  <text x="308" y="162" font-size="12" font-weight="700" fill="#4C5A57" text-anchor="middle">owes</text>
+  <rect x="408" y="146" width="140" height="46" rx="23" fill="#FFFFFF" stroke="#16211F" stroke-width="1.5"/>
+  <text x="478" y="175" font-size="13.5" font-weight="700" fill="#16211F" text-anchor="middle">20 quid</text>
+  <path d="M180 192 C 240 250, 480 236, 616 246" stroke="#B26A00" stroke-width="1.7" fill="none" marker-end="url(#f7amber)"/>
+  <text x="352" y="238" font-size="12" font-weight="700" fill="#B26A00" text-anchor="middle">owes</text>
+  <rect x="620" y="224" width="220" height="46" rx="23" fill="#FDF3E3" stroke="#B26A00" stroke-width="1.5"/>
+  <text x="730" y="253" font-size="13" font-weight="700" fill="#8A5200" text-anchor="middle">Waku Agent Arena</text>
+  <text x="620" y="290" font-size="11.5" fill="#B26A00">"which I don't understand" — 28:27</text>
+
+  <rect x="40" y="276" width="150" height="44" rx="22" fill="#FFFFFF" stroke="#16211F" stroke-width="1.5"/>
+  <text x="115" y="304" font-size="13" font-weight="700" fill="#16211F" text-anchor="middle">chili oil</text>
+  <path d="M192 298 L344 298" stroke="#5A6B67" stroke-width="1.7" fill="none" marker-end="url(#f7ink)"/>
+  <text x="268" y="291" font-size="12" font-weight="700" fill="#4C5A57" text-anchor="middle">stained</text>
+  <rect x="348" y="276" width="150" height="44" rx="22" fill="#FFFFFF" stroke="#16211F" stroke-width="1.5"/>
+  <text x="423" y="304" font-size="13" font-weight="700" fill="#16211F" text-anchor="middle">the white rug</text>
+  <rect x="512" y="278" width="84" height="40" rx="20" fill="#FCF0EE" stroke="#C4372B" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="554" y="303" font-size="12" font-weight="700" fill="#A32C21" text-anchor="middle">no guest</text>
+  <path d="M508 298 L470 298" stroke="#C4372B" stroke-width="1.4" fill="none" stroke-dasharray="4 4"/>
+  <text x="606" y="303" font-size="11.5" fill="#A32C21">the relationship arrived without the person attached</text>
+</svg>
+<figcaption><b>Figure 7. Reconstructed from what he reads aloud</b> while navigating the graph (28:08–28:51) — a fragment, not the whole graph, and not a reproduction of the UI. It puts the section's two findings in one frame: the <i>"revealed ending of"</i> edge is the strongest evidence in the video for what a graph buys you, and the two weaker edges beside it are why he still hesitates.</figcaption>
+</figure>
+
+<p>His verdict, on camera, is mixed and better for being so:</p>
+
+<div class="quote">
+  <p>"I feel like it lost some information here. And it's taking forever." … "Maybe it's an overkill for a lot of these smaller use cases…"</p>
+  <cite>— Shen Sean Chen, 29:03 and 29:07</cite>
+</div>
+
+<p>And then, addressed to the vendor by name:</p>
+
+<div class="quote">
+  <p>"Zep team, if you're watching this, I think this is a big pain point. Love the product, love the visualization, but please fix speed or at least do something about it for making simpler tasks faster."</p>
+  <cite>— Shen Sean Chen, 29:53</cite>
+</div>
+
+<div class="note warn">
+  <div class="lbl">Two cautions on this section</div>
+  <p><b>The seeding delay is not measured.</b> He loses patience, cuts away twice, and at one point fills time with a community plug — so "taking forever" is a wall-clock impression on one run over a network, not a benchmark. Once seeded, the store answered in 4.9s, 4.9s and 6.4s, which is competitive with everything else.</p>
+  <p><b>His reading of the chili-oil edge is unreliable.</b> Late in the video he names the wrong guest for the spill — the seeded fact attributes it to Jensen Huang — so his specific complaint about that edge cannot be taken at face value. What the graph clearly does show is a stain relationship with <i>no</i> guest attached, which is a real gap either way. The slip does not touch the timings or the earlier results.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">9</span>One table: the five layers, plus what was and wasn't tested</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:15%">Layer</th><th style="width:20%">What a memory is</th><th style="width:20%">How it is found</th><th style="width:22%">How it is maintained</th><th>In the race</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>1 · Plain text</b><br><span style="color:var(--muted);font-size:13px">Hermes, Waku Agent</span></td>
+      <td><code>SOUL.md</code>, skills, <code>memory.md</code> — files on disk</td>
+      <td><b>Do nothing.</b> Preloaded into the context window</td>
+      <td>Edit by hand, or let consolidation rewrite it</td>
+      <td>Not a contender itself; it is the approach the author defends</td>
+    </tr>
+    <tr>
+      <td><b>2 · SQLite</b><br><span style="color:var(--muted);font-size:13px">state.db</span></td>
+      <td>Rows in a relational table</td>
+      <td>Keyword search (FTS5)</td>
+      <td>Edit by hand, or the consolidation module</td>
+      <td><b>Fastest to answer</b> (4.6s) · missed the language switch (10.3s, replied in English)</td>
+    </tr>
+    <tr>
+      <td><b>3 · Vector stores</b><br><span style="color:var(--muted);font-size:13px">PGVector, Weaviate, Pinecone</span></td>
+      <td>Vectors plus metadata — still rows, in the PGVector case</td>
+      <td>Similarity search over embeddings</td>
+      <td>Upsert / delete — or add your own consolidation</td>
+      <td><b>Never tested.</b> Excluded on purpose: "we're not testing embeddings here"</td>
+    </tr>
+    <tr>
+      <td><b>4 · mem0</b></td>
+      <td>Row memory and graph memory — both stored as vectors</td>
+      <td>Not disclosed for the hosted version; he says so</td>
+      <td>Add / update / delete / noop / supersede</td>
+      <td>Row mode: correct on all three, and <b>replied in Chinese</b> where SQLite replied in English. <b>Graph mode untested</b> — paywalled</td>
+    </tr>
+    <tr>
+      <td><b>5 · Zep</b></td>
+      <td>Temporal graph: nodes, edges, validity windows</td>
+      <td>Vector search over nodes <i>and</i> edges, plus traversal</td>
+      <td>Invalidate by time range; history survives</td>
+      <td>Missed the live round while seeding; 4.9 / 4.9 / 6.4s once ready. Produced the one meaningful edge — and some lost detail</td>
+    </tr>
+    <tr>
+      <td><b>+ LangMem</b><br><span style="color:var(--muted);font-size:13px">LangChain</span></td>
+      <td>Nothing of its own — <b>a package, not a store</b></td>
+      <td>Whatever the store you bring supports</td>
+      <td>Extract and resolve updates before writing</td>
+      <td>Correct on all three; slowest to answer Q1 at 7.5s. Empty in the store viewer, as expected</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">10</span>What to take away</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>The closing argument arrives, oddly, in the middle of the video rather than at the end — at 12:13, while he is still on plain text:</p>
+
+<div class="quote">
+  <p>"What lasts forever or what matters most to you eventually is the memories. … If you're committing these memories and then store them well and prepare them well and then take care of them, then these memories are the most valuable assets for any AI agent harness."</p>
+  <cite>— Shen Sean Chen, 12:13–12:24</cite>
+</div>
+
+<p>Note the condition, which is easy to lose: the memories are the asset <i>if</i> you commit them, store them well and take care of them — pillar 3 doing the work. Paired with the line just before it — <i>"agent harness is very flexible. You don't have to stick to any standard"</i> (12:06) — the argument is an asymmetry: harnesses get rewritten, models get swapped, frameworks come and go, and the memory has to survive all of it. Which is a good reason to prefer a store you can open, read and edit by hand over one you can only reach through somebody's API.</p>
+
+<div class="card">
+  <ul class="clean" style="margin:0">
+    <li><b>Answer the three questions explicitly</b> for anything you build. Most memory arguments are people answering different pillars at each other.</li>
+    <li><b>Start at "do nothing".</b> If the facts fit in the context window, preloading a file is not a compromise — it is one fewer component that can be wrong. Climb only when the size or the retrieval quality forces you.</li>
+    <li><b>Retire, don't delete.</b> Bounding an old fact with a validity window costs almost nothing and preserves the ability to explain an answer you gave last week. This is the one design idea here that applies whatever store you use.</li>
+    <li><b>Attribute every fact.</b> "The user told me on Tuesday" and "a web search said so" deserve different levels of trust.</li>
+    <li><b>Always run a control group.</b> An agent with no memory that correctly says "I have no record" is the baseline that stops you crediting a memory layer for the model's guesswork.</li>
+    <li><b>Buy a temporal graph for the relationships, not the speed.</b> On this evidence the edge summarisation is real and the latency is real; if your use case is small, the video's own conclusion is that it may be overkill.</li>
+    <li><b>For a regulated or audited setting</b> — the reason to care about pillar 3 is traceability. Retire-plus-attribute is what lets you reconstruct <i>why</i> an agent said something months later; a store that only overwrites cannot do that at any price.</li>
+  </ul>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">11</span>Where this sits in the library</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<ul class="clean">
+  <li><a href="../loop-vs-graph/"><b>Loop Engineering vs Graph Engineering</b></a> — same author, same harness, same series, and the direct predecessor: it named the retrieval gate and the procedural/semantic/episodic split in a single line. This is that line as a whole video. It also settles an open request on this topic's own <b>Wanted</b> list — memory architectures compared on something other than vibes — though the comparison it delivers is one informal n=1 race, not the measured study that item was asking for.</li>
+  <li><a href="../../evaluation-and-observability/signal-to-pr/"><b>From Signal to PR</b></a> — read them together for the same surprising conclusion reached from opposite directions: there, the unglamorous move that works is writing production traces into the repo <i>as files</i> because coding harnesses are magical with files; here, it is keeping memory as plain text preloaded into context, with Hermes and Waku Agent using no retrieval and no embeddings at all.</li>
+</ul>
+
+<hr class="rule">
+
+<h2><span class="num">12</span>Chapter index — jump straight to a section</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>The video ships 24 chapters; these are its own titles and boundaries, each deep-linked.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:14%">Time</th><th>Chapter</th></tr></thead>
+  <tbody>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=0s" target="_blank" rel="noopener">0:00</a></td><td>Why every LLM call starts with amnesia</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=25s" target="_blank" rel="noopener">0:25</a></td><td>Harness recap: procedural, semantic, episodic memory</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=58s" target="_blank" rel="noopener">0:58</a></td><td>RAG, agentic RAG, Graph RAG, and why Hermes and Waku use none</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=112s" target="_blank" rel="noopener">1:52</a></td><td>One agent run: retrieval gate, tools, tracing</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=151s" target="_blank" rel="noopener">2:31</a></td><td><b>Pillar 1: what a memory is (text, table, graph)</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=304s" target="_blank" rel="noopener">5:04</a></td><td><b>Pillar 2: how the agent finds it (do nothing, keyword, RAG, Graph RAG)</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=449s" target="_blank" rel="noopener">7:29</a></td><td>Pillar 3: how you maintain it (add, delete, retire, attribute, reflect)</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=472s" target="_blank" rel="noopener">7:52</a></td><td><b>Retire vs delete: the 1,000 to 1,300 stars example</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=541s" target="_blank" rel="noopener">9:01</a></td><td>Reflect, and Anthropic's "dreaming"</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=587s" target="_blank" rel="noopener">9:47</a></td><td>Layer 1: plain text (SOUL.MD, skills, memory.MD)</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=672s" target="_blank" rel="noopener">11:12</a></td><td>The consolidation pipeline and the retrieval gate</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=753s" target="_blank" rel="noopener">12:33</a></td><td>Layer 2: SQLite state.db and keyword search</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=793s" target="_blank" rel="noopener">13:13</a></td><td>Layer 3: vector stores (Supabase PGVector, Weaviate, Pinecone)</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=878s" target="_blank" rel="noopener">14:38</a></td><td>Layer 4: mem0 row memory vs graph memory</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=989s" target="_blank" rel="noopener">16:29</a></td><td>Layer 5: Zep temporal graph memory</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1040s" target="_blank" rel="noopener">17:20</a></td><td>LangMem: a package, not a store</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1096s" target="_blank" rel="noopener">18:16</a></td><td><b>The dinner party: seeding 5 stores with the same facts</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1263s" target="_blank" rel="noopener">21:03</a></td><td>Code walkthrough: examples/memory_native</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1395s" target="_blank" rel="noopener">23:15</a></td><td>Test: Jensen and the chili oil</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1459s" target="_blank" rel="noopener">24:19</a></td><td><b>Test: Paul Graham's 20 quid, asked in Chinese</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1487s" target="_blank" rel="noopener">24:47</a></td><td>Test: superseding Elon's arrival time</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1592s" target="_blank" rel="noopener">26:32</a></td><td><b>Inside Zep's graph: the edge that carried meaning</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1739s" target="_blank" rel="noopener">28:59</a></td><td>Where temporal graphs become overkill</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1804s" target="_blank" rel="noopener">30:04</a></td><td>Final take: the memory is the asset</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="srcbox">
+  <div class="lbl">Source</div>
+  <p><b>"You Can Learn AI Agent Memory Layers | Graph RAG, Vector DB, SQLite, Hermes, Waku"</b> — Shen Sean Chen.<br>
+  Channel: Sean's AI Stories (YouTube). Published 16 August 2026. Runtime 30:26.</p>
+  <p><a href="https://www.youtube.com/watch?v=072eNztI06k" target="_blank" rel="noopener">https://www.youtube.com/watch?v=072eNztI06k</a></p>
+  <p style="color:var(--ink2); font-size:13.5px">Projects, products and ideas named in the video: <b>Waku Agent</b> (the author's own open-source harness, <code>pip install waku-agent</code>, 1,300+ GitHub stars at recording) · <b>Hermes</b> · <b>mem0</b> · <b>Zep</b> · <b>LangMem</b> (LangChain) · <b>Supabase PGVector</b> · <b>Weaviate</b> · <b>Pinecone</b> · SQLite FTS5 · and Anthropic's "dreaming", cited without a reference.</p>
+</div>
+
+<div class="prov">
+<p><b>How this explainer was produced.</b> Compiled from the video's auto-generated caption track (393 segments spanning 0:00–30:25) and the video's own 24 chapters, which supply every section boundary and the titles in the chapter index. No other source was used; nothing here is drawn from the products' own documentation. The 24 chapter titles are the creator's own strings from the video record rather than transcriptions of his speech — two of them are tidier than anything he says aloud, the "1,300 stars" figure and "a package, not a store".</p>
+<ul>
+  <li><b>Quotes.</b> Verbatim from that auto-generated track. Every block quote carries its timestamp; the short quoted phrases inside prose and figures are verbatim too, but do not all carry one. "…" marks elided words — and where an elision would drop something load-bearing rather than filler, the words are left in. Because the transcript is machine-generated, a quote is the caption track's rendering of what was said, which is one step removed from the audio.</li>
+  <li><b>Corrected spellings.</b> The captions garble product names throughout — Zep appears as "Zap" and "Zeb", mem0 as "Memzer" and "Mem Zero", LangMem as "Lam Mem", Supabase as "Superbase", <code>SOUL.md</code> as "so.md". Corrected forms are used in the prose, and no product name is asserted on the caption track's authority alone.</li>
+  <li><b>Figure 1</b> is redrawn from a single frame captured at 4:56 and the written record of what that frame showed: the pink root box, the three green pillar boxes and the bullet list are the source's own, and the note about only pillar 1 being filled in reflects the state of the whiteboard at that moment. The screenshot itself is not reproduced here — this repository publishes redrawn SVG, never captured images.</li>
+  <li><b>Figures 2–7 are reconstructions from the spoken description.</b> They are illustrations of what the video explains verbally, not reproductions of specific screens. Six frames of the seven planned could not be captured (the browser tab could not be kept in the foreground), so the results dashboard, the seeding screen and the graph UI were all rebuilt from narration. In particular, the grid in Figure 6 is my arrangement of numbers he reads aloud, not a copy of his dashboard's own table, and Figure 7 is a fragment of a larger graph.</li>
+  <li><b>The numbers.</b> Every timing is his, spoken aloud, wall-clock, one run per question, mixing a local SQLite file with network calls to hosted services. mem0's Q1 result has <i>no</i> number — he says only "very fast" and "a slightly longer time than SQLite", and none has been invented. The vector-store row of the comparison table is theory: that store was never run.</li>
+  <li><b>Not re-checked against the live page.</b> At verification time the source could not be reached from this environment — the metadata tool timed out repeatedly, a page fetch returned nothing, and browser access was blocked by policy — so the metadata below rests on the original harvest and was checked for internal consistency only, not against YouTube as it stands today.</li>
+  <li><b>Publication date.</b> 16 August 2026, exact from the video record — no relative-age arithmetic. Incidentally, the menu bar visible in the captured frame reads Sat Aug 15, so it was recorded the day before publication.</li>
+  <li><b>The title is not stable at source.</b> Two different titles were observed for this video within two hours, from the API and from the live watch page, with an unchanged upload date — most likely a creator-side title test. The source box records the form returned by the API. The other observed form was <i>"You Can Learn To Store, Retrieve &amp; Maintain AI Agent Memory | Graph RAG, SQLite, Hermes, Waku"</i>. Neither is asserted here as <i>the</i> title.</li>
+  <li><b>"The memory is the asset"</b> is a compression of 12:13–12:24, not a sentence he says; the verbatim words are quoted in section 10. The chapter titled "Final take: the memory is the asset" is the video's own chapter title.</li>
+  <li><b>One slip left uncorrected in the source.</b> Late in the video he names the wrong guest for the chili-oil spill; the seeded fact attributes it to Jensen Huang. The erroneous line is not quoted or repeated here, and the point where it affects his reading of the graph is flagged in section 8.</li>
+  <li><b>Presentation.</b> This entry carries its own accent palette (teal on a cool paper) while keeping the house component vocabulary and layout rules.</li>
+</ul>
+</div>
+
+</div>
+</body>
+</html>

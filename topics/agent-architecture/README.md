@@ -16,12 +16,17 @@ that sits inside the loop → see [`post-training`](../post-training/).
 | Entry | Source | Format | Added |
 | --- | --- | --- | --- |
 | [**Loop Engineering vs Graph Engineering**](loop-vs-graph/) — the five-rung ladder from prompts to graphs, why loops and graphs are not competitors, and the three things that make an agent graph more than a 2023 DAG. [_read_](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/loop-vs-graph/) | Shen Sean Chen · Sean's AI Stories | Talk explainer · 21m31s | 2026-08-11 |
+| [**Memory Layers for AI Agents**](memory-layers/) — every LLM call starts with amnesia, so what makes an agent seem to remember is a memory system built around it. Three pillars: what a memory *is* (text, table, graph), how the agent *finds* it (do nothing, keyword, RAG, Graph RAG), and how you *keep it true* (retire rather than delete, attribute, reflect). Then four real stores raced on identical facts against a no-memory control. Same author and harness as the entry above. [_read_](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/memory-layers/) · [_ID_](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/memory-layers/index.id.html) | Shen Sean Chen · Sean's AI Stories | Talk explainer · 30m26s | 2026-08-18 |
 
 ## Wanted
 
 - A clear account of when multi-agent actually beats a single well-equipped agent — and when it just
   multiplies cost and failure surface.
-- Memory architectures compared on something other than vibes.
+- ~~Memory architectures compared on something other than vibes.~~ **Answered** by
+  [memory-layers](memory-layers/): four real stores raced on identical facts, with a no-memory control
+  group. Still open underneath it, though — that benchmark is n=1 with wall-clock timings and compares a
+  local store against network calls, so *ranked* memory architectures on repeatable measurements remain
+  wanted.
 - What "planning" concretely buys over letting a strong model improvise inside a good loop.
 - **What guardrails on a non-deterministic graph actually look like.** The loop-vs-graph entry
   establishes that they become mandatory once nodes and routing stop being deterministic, but stops

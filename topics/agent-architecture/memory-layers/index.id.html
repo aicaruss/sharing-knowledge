@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lapisan Memori untuk AI Agent — Penjelasan Rinci</title>
+<style>
+  :root{
+    --page:#F1F5F4; --paper:#FFFFFF; --band:#122220;
+    --ink:#16211F; --ink2:#4C5A57; --muted:#788682;
+    --line:#D6E2DE; --line2:#E7EFEC;
+    --teal:#0E7C6B; --teal-soft:#E1F1EE; --teal-deep:#0A5C50;
+    --blue:#2F6BD8; --green:#1B8A54; --red:#C4372B; --amber:#B26A00; --purple:#6B4FBB; --pink:#CE4D86;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--page); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16.5px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px; margin:0 auto; padding:0 22px 90px}
+
+  header{background:var(--band); color:#EAF3F1; padding:44px 0 38px; margin-bottom:32px}
+  header .wrap{padding-bottom:0}
+  .kicker{font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:#63C7B4; font-weight:700}
+  header h1{font-size:clamp(26px,4.4vw,38px); line-height:1.2; margin:12px 0 10px; letter-spacing:-.02em}
+  header p.sub{margin:0; color:#9DB3AE; font-size:15px}
+  .toplinks{display:flex; flex-wrap:wrap; gap:10px; margin-top:20px}
+  .srclink{display:inline-flex; align-items:center; gap:9px; background:#1E322F;
+           border:1px solid #33514C; border-radius:10px; padding:10px 15px; text-decoration:none;
+           color:#BDF0E4; font-size:14px; font-weight:600}
+  .srclink:hover{background:#254039}
+  .srclink svg{flex:none}
+  .srclink span.u{color:#8AA39E; font-weight:400; font-size:13px}
+  .langlink{display:inline-flex; align-items:center; gap:8px; border:1px solid #33514C; border-radius:10px;
+            padding:10px 15px; text-decoration:none; color:#9DB3AE; font-size:14px; font-weight:600}
+  .langlink:hover{color:#BDF0E4; border-color:#4B6E67}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px}
+  .chip{background:#1E322F; border:1px solid #33514C; color:#CFE3DF; font-size:12.5px; padding:5px 11px; border-radius:999px}
+
+  h2{font-size:clamp(20px,3vw,26px); letter-spacing:-.01em; margin:50px 0 6px; line-height:1.25}
+  h2 .num{color:var(--teal); font-variant-numeric:tabular-nums; margin-right:10px}
+  h3{font-size:17.5px; margin:28px 0 6px; letter-spacing:-.01em}
+  p{margin:10px 0}
+  a{color:var(--teal-deep)}
+  .lede{color:var(--ink2); font-size:14.5px; margin:2px 0 14px}
+  hr.rule{border:0; border-top:1px solid var(--line); margin:44px 0 0}
+  .dots{display:flex; gap:5px; margin:0 0 14px}
+  .dots i{width:9px; height:9px; display:block; border-radius:2px}
+  .dots i:nth-child(1){background:#A9DCD2} .dots i:nth-child(2){background:#4FB3A0} .dots i:nth-child(3){background:var(--teal)}
+
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin:18px 0}
+  .tldr{background:var(--band); color:#DFEDEA; border:0}
+  .tldr h3{margin-top:0; color:#fff}
+  .tldr ol{margin:10px 0 0; padding-left:22px}
+  .tldr li{margin:9px 0; color:#DAE9E6}
+  .tldr b{color:#8FE0CD}
+  .tldr code{background:#1E322F; border-color:#33514C; color:#BDF0E4}
+  .note{border-left:4px solid var(--teal); background:#EAF5F2; border-radius:0 12px 12px 0; padding:14px 18px; margin:18px 0}
+  .note .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--teal-deep)}
+  .note p{margin:6px 0 0}
+  .note.warn{border-left-color:var(--red); background:#FCF0EE}
+  .note.warn .lbl{color:var(--red)}
+  .analogy{background:#F1F5FE; border:1px solid #CFDDF7; border-radius:12px; padding:14px 18px; margin:16px 0}
+  .analogy .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--blue)}
+  .analogy p{margin:6px 0 0}
+  .quote{background:var(--teal-soft); border:1px solid #BFDFD8; border-radius:14px; padding:22px 26px; margin:22px 0}
+  .quote p{font-size:18px; line-height:1.5; font-weight:600; margin:0}
+  .quote cite{display:block; margin-top:12px; font-size:13.5px; color:var(--ink2); font-style:italic}
+
+  figure{margin:22px 0; background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:16px 14px 12px; overflow-x:auto}
+  figure svg{width:100%; height:auto; display:block; min-width:620px}
+  figcaption{font-size:13.5px; color:var(--ink2); margin-top:11px; padding-top:10px; border-top:1px solid var(--line2)}
+  figcaption b{color:var(--ink)}
+
+  .scroll{overflow-x:auto; margin:18px 0}
+  table{width:100%; border-collapse:collapse; margin:0; font-size:14.5px; background:var(--paper);
+        border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  .scroll table{min-width:700px}
+  th,td{padding:11px 13px; text-align:left; border-bottom:1px solid var(--line2); vertical-align:top}
+  th{background:var(--teal-soft); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--teal-deep)}
+  tr:last-child td{border-bottom:0}
+  td.ts{font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:700; width:14%}
+  td.ts a{color:var(--teal-deep); text-decoration:none; border-bottom:1px dotted #85BDB2}
+
+  code{background:var(--teal-soft); border:1px solid #C9E2DC; border-radius:5px; padding:1px 5px; font-size:13.5px;
+       font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .tag{display:inline-block; font-size:11.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+       padding:3px 9px; border-radius:999px; background:var(--teal-soft); color:var(--teal-deep); margin-right:6px}
+  ul.clean{padding-left:20px} ul.clean li{margin:8px 0}
+  .srcbox{background:var(--paper); border:1px solid var(--line); border-left:4px solid var(--teal);
+          border-radius:0 12px 12px 0; padding:18px 20px; margin:34px 0 0}
+  .srcbox .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--teal-deep)}
+  .srcbox p{margin:8px 0 0; font-size:14.5px}
+  .srcbox a{word-break:break-all}
+  .prov{margin-top:26px; font-size:13px; color:var(--ink2); border-top:1px solid var(--line); padding-top:18px}
+  .prov b{color:var(--ink)}
+  .prov ul{padding-left:20px} .prov li{margin:7px 0}
+  text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">Penjelasan video · Sean's AI Stories · 16 Agustus 2026</div>
+    <h1>Lapisan Memori untuk AI Agent — apa itu sebuah memori, bagaimana agent menemukannya, bagaimana kamu menjaganya tetap benar</h1>
+    <p class="sub">Shen Sean Chen — Sean's AI Stories · 30 menit 26 detik · whiteboard dulu, lalu dashboard live dan pembacaan kode</p>
+
+    <div class="toplinks">
+      <a class="srclink" href="https://www.youtube.com/watch?v=072eNztI06k" target="_blank" rel="noopener">
+        <svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true">
+          <rect x="0" y="0" width="20" height="14" rx="3.4" fill="#FF0000"/>
+          <path d="M8 4 L13.4 7 L8 10 Z" fill="#fff"/>
+        </svg>
+        Tonton video sumbernya <span class="u">youtube.com/watch?v=072eNztI06k</span>
+      </a>
+      <a class="langlink" href="index.html" hreflang="en" lang="en">Read in English</a>
+    </div>
+
+    <p class="sub" style="margin-top:18px; max-width:74ch">Ini terjemahan Bahasa Indonesia dari <a href="index.html" style="color:#BDF0E4">entri versi Inggris</a>, yang tetap menjadi rujukan utama. <b style="color:#BDF0E4">Semua kutipan dibiarkan dalam bahasa Inggris asli pembicara</b> — kutipan yang diterjemahkan bukan lagi kutipan verbatim, melainkan kalimat yang tidak pernah ia ucapkan. Bantuan terjemahan diletakkan di luar tanda kutip, ditandai "Maksudnya:". Judul chapter juga dibiarkan persis seperti di YouTube.</p>
+
+    <div class="meta">
+      <span class="chip">Memori agent</span>
+      <span class="chip">Graph RAG</span>
+      <span class="chip">Vector store</span>
+      <span class="chip">SQLite FTS5</span>
+      <span class="chip">Agent harness</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="card tldr">
+  <h3>Seluruh isi video dalam tujuh poin</h3>
+  <ol>
+    <li><b>Premisnya:</b> model sama sekali tidak punya memori. Apa pun yang tampak seperti ingatan — ChatGPT tahu namamu, coding agent tahu isi repo-mu — sebenarnya adalah <b>memory system yang dibangun seseorang di sekeliling model</b>. Memori itu keputusan arsitektur, bukan fitur model.</li>
+    <li><b>Tiga pertanyaan, dalam urutan ini:</b> apa <i>itu</i> sebuah memori (teks, tabel, atau graph) · bagaimana agent <i>menemukannya</i> (do nothing, keyword, RAG, Graph RAG) · bagaimana kamu <i>merawatnya</i> (add, delete, overwrite, noop, retire, attribute, reflect). Hampir semua perdebatan soal produk memori sebenarnya perdebatan di dalam salah satu dari tiga kotak itu.</li>
+    <li><b>Strategi retrieval yang pertama adalah tidak melakukan retrieval.</b> Kalau file memorinya pendek, file itu tinggal dimuat lebih dulu ke context window — dan itu persis yang dilakukan harness miliknya sendiri dan harness Hermes. Tanpa embedding sama sekali. Ia mengatakannya terang-terangan di dua menit pertama, melawan arus pembicaraan RAG / agentic-RAG / Graph-RAG.</li>
+    <li><b>Perawatan adalah tempat desain yang sebenarnya.</b> Menghapus fakta yang sudah di-supersede memusnahkan sejarahnya; <b>me-retire</b> fakta itu — memberi batas rentang waktu pada nilai lama lalu menambahkan nilai yang baru — menyimpan jejak yang kamu butuhkan untuk menjelaskan sebuah jawaban di kemudian hari. Contohnya repo miliknya sendiri: 1,000 star di hari ke-25, 1,300 di hari ke-26.</li>
+    <li><b>Lima lapisan, secara konkret:</b> file teks biasa → SQLite <code>state.db</code> dengan keyword search → vector store → mem0 (row memory dan graph memory, keduanya disimpan sebagai vektor) → Zep (temporal graph dengan validity window). Plus LangMem, yang merupakan <b>sebuah package, bukan sebuah store</b>.</li>
+    <li><b>Ia melombakan empat kontestan dengan skenario jamuan makan malam</b> — SQLite, mem0 dan Zep dari daftar itu, plus LangMem — atas empat fakta yang di-seed, melawan satu control tanpa memori. Teks biasa tidak diikutkan dan vector store sama sekali tidak diuji. Pilihan desain paling tajam dalam pengujian ini: sebuah <b>control group yang sama sekali tidak punya memori</b>, yang <i>lulus</i> pada satu pertanyaan justru dengan melaporkan secara benar bahwa ia tidak punya catatan apa pun. Kecanggihan tidak menang. SQLite lokal menjawab dalam 4.6s; temporal graph menghabiskan sebagian besar demo hanya untuk seeding.</li>
+    <li><b>Kesimpulannya:</b> harness itu fleksibel dan bisa diganti, jadi <b>memori</b>-lah asetnya — dan sebaiknya kamu memilih lapisan paling sederhana yang benar-benar dibutuhkan use case-mu. Graph memang menghasilkan satu hal yang betul-betul bernilai, sebuah edge berlabel <i>"revealed ending of"</i>, dan ia tetap menyebutnya mungkin overkill untuk use case yang lebih kecil.</li>
+  </ol>
+</div>
+
+<div class="note warn">
+  <div class="lbl">Baca perbandingan ini dengan empat hal di kepala</div>
+  <p><b>1. Posisi penulisnya.</b> Shen Sean Chen adalah pembuat <b>Waku Agent</b>, harness open-source tempat arena ini berjalan, dan pendekatan teks biasa yang akhirnya dibela video ini adalah pendekatan proyeknya sendiri. Itu tidak membuat argumennya salah; tapi itu berarti kesimpulan dan produknya menunjuk ke arah yang sama.</p>
+  <p><b>2. n=1.</b> Satu kali jalan per pertanyaan, waktu wall-clock yang dibaca dari sebuah dashboard, tanpa pengulangan dan tanpa statistik. Setiap angka di bawah adalah <i>apa yang ia lihat satu kali</i>, bukan hasil pengukuran.</p>
+  <p><b>3. Bukan perbandingan setara.</b> SQLite jalan di disk lokal; mem0, LangMem dan Zep adalah panggilan jaringan ke layanan hosted. Sebagian dari setiap selisih waktu itu adalah latensi round-trip, bukan kualitas retrieval, dan video ini tidak memisahkan keduanya.</p>
+  <p><b>4. Satu store dan satu mode sama sekali tidak diuji.</b> Vector store (Supabase PGVector) sengaja ditinggalkan — dalam kata-katanya sendiri, <i>"because we're not testing embeddings here"</i> (20:01), maksudnya embedding bukan yang sedang diuji di sini — dan graph mode milik mem0 ada di balik tier berbayar yang ia pilih untuk tidak dibeli. Baris vector store pada perbandingan mana pun di halaman ini adalah <b>teori, bukan hasil</b>.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">0</span>Kosakata lebih dulu</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>Video ini memakai ulang kosakata harness dari video-video sebelumnya tanpa menjelaskannya lagi. Berikut istilah yang dipakai sisa halaman ini, didefinisikan dalam pengertian <i>dia</i>, bukan pengertian buku teks.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:25%">Istilah</th><th>Artinya di sini</th></tr></thead>
+  <tbody>
+    <tr><td><b>Harness</b></td><td>Semua yang mengelilingi model: loop-nya, tools-nya, tracing-nya, memory system-nya. Miliknya adalah <b>Waku Agent</b>; sepanjang video ia juga merujuk <b>Hermes</b>, harness lain dengan kebiasaan teks biasa yang sama.</td></tr>
+    <tr><td><b>Working memory</b></td><td>Apa yang sebenarnya dirakit ke dalam context window untuk satu kali agent run, diambil dari tiga jenis memori di bawah ini.</td></tr>
+    <tr><td><b>Procedural / semantic / episodic memory</b></td><td>Tiga kategori retrieval di harness-nya: procedural = sebuah <b>skill</b>, prosedur tersimpan yang menyala ketika ada trigger; semantic = <b>fakta yang tahan lama</b>; episodic = <b>peristiwa bertanggal</b>. Disebut dalam satu baris pada 0:40 lalu dianggap sudah dipahami. Perhatikan bahwa 0:40 juga satu-satunya tempat ia mengucapkan <i>"pillars"</i>, dan yang ia maksud adalah <b>ketiga hal ini</b>; label "pilar 1/2/3" yang dipakai halaman ini mengikuti judul chapter video itu sendiri, yang memakai kata itu untuk trio apa / cari / rawat.</td></tr>
+    <tr><td><b>Retrieval gate</b></td><td>Langkah yang memutuskan <i>apakah dan apa</i> yang perlu di-retrieve sebelum model dipanggil. Ia tegas bahwa punya gate ini sifatnya opsional: <i>"Whether or not we should have retrieval gate, that's completely up to you"</i> (12:29) — maksudnya, terserah kamu.</td></tr>
+    <tr><td><b>FTS5</b></td><td>Ekstensi full-text search milik SQLite. Di sini ia mewakili seluruh keluarga keyword search: cocokkan kata-katanya, tanpa embedding.</td></tr>
+    <tr><td><b>Embedding / vector</b></td><td>Sebuah kata atau fakta yang diubah menjadi deretan angka supaya kemiripan bisa dihitung. Ia menyebut <i>"1024 by 1"</i> sebagai bentuk ilustratif, bukan spesifikasi.</td></tr>
+    <tr><td><b>Graph RAG</b></td><td>Meng-embed <b>node dan edge</b>, bukan hanya fakta, sehingga similarity search bisa mengembalikan <i>subgraph relasi</i> — agent mendapat "A revealed the ending of B", bukan dua fakta yang tidak terhubung.</td></tr>
+    <tr><td><b>Retire / supersede</b></td><td>Menandai sebuah fakta lama sebagai tidak berlaku sejak satu titik waktu, alih-alih menghapusnya. Satu ide dengan dua nama: ia menyebut "retire" di whiteboard dan "supersede" saat menjelaskan mem0 dan Zep.</td></tr>
+    <tr><td><b>Consolidation</b></td><td>Proses latar yang menyaring riwayat percakapan mentah menjadi fakta yang tahan lama — di harness-nya, setiap 5–10 turn, memakai model auxiliary yang lebih murah.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">1</span>Setiap panggilan LLM dimulai dengan amnesia</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">0:00 – 1:52 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=0s" target="_blank" rel="noopener">lompat ke 0:00</a></p>
+
+<p>Pembukaannya adalah klaim penopang seluruh video, dan layak dinyatakan dengan presisi, karena banyak materi pemasaran hidup dari mengaburkannya.</p>
+
+<div class="quote">
+  <p>"…any LLM call does not carry any weight for long terms. The reason why your ChatGPT and Claude code remembers what you talked about from the past is because it has already crafted this memory system for their own AI agent harness."</p>
+  <cite>— Shen Sean Chen, 0:03 (dari trek caption otomatis video; kutipan dibiarkan dalam bahasa Inggris asli)</cite>
+</div>
+
+<p class="lede"><b>Maksudnya:</b> satu panggilan LLM tidak membawa apa pun untuk jangka panjang; ChatGPT dan Claude Code terasa ingat percakapan lampau karena masing-masing sudah membangun memory system sendiri di sekeliling agent harness mereka.</p>
+
+<p>Jadi "apakah model ini ingat saya?" adalah pertanyaan yang salah. Model tidak pernah ingat. Ada orang yang memilih tempat menaruh faktanya, cara mengambilnya kembali, dan kebijakan tentang apa yang harus dilakukan ketika fakta itu kedaluwarsa. Tiga pilihan itulah isi video ini, dan itu pula tiga pilar di bagian berikutnya.</p>
+
+<p>Ia lalu merangkum harness-nya dalam satu tarikan napas — sebuah agent loop yang memanggil tools dan mendelegasikan sub-agent, merakit working memory dari memori <b>procedural</b>, <b>semantic</b> dan <b>episodic</b> — dan menyebut Hermes membangun memorinya dengan cara yang mirip. Satu baris itulah sambungan dengan entri sebelumnya di library ini: <a href="../loop-vs-graph/">Loop Engineering vs Graph Engineering</a> (versi Inggris) menyebut retrieval gate dan tiga jenis memori itu secara sekilas. Video ini adalah baris itu yang dibuka lebar.</p>
+
+<p>Lalu, tidak biasanya sedini itu, ia menancapkan bendera melawan wacana yang sedang dominan:</p>
+
+<div class="quote">
+  <p>"Retrieval augmented generation has always been there, but there's no retrievals or embeddings in Hermes and Waku agent."</p>
+  <cite>— Shen Sean Chen, 1:02</cite>
+</div>
+
+<p class="lede"><b>Maksudnya:</b> RAG memang sudah lama ada, tapi di Hermes dan Waku Agent tidak ada retrieval maupun embedding sama sekali.</p>
+
+<p>Dua sistem yang orang akan sebut sebagai agent dengan memori tebal ternyata <b>tidak</b> punya mesin retrieval sama sekali. Simpan dulu itu di kepala — itu jawaban pilar 2 yang datang sebelum pertanyaannya.</p>
+
+<hr class="rule">
+
+<h2><span class="num">2</span>Tiga pilar itu</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">2:31 – 5:04 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=151s" target="_blank" rel="noopener">lompat ke 2:31</a></p>
+
+<p>Kerangkanya adalah tiga pertanyaan di sebuah whiteboard, dan itu bagian paling mudah dibawa ke mana-mana dari video ini. (Judul chapter video menomorinya Pillar 1, 2 dan 3, dan halaman ini mengikutinya. Perlu dicatat, ketika ia mengucapkan "three main pillars" pada 0:40 yang ia maksud justru trio procedural / semantic / episodic.) Produk memori apa pun yang ditawarkan kepadamu sedang menjawab salah satu dari tiga pertanyaan itu — dan pitch-nya biasanya paling kuat di satu pertanyaan lalu diam soal dua lainnya.</p>
+
+<figure>
+<svg viewBox="0 0 900 300" role="img" aria-label="Diagram whiteboard: satu kotak pink berlabel AI Agent Memory dengan tiga anak panah ke bawah menuju tiga kotak hijau bertuliskan What is it, How to find it, How to maintain it, dengan daftar butir di bawah kotak pertama berisi txt md, rows in table, graph nodes edges">
+  <defs>
+    <marker id="f1ink" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#5A6B67"/></marker>
+  </defs>
+  <rect x="335" y="16" width="230" height="54" rx="12" fill="#FBE4EF" stroke="#CE4D86" stroke-width="1.8"/>
+  <text x="450" y="49" font-size="16.5" font-weight="700" fill="#A2245C" text-anchor="middle">AI Agent Memory</text>
+
+  <path d="M448 70 C 448 100, 136 96, 136 126" stroke="#5A6B67" stroke-width="1.6" fill="none" marker-end="url(#f1ink)"/>
+  <path d="M450 70 L450 126" stroke="#5A6B67" stroke-width="1.6" fill="none" marker-end="url(#f1ink)"/>
+  <path d="M452 70 C 452 100, 764 96, 764 126" stroke="#5A6B67" stroke-width="1.6" fill="none" marker-end="url(#f1ink)"/>
+
+  <rect x="18" y="130" width="236" height="52" rx="11" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.7"/>
+  <text x="136" y="162" font-size="15.5" font-weight="700" fill="#14664C" text-anchor="middle">What is it?</text>
+  <rect x="332" y="130" width="236" height="52" rx="11" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.7"/>
+  <text x="450" y="162" font-size="15.5" font-weight="700" fill="#14664C" text-anchor="middle">How to find it?</text>
+  <rect x="646" y="130" width="236" height="52" rx="11" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.7"/>
+  <text x="764" y="162" font-size="15.5" font-weight="700" fill="#14664C" text-anchor="middle">How to maintain it?</text>
+
+  <path d="M136 182 L136 204" stroke="#5A6B67" stroke-width="1.4" fill="none"/>
+  <path d="M60 210 L60 288" stroke="#B9C9C5" stroke-width="1.6" fill="none"/>
+  <text x="76" y="228" font-size="14.5" fill="#16211F">– txt, md</text>
+  <text x="76" y="258" font-size="14.5" fill="#16211F">– rows in table</text>
+  <text x="76" y="288" font-size="14.5" fill="#16211F">– graph (nodes/edges)</text>
+  <text x="332" y="232" font-size="12.5" fill="#788682">pada 4:56 baru daftar pilar 1 yang dituliskan;</text>
+  <text x="332" y="252" font-size="12.5" fill="#788682">dua kotak lainnya masih berupa judul.</text>
+</svg>
+<figcaption><b>Gambar 1. Digambar ulang dari whiteboard,</b> dari satu frame yang ditangkap pada 4:56 — kotak akar berwarna pink, tiga pilar hijau dan daftar butirnya adalah kotak dan kata-kata milik sumbernya sendiri, karena itu label-labelnya dibiarkan dalam bahasa Inggris persis seperti yang tampil di layar. Yang ada di frame asli tapi tidak ada di gambar ulang ini: sebuah gambar orang-orangan tangan di tepi kiri, inset video pembicara, dan caption yang terbakar di frame. Nilai gambar ini ada pada <i>urutannya</i>: penyimpanan dulu, retrieval kedua, perawatan ketiga — dan sebagian besar tooling justru dijual dengan menonjolkan yang tengah.</figcaption>
+</figure>
+
+<hr class="rule">
+
+<h2><span class="num">3</span>Pilar 1 — apa sebenarnya sebuah memori <i>itu</i></h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">2:31 – 5:04 · tiga bentuk, dan di mana sebenarnya embedding duduk</p>
+
+<p>Tiga bentuk penyimpanan, masing-masing ditunjukkan di sistem yang benar-benar jalan, bukan dijelaskan secara abstrak:</p>
+
+<ul class="clean">
+  <li><b>Teks atau markdown.</b> Ia membuka <code>.hermes/memory/memory.md</code> milik Hermes di depan kamera — teks biasa, yang disuapkan ke context window setiap kali kamu bertanya. Di harness-nya sendiri file yang setara ada di bawah <code>.waku</code>, termasuk <code>SOUL.md</code>, yaitu system prompt dan kepribadiannya.</li>
+  <li><b>Baris di dalam tabel.</b> Sebuah spreadsheet, sebuah Google Sheet, atau database relasional. Di Hermes itu berarti <code>state.db</code>, satu file SQLite yang bisa kamu buka dan baca schema-nya.</li>
+  <li><b>Sebuah graph berisi node dan edge.</b> Definisinya sengaja dibuat sederhana: cara membangun koneksi antar potongan informasi. Ia mendemokannya dengan tampilan relational graph milik Zep, menyusuri satu contoh kecil — seorang founder bernama Alex, sebuah AI meetup di Lisbon, sebuah startup robotika, satu peluncuran produk di bulan Mei dan satu lagi di bulan Juni — lalu menegaskan bahwa yang menarik adalah kaitan antar faktanya, bukan fakta satu per satu.</li>
+</ul>
+
+<p>Lalu datang pertanyaan yang sudah pasti diteriakkan audiens yang berpikir dalam kerangka RAG, dan jawaban yang membuat kerangka ini utuh:</p>
+
+<div class="note">
+  <div class="lbl">Embedding bukan jenis memori keempat</div>
+  <p>Vektornya masuk ke mana? <b>Ke salah satu dari tiga bentuk di atas.</b> Dengan Supabase PGVector — setup yang ia pakai sendiri — memorinya tetap berupa baris di dalam tabel; hanya saja sebagian kolomnya berisi vektor. Atau ia duduk di sebuah NoSQL store. Embedding adalah properti dari <i>cara kamu mencari</i>, bukan bentuk keberadaan yang terpisah. Itulah sebabnya embedding masuk ke pilar 2, bukan pilar 1.</p>
+</div>
+
+<figure>
+<svg viewBox="0 0 900 340" role="img" aria-label="Tiga panel yang menunjukkan tiga bentuk penyimpanan: file teks biasa, baris di dalam tabel, dan sebuah graph berisi node dan edge; di bawahnya sebuah pita yang menjelaskan bahwa embedding bukan jenis keempat melainkan hidup di dalam tabel atau graph">
+  <defs>
+    <marker id="f2teal" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0E7C6B"/></marker>
+  </defs>
+
+  <rect x="14" y="18" width="282" height="178" rx="13" fill="#FFFFFF" stroke="#D6E2DE" stroke-width="1.5"/>
+  <text x="34" y="46" font-size="15" font-weight="700" fill="#16211F">1 · Teks biasa / markdown</text>
+  <text x="34" y="72" font-size="12.5" fill="#4C5A57">memory.md · SOUL.md · skills</text>
+  <text x="34" y="92" font-size="12.5" fill="#4C5A57">file di disk, bisa diedit tangan</text>
+  <text x="34" y="112" font-size="12.5" fill="#4C5A57">dibaca langsung ke context window</text>
+  <rect x="34" y="130" width="180" height="10" rx="3" fill="#E7EFEC"/>
+  <rect x="34" y="146" width="230" height="10" rx="3" fill="#E7EFEC"/>
+  <rect x="34" y="162" width="150" height="10" rx="3" fill="#E7EFEC"/>
+
+  <rect x="309" y="18" width="282" height="178" rx="13" fill="#FFFFFF" stroke="#D6E2DE" stroke-width="1.5"/>
+  <text x="329" y="46" font-size="15" font-weight="700" fill="#16211F">2 · Baris di dalam tabel</text>
+  <text x="329" y="72" font-size="12.5" fill="#4C5A57">state.db (SQLite) · sebuah spreadsheet</text>
+  <text x="329" y="92" font-size="12.5" fill="#4C5A57">baris dan kolom, sebuah schema</text>
+  <text x="329" y="112" font-size="12.5" fill="#4C5A57">juga bisa diedit tangan</text>
+  <g stroke="#B9C9C5" stroke-width="1.2" fill="none">
+    <rect x="329" y="128" width="228" height="46"/>
+    <path d="M329 143 H557 M329 159 H557 M405 128 V174 M481 128 V174"/>
+  </g>
+
+  <rect x="604" y="18" width="282" height="178" rx="13" fill="#FFFFFF" stroke="#D6E2DE" stroke-width="1.5"/>
+  <text x="624" y="46" font-size="15" font-weight="700" fill="#16211F">3 · Graph: node dan edge</text>
+  <text x="624" y="72" font-size="12.5" fill="#4C5A57">koneksi antar fakta</text>
+  <text x="624" y="92" font-size="12.5" fill="#4C5A57">"Alex → attended → Lisbon meetup"</text>
+  <text x="624" y="112" font-size="12.5" fill="#4C5A57">traversal, bukan cuma lookup</text>
+  <g fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.5">
+    <circle cx="650" cy="152" r="15"/><circle cx="745" cy="132" r="15"/><circle cx="745" cy="172" r="15"/><circle cx="840" cy="152" r="15"/>
+  </g>
+  <g stroke="#0E7C6B" stroke-width="1.4" fill="none">
+    <path d="M665 148 L730 135"/><path d="M665 157 L730 170"/><path d="M760 136 L826 148"/><path d="M760 168 L826 156"/>
+  </g>
+
+  <path d="M450 232 L450 202" stroke="#0E7C6B" stroke-width="1.6" fill="none" marker-end="url(#f2teal)"/>
+  <path d="M745 232 L745 202" stroke="#0E7C6B" stroke-width="1.6" fill="none" marker-end="url(#f2teal)"/>
+  <rect x="14" y="234" width="872" height="90" rx="13" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="36" y="264" font-size="14.5" font-weight="700" fill="#0A5C50">Embedding bukan jenis keempat — ia hidup di dalam salah satu bentuk ini.</text>
+  <text x="36" y="288" font-size="12.5" fill="#2F4A45">Di Supabase PGVector memorinya tetap baris di dalam tabel; sebagian kolomnya berisi vektor. Di sebuah graph store, node</text>
+  <text x="36" y="308" font-size="12.5" fill="#2F4A45">dan edge itulah yang di-embed. Bagaimanapun, bentuk di bawahnya adalah salah satu dari tiga panel di atas.</text>
+</svg>
+<figcaption><b>Gambar 2. Direkonstruksi dari penjelasan lisan</b> (2:31–5:04) — sebuah ilustrasi argumennya, bukan reproduksi layar. Gambar ini menambahkan hal yang dibiarkan implisit oleh whiteboard: pita bergaris putus-putus itu adalah jawaban untuk "lalu RAG-nya masuk ke mana?", dan tempatnya <i>di bawah</i> pilar 1, bukan di sebelahnya.</figcaption>
+</figure>
+
+<hr class="rule">
+
+<h2><span class="num">4</span>Pilar 2 — bagaimana agent menemukannya, dimulai dari "do nothing"</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">5:04 – 7:29 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=304s" target="_blank" rel="noopener">lompat ke 5:04</a></p>
+
+<p>Empat strategi, dan urutannya itulah argumennya: yang paling murah adalah tidak mencari sama sekali.</p>
+
+<figure>
+<svg viewBox="0 0 900 372" role="img" aria-label="Empat strategi retrieval dalam empat jalur: do nothing memuat file ke context lebih dulu, keyword search memakai SQLite FTS5, RAG meng-embed pertanyaan lalu melakukan similarity search, dan Graph RAG meng-embed node serta edge untuk mengembalikan subgraph relasi">
+  <defs>
+    <marker id="f3ink" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#5A6B67"/></marker>
+  </defs>
+
+  <rect x="14" y="16" width="168" height="80" rx="11" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.6"/>
+  <text x="32" y="46" font-size="14.5" font-weight="700" fill="#14664C">1 · Do nothing</text>
+  <text x="32" y="68" font-size="11.5" fill="#2F5F4C">tidak ada langkah pencarian</text>
+  <text x="32" y="86" font-size="12" fill="#2F5F4C">Hermes · Waku Agent</text>
+  <text x="200" y="44" font-size="12.5" fill="#16211F">File-nya pendek, jadi ia tinggal dimuat ke context window di setiap panggilan:</text>
+  <text x="200" y="64" font-size="12.5" fill="#16211F">memory.md, plus SOUL.md, definisi tool dan definisi MCP.</text>
+  <text x="200" y="84" font-size="11.5" fill="#788682">Ini sebabnya sesi yang baru dibuka bisa langsung tampak memakai banyak context.</text>
+  <path d="M624 56 L640 56" stroke="#5A6B67" stroke-width="1.5" marker-end="url(#f3ink)"/>
+  <rect x="646" y="24" width="240" height="64" rx="10" fill="#F5FAF8" stroke="#B9C9C5" stroke-width="1.3"/>
+  <text x="664" y="50" font-size="12.5" font-weight="700" fill="#16211F">Semuanya, selalu</text>
+  <text x="664" y="70" font-size="12" fill="#4C5A57">tak memilih, tak ada yang terlewat</text>
+
+  <rect x="14" y="108" width="168" height="80" rx="11" fill="#EAF0FC" stroke="#2F6BD8" stroke-width="1.6"/>
+  <text x="32" y="138" font-size="14.5" font-weight="700" fill="#1E4C9E">2 · Keyword</text>
+  <text x="32" y="160" font-size="12" fill="#2A4D86">SQLite FTS5</text>
+  <text x="32" y="178" font-size="12" fill="#2A4D86">atas state.db</text>
+  <text x="200" y="136" font-size="12.5" fill="#16211F">Cocokkan kata-kata di pertanyaan dengan kata-kata di baris tersimpan.</text>
+  <text x="200" y="156" font-size="12" fill="#16211F">Rangkumannya: "all you need to know is basically it's doing keyword searching".</text>
+  <text x="200" y="176" font-size="12" fill="#788682">Murah, lokal, dan buta pada apa pun yang katanya tidak sama secara literal.</text>
+  <path d="M624 148 L640 148" stroke="#5A6B67" stroke-width="1.5" marker-end="url(#f3ink)"/>
+  <rect x="646" y="116" width="240" height="64" rx="10" fill="#F5FAF8" stroke="#B9C9C5" stroke-width="1.3"/>
+  <text x="664" y="142" font-size="12.5" font-weight="700" fill="#16211F">Baris yang teksnya cocok</text>
+  <text x="664" y="162" font-size="12" fill="#4C5A57">tanpa pengertian makna</text>
+
+  <rect x="14" y="200" width="168" height="80" rx="11" fill="#F1EDFB" stroke="#6B4FBB" stroke-width="1.6"/>
+  <text x="32" y="230" font-size="14.5" font-weight="700" fill="#4E3399">3 · RAG</text>
+  <text x="32" y="252" font-size="12" fill="#4E3399">kemiripan vektor</text>
+  <text x="32" y="270" font-size="12" fill="#4E3399">atas embedding</text>
+  <text x="200" y="228" font-size="12" fill="#16211F">Embed pertanyaannya, lalu cari apa yang duduk berdekatan di ruang yang sama.</text>
+  <text x="200" y="248" font-size="12.5" fill="#16211F">Contohnya: "food" mendarat dekat apple dan sausages — pencarian semantik,</text>
+  <text x="200" y="268" font-size="12.5" fill="#16211F">bukan pencarian keyword. ("1024 by 1" adalah dimensi ilustratifnya.)</text>
+  <path d="M624 240 L640 240" stroke="#5A6B67" stroke-width="1.5" marker-end="url(#f3ink)"/>
+  <rect x="646" y="208" width="240" height="64" rx="10" fill="#F5FAF8" stroke="#B9C9C5" stroke-width="1.3"/>
+  <text x="664" y="234" font-size="12.5" font-weight="700" fill="#16211F">Fakta serupa, terurut</text>
+  <text x="664" y="254" font-size="12" fill="#4C5A57">tetap fakta yang terpisah</text>
+
+  <rect x="14" y="292" width="168" height="80" rx="11" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="32" y="322" font-size="14.5" font-weight="700" fill="#0A5C50">4 · Graph RAG</text>
+  <text x="32" y="344" font-size="12" fill="#0A5C50">embed node DAN edge</text>
+  <text x="32" y="362" font-size="12" fill="#0A5C50">lalu traversal</text>
+  <text x="200" y="320" font-size="12.5" fill="#16211F">Tetap embedding — tapi edge-nya juga di-embed: apakah ini sebuah relasi,</text>
+  <text x="200" y="340" font-size="12.5" fill="#16211F">atau sebuah observasi? Similarity search lalu menyusuri graph dan</text>
+  <text x="200" y="360" font-size="12.5" fill="#16211F">mengembalikan subgraph, jadi agent melihat bagaimana fakta saling terkait.</text>
+  <path d="M624 332 L640 332" stroke="#5A6B67" stroke-width="1.5" marker-end="url(#f3ink)"/>
+  <rect x="646" y="300" width="240" height="64" rx="10" fill="#F5FAF8" stroke="#B9C9C5" stroke-width="1.3"/>
+  <text x="664" y="326" font-size="12.5" font-weight="700" fill="#16211F">Sebuah subgraph relasi</text>
+  <text x="664" y="346" font-size="12" fill="#4C5A57">fakta plus cara mereka terhubung</text>
+</svg>
+<figcaption><b>Gambar 3. Direkonstruksi dari penjelasan lisan</b> (5:04–7:29) — empat strategi dalam urutan yang ia berikan, dengan kolom kanan yang saya tambahkan sendiri agar trade-off-nya terlihat: setiap kenaikan satu tingkat membeli jawaban berbentuk lebih baik dan berbiaya satu langkah pencarian. Bukan reproduksi layar. Nama strategi dan nama produk dibiarkan dalam bahasa Inggris karena itu istilah penulisnya.</figcaption>
+</figure>
+
+<p>Jalur pertama itulah yang paling layak didebat. "Do nothing" bukan kemalasan; ia sebuah klaim bahwa untuk memori yang cukup kecil, context window <i>adalah</i> sistem retrieval-nya, dan bahwa apa pun selain itu menambah satu komponen yang bisa salah. Biayanya sama jelasnya: tidak bisa scale, dan semua yang kamu muat di awal berebut window yang sama.</p>
+
+<hr class="rule">
+
+<h2><span class="num">5</span>Pilar 3 — perawatan, tempat desain yang sesungguhnya</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">7:29 – 9:47 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=449s" target="_blank" rel="noopener">lompat ke 7:29</a></p>
+
+<p>Ia mengumumkan empat cara merawat sebuah memory system lalu menyampaikan satu set keputusan plus dua praktik bernama — jumlahnya tidak benar-benar cocok, dan saya mempertahankan pengelompokan dia alih-alih merapikannya:</p>
+
+<div class="card">
+  <p style="margin:0 0 8px"><span class="tag">1</span> <b>Keputusan, pada setiap fakta baru</b> — add · delete · overwrite · <b>noop</b> (tidak melakukan apa-apa) · <b>retire</b>.</p>
+  <p style="margin:0 0 8px"><span class="tag">2</span> <b>Attribute</b> — catat dari mana fakta itu datang: user yang bicara dengan agent, sebuah web search, sebuah pengecekan kalender. "In human language… tracing where the source comes from."</p>
+  <p style="margin:0"><span class="tag">3</span> <b>Reflect</b> — buang atau gabungkan duplikat dan fakta yang sudah usang, sebagai proses terjadwal, bukan saat itu juga.</p>
+</div>
+
+<h3>Retire, bukan delete — contoh 1,000 → 1,300 star</h3>
+
+<p>Ini bagian video yang akan saya simpan kalau hanya boleh menyimpan satu paragraf. Repo miliknya sendiri punya <b>1,000 star dalam 25 hari pertama</b>. Di hari ke-26 ia memberi tahu agent-nya bahwa sekarang ada <b>1,300</b>. Langkah naifnya adalah menimpa angka lama, karena angka lama sekarang salah. Argumennya: angka lama itu tidak salah — ia <i>benar pada saat itu</i>, dan fakta bahwa pertumbuhannya melompat 30% dalam sehari hanya terlihat kalau kedua nilai itu selamat.</p>
+
+<figure>
+<svg viewBox="0 0 900 306" role="img" aria-label="Garis waktu yang menunjukkan fakta 1,000 star berlaku untuk hari 1 sampai 25 dan fakta 1,300 star berlaku sejak hari 26 dan seterusnya, lalu dua panel yang mempertentangkan menghapus fakta lama dengan me-retire-nya">
+  <defs>
+    <marker id="f4ink" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#5A6B67"/></marker>
+  </defs>
+  <rect x="60" y="30" width="500" height="30" rx="8" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.6" stroke-dasharray="0"/>
+  <text x="76" y="50" font-size="13" font-weight="700" fill="#0A5C50">Waku Agent punya 1,000 star</text>
+  <text x="404" y="50" font-size="12" fill="#0A5C50">valid hari 1 – 25</text>
+  <rect x="600" y="76" width="240" height="30" rx="8" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.6"/>
+  <text x="616" y="96" font-size="13" font-weight="700" fill="#14664C">kini 1,300 star</text>
+  <path d="M842 91 L876 91" stroke="#1B8A54" stroke-width="1.6" marker-end="url(#f4ink)"/>
+  <text x="600" y="126" font-size="12" fill="#14664C">valid sejak hari 26, terbuka</text>
+  <path d="M560 45 L594 45 L594 76" stroke="#5A6B67" stroke-width="1.4" fill="none" stroke-dasharray="4 4" marker-end="url(#f4ink)"/>
+  <text x="470" y="24" font-size="11.5" fill="#788682">dibatasi, bukan dihapus</text>
+
+  <path d="M40 150 L876 150" stroke="#B9C9C5" stroke-width="1.5"/>
+  <g font-size="11.5" fill="#788682">
+    <path d="M60 144 L60 156 M560 144 L560 156 M600 144 L600 156" stroke="#B9C9C5" stroke-width="1.5"/>
+    <text x="60" y="172" text-anchor="middle">hari 1</text>
+    <text x="560" y="172" text-anchor="middle">hari 25</text>
+    <text x="612" y="172">hari 26</text>
+  </g>
+
+  <rect x="14" y="196" width="428" height="98" rx="12" fill="#FCF0EE" stroke="#C4372B" stroke-width="1.5"/>
+  <text x="34" y="224" font-size="14" font-weight="700" fill="#A32C21">Kalau kamu DELETE fakta lama</text>
+  <text x="34" y="248" font-size="12.5" fill="#7A2A21">Angka 1,000 hilang. Tidak ada lagi yang bisa dilacak, dan</text>
+  <text x="34" y="268" font-size="12.5" fill="#7A2A21">jawaban yang sudah dipakai agent jadi tak bisa dijelaskan.</text>
+  <text x="34" y="288" font-size="12" fill="#A32C21">Cerita pertumbuhannya ikut hilang.</text>
+
+  <rect x="458" y="196" width="428" height="98" rx="12" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.5"/>
+  <text x="478" y="224" font-size="14" font-weight="700" fill="#14664C">Kalau kamu RETIRE saja</text>
+  <text x="478" y="248" font-size="12.5" fill="#1E5B45">Terbaru 1.3 ribu — lacak balik satu hari ke 1,000</text>
+  <text x="478" y="268" font-size="12.5" fill="#1E5B45">Dua nilai tetap berdiri, masing-masing dengan validitasnya.</text>
+  <text x="478" y="288" font-size="12" fill="#14664C">Katanya: tetap penting "for future tracing purposes".</text>
+</svg>
+<figcaption><b>Gambar 4. Direkonstruksi dari penjelasan lisan</b> (7:52–8:38) — angka dan alur penalarannya, digambar sebagai garis waktu validitas. Label kotaknya adalah label diagram, bukan kutipan; kata-katanya sendiri soal fakta yang di-retire ada di 8:25. Yang ditambahkannya di atas prosa: alasan retire mengalahkan delete bukan sentimen terhadap data lama, tapi karena <i>jawaban yang kamu berikan kemarin jadi tak bisa dijelaskan</i> begitu fakta di belakangnya dihapus.</figcaption>
+</figure>
+
+<h3>Attribute, lalu reflect — termasuk "dreaming" versi Anthropic</h3>
+
+<p><b>Attribute</b> hanya satu baris di video dan murah untuk diimplementasikan: simpan asal-usul setiap fakta — user, web search, kalender. Itulah bedanya antara "agent percaya X" dan "agent percaya X karena user mengatakannya hari Selasa".</p>
+
+<p><b>Reflect</b> ia akui tumpang tindih dengan delete dan retire, lalu ia sambungkan ke ide yang lebih besar:</p>
+
+<div class="quote">
+  <p>"…reflect sometimes can link to what Anthropic has proposed, which is dreaming. Dreaming happens when we are not working."</p>
+  <cite>— Shen Sean Chen, 9:12</cite>
+</div>
+
+<p class="lede"><b>Maksudnya:</b> reflect kadang bisa dihubungkan dengan apa yang diusulkan Anthropic, yaitu "dreaming" — dan dreaming terjadi ketika kita sedang tidak bekerja.</p>
+
+<p>Mekanisme yang ia jelaskan: selama agent berjalan, ia sibuk <i>menumpuk</i> — fakta, peristiwa bertanggal, prosedur yang berubah menjadi skill. Ketika agent sedang idle, jadwalkan satu proses yang merefleksikan tumpukan itu, menggabungkan duplikat dan membuang yang sudah tidak relevan. Ia menyebutnya langkah post-mortem atau post-process untuk memory system.</p>
+
+<div class="note warn">
+  <div class="lbl">Sitasi ini tidak bisa ditelusuri dalam bentuk yang diberikan</div>
+  <p>"Dreaming" dinisbatkan ke Anthropic <b>tanpa paper, penulis, judul atau tautan</b> di mana pun dalam video. Di sini ia dicatat sebagaimana ia menyampaikannya, dan dalam bentuk itu ia tidak bisa dijadikan sitasi — kalau kamu mau memakai idenya, kamu harus mencari sumber primernya sendiri.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">6</span>Lima lapisan itu, secara konkret</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">9:47 – 18:16 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=587s" target="_blank" rel="noopener">lompat ke 9:47</a></p>
+
+<p>Setiap lapisan mendapat tiga pertanyaan yang sama: apa memorinya, bagaimana ia ditemukan, bagaimana ia dirawat.</p>
+
+<h3>Lapisan 1 — teks biasa (Hermes, Waku Agent)</h3>
+<p>Tiga file yang mengerjakan tiga pekerjaan berbeda. <code>SOUL.md</code> adalah system prompt sekaligus kepribadian — ia membuka SOUL Hermes miliknya sendiri untuk menunjukkan bahwa file itu dikonfigurasi agar bicara seperti Pikachu, dengan "Pikapi" khusus untuk menyapa dirinya secara langsung, dan menegaskan kamu bisa mengeditnya jadi apa saja. <b>Skills</b> adalah prosedur yang dimuat lewat trigger — yang ia jelaskan meriset semua video AI agent di internet lalu setiap pagi melaporkan berita terbaru yang sebaiknya dibahas kanalnya di video berikutnya (parafrase dari 10:42). <code>memory.md</code> menyimpan fakta tahan lama yang menumpuk seiring kamu bicara. Ketiganya file yang bisa kamu buka dan edit dengan tangan.</p>
+
+<h3>Lapisan 2 — SQLite <code>state.db</code>, dan pipeline consolidation</h3>
+<p>Baris di dalam database relasional, ditemukan dengan keyword search FTS5, dirawat entah dengan mengeditnya sendiri atau dengan membiarkan harness melakukan consolidation. Consolidation adalah mekanisme yang layak dicuri lapisan mana pun yang kamu pilih: setiap turn percakapan disimpan ke <code>state.db</code>, dan setiap lima atau sepuluh turn <b>model auxiliary yang lebih murah</b> menyaring riwayat itu menjadi fakta tahan lama di <code>memory.md</code>. Riwayat mentah tetap murah dan lengkap; context window yang mahal hanya pernah melihat hasil sarinya.</p>
+
+<figure>
+<svg viewBox="0 0 900 322" role="img" aria-label="Diagram pipeline: sebuah prompt user melewati retrieval gate yang opsional menuju LLM dan kembali sebagai jawaban, setiap turn ditambahkan ke state.db, satu langkah consolidation setiap lima sampai sepuluh turn memakai model auxiliary yang lebih murah untuk menyaring fakta ke memory.md, dan memory.md dimuat kembali ke context">
+  <defs>
+    <marker id="f5blue" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2F6BD8"/></marker>
+    <marker id="f5green" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1B8A54"/></marker>
+    <marker id="f5teal" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0E7C6B"/></marker>
+  </defs>
+
+  <rect x="14" y="26" width="140" height="56" rx="11" fill="#FFFFFF" stroke="#16211F" stroke-width="1.5"/>
+  <text x="84" y="60" font-size="13.5" font-weight="700" fill="#16211F" text-anchor="middle">Kamu tanya</text>
+  <path d="M154 54 L192 54" stroke="#2F6BD8" stroke-width="1.7" marker-end="url(#f5blue)"/>
+
+  <rect x="196" y="26" width="200" height="56" rx="11" fill="#F5FAF8" stroke="#788682" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="296" y="50" font-size="13" font-weight="700" fill="#16211F" text-anchor="middle">Retrieval gate</text>
+  <text x="296" y="70" font-size="11.5" fill="#788682" text-anchor="middle">opsional — "completely up to you"</text>
+  <path d="M396 54 L434 54" stroke="#2F6BD8" stroke-width="1.7" marker-end="url(#f5blue)"/>
+
+  <rect x="438" y="26" width="140" height="56" rx="11" fill="#EAF0FC" stroke="#2F6BD8" stroke-width="1.6"/>
+  <text x="508" y="60" font-size="13.5" font-weight="700" fill="#1E4C9E" text-anchor="middle">LLM</text>
+  <path d="M578 54 L616 54" stroke="#1B8A54" stroke-width="1.7" marker-end="url(#f5green)"/>
+
+  <rect x="620" y="26" width="140" height="56" rx="11" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.6"/>
+  <text x="690" y="60" font-size="13.5" font-weight="700" fill="#14664C" text-anchor="middle">Jawaban</text>
+
+  <path d="M690 82 L690 108 L588 108 L588 130" stroke="#5A6B67" stroke-width="1.5" fill="none" marker-end="url(#f5teal)"/>
+  <text x="700" y="104" font-size="11.5" fill="#788682">setiap turn</text>
+  <rect x="438" y="134" width="300" height="56" rx="11" fill="#FFFFFF" stroke="#16211F" stroke-width="1.5"/>
+  <text x="588" y="158" font-size="13" font-weight="700" fill="#16211F" text-anchor="middle">state.db (SQLite)</text>
+  <text x="588" y="177" font-size="11.5" fill="#4C5A57" text-anchor="middle">seluruh riwayat percakapan, murah disimpan</text>
+
+  <path d="M588 190 L588 218" stroke="#0E7C6B" stroke-width="1.6" fill="none" marker-end="url(#f5teal)"/>
+  <rect x="438" y="222" width="300" height="62" rx="11" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="588" y="246" font-size="13" font-weight="700" fill="#0A5C50" text-anchor="middle">Consolidation, setiap ~5–10 turn</text>
+  <text x="588" y="266" font-size="11.5" fill="#2F4A45" text-anchor="middle">model auxiliary lebih murah menyaring riwayat</text>
+
+  <path d="M438 253 L390 253" stroke="#0E7C6B" stroke-width="1.6" fill="none" marker-end="url(#f5teal)"/>
+  <rect x="60" y="222" width="326" height="62" rx="11" fill="#FFFFFF" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="223" y="246" font-size="13" font-weight="700" fill="#0A5C50" text-anchor="middle">memory.md — fakta tahan lama</text>
+  <text x="223" y="266" font-size="11.5" fill="#4C5A57" text-anchor="middle">semantic memory, bisa diedit tangan</text>
+
+  <path d="M223 222 L223 100 L246 100 L246 82" stroke="#0E7C6B" stroke-width="1.6" fill="none" marker-end="url(#f5teal)"/>
+  <text x="238" y="144" font-size="11.5" fill="#0A5C50">dimuat ke context secara default —</text>
+  <text x="238" y="162" font-size="11.5" fill="#0A5C50">atau di-retrieve lewat gate,</text>
+  <text x="238" y="180" font-size="11.5" fill="#0A5C50">kalau kamu membangunnya</text>
+</svg>
+<figcaption><b>Gambar 5. Direkonstruksi dari penjelasan lisan</b> (11:12–13:13) — loop consolidation seperti yang ia narasikan, termasuk detail bahwa penyaringannya dikerjakan model yang <i>lebih murah</i>. Kotak bergaris putus-putus itu penting: ia memperlakukan retrieval gate sebagai opsional, dan justru itu yang membuat lapisan 1 dan lapisan 2 bisa jalan tanpa mesin retrieval apa pun. Bukan reproduksi layar.</figcaption>
+</figure>
+
+<h3>Lapisan 3 — vector store (Supabase PGVector, Weaviate, Pinecone)</h3>
+<p>Memori disimpan sebagai vektor berdimensi tinggi plus metadata, ditemukan lewat similarity search, dirawat dengan upsert dan delete. Ia mencatat Supabase itu database relasional dan "technically not a vector store" — PGVector-lah ekstensi yang membuatnya jadi vector store. Sarannya: berikan vector store modul consolidation yang sama seperti yang ia tunjukkan untuk <code>state.db</code>, supaya perawatannya bukan sekadar upsert-lalu-berharap. <b>Lapisan ini sama sekali tidak dilombakan</b> — lihat catatan peringatan di bagian atas halaman.</p>
+
+<h3>Lapisan 4 — mem0: row memory dan graph memory</h3>
+<p>Dua mode, dan ia berhati-hati menyebut keduanya disimpan sebagai vektor. Row memory adalah satu fakta tahan lama per baris; ia membuka satu di portal mem0 miliknya sendiri dan membacakannya — sebuah fakta permanen bahwa seorang pembeli dari Jerman mensyaratkan sertifikasi vegan pada setiap SKU yang dijual kepada mereka (parafrase dari bacaannya pada 14:59; layar itu tidak pernah berhasil ditangkap, jadi ini semata apa yang ia katakan tertulis di sana). Perawatannya add / update / delete / noop / <b>supersede</b>, dan ia mengaitkan supersede langsung kembali ke contoh star tadi. Graph memory adalah node dan edge dengan traversal.</p>
+<p>Dua pengakuan di bagian ini lebih bernilai daripada daftar fiturnya:</p>
+<ul class="clean">
+  <li>Soal bagaimana retrieval sebenarnya terjadi di produk hosted-nya: <i>"I don't know if they did the keyword search here or doing some embeddings or rags"</i> … <i>"I'm not sure which one they're actually using behind the scene"</i> (15:16–15:26) — maksudnya, ia tidak tahu mekanisme mana yang dipakai di belakang layar. Proyek open-source-nya ada, tapi yang ia lihat versi enterprise.</li>
+  <li>Soal perawatan di mode graph: <i>"I'm not too sure if it does supersede maybe it does too."</i> … <i>"For these things you should check the source code."</i> (16:12–16:21) — maksudnya, untuk hal seperti ini kamu perlu memeriksa source code-nya sendiri.</li>
+</ul>
+<p>Dan inilah alasan graph memory tidak pernah masuk lomba: ia butuh tier berbayar yang ia pilih untuk tidak dibeli, jadi ia mencari alternatif — dan begitulah Zep masuk.</p>
+
+<h3>Lapisan 5 — Zep: temporal graph memory</h3>
+<p>Node, edge, dan <b>validitas</b>: sebuah graph yang berkembang seiring waktu. Retrieval-nya vector search atas node maupun edge plus traversal melintasi graph. Perawatannya justru intinya — ia menandai tidak berlaku dengan rentang waktu alih-alih menghapus, sehingga, dalam kerangkanya, "you never delete it but the history survives". Ini ide pilar 3 dari bagian 5 yang dikirim sebagai fitur produk.</p>
+
+<h3>Plus LangMem — sebuah package, bukan sebuah store</h3>
+<p>Library memori dari LangChain, dan soal ini ia tegas: LangMem tidak punya store sendiri. Ia bekerja di atas store apa pun yang kamu bawa, mengekstraksi dan menyelesaikan update sebelum apa pun ditulis. Simpan ini untuk babak lomba nanti: "LangMem has nothing" di store viewer bukan kegagalan — itu perilaku yang benar untuk sebuah library yang tidak memiliki storage.</p>
+
+<hr class="rule">
+
+<h2><span class="num">7</span>Jamuan makan malam: empat kontestan, satu control group, empat fakta</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">18:16 – 26:32 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1096s" target="_blank" rel="noopener">lompat ke 18:16</a></p>
+
+<p>Paruh kedua adalah demo langsung dari apa yang ia sebut arena — sebuah layar lomba memori di dashboard miliknya sendiri, yang namanya oleh caption ditulis sebagai "memory rays" (18:39). Satu skenario (merencanakan jamuan makan malam), satu set fakta, di-seed ke setiap store, lalu pertanyaan yang sama diajukan ke masing-masing. Judul chapter video untuk bagian ini sendiri berbunyi "seeding 5 stores", yang melipat control group ke dalam hitungan store; halaman ini menghitung empat kontestan dan control-nya secara terpisah. Fakta-faktanya sebagaimana ia bacakan:</p>
+
+<div class="card">
+  <p style="margin:0 0 8px"><span class="tag">1</span> <b>Jensen Huang akan datang</b> — dan terakhir kali, ia menyenggol chili oil sampai jatuh ke karpet putih.</p>
+  <p style="margin:0 0 8px"><span class="tag">2</span> <b>Elon Musk akan datang</b> dan bilang akan tiba jam 7:00 — lalu diperbarui: ia tidak bisa sampai sebelum jam 9:00 pm.</p>
+  <p style="margin:0 0 8px"><span class="tag">3</span> <b>Tom Holland ada di daftar</b> — ia menceritakan ending film berikutnya sambil ngopi Selasa lalu, dan tidak pernah bisa menyimpan rahasia film yang belum tayang.</p>
+  <p style="margin:0"><span class="tag">4</span> <b>Paul Graham berutang 20 quid</b> dari taruhan sourdough; mereka bertemu di Lisbon. (Ia mencatat "quid" adalah sebutan Inggris untuk pound — dan satu pertanyaan soal ini diajukan dalam bahasa Mandarin.)</p>
+</div>
+
+<p>Empat kontestannya: <b>SQLite</b>, <b>mem0</b>, <b>LangMem</b> dan <b>Zep</b>. Melawan mereka, dengan perannya sendiri, ada <b>Control</b> — agen tanpa memori sama sekali. Supabase sengaja tidak diikutkan.</p>
+
+<div class="note">
+  <div class="lbl">Control group adalah ide terbaik dalam pengujian ini</div>
+  <p>Control adalah agent yang <b>sama sekali tidak punya memori</b>. Ia ada untuk menangkap failure mode yang membuat benchmark memori jadi tidak berguna: jawaban yang tampak benar karena model menebak, atau karena faktanya bocor ke dalam prompt. Dan perhatikan bagaimana ia <i>lulus</i> — bukan dengan menjawab, tapi dengan melaporkan secara benar bahwa ia tidak punya catatan. Ketika ditanya kapan Elon tiba, ia melangkah lebih jauh: mencari di memori, memakai tools-nya untuk memeriksa kalender, lalu melaporkan tidak ada acara semacam itu. Sebuah memory system harus mengalahkan <i>itu</i>, bukan mengalahkan kebisuan.</p>
+</div>
+
+<h3>Fakta yang sama, dalam kode biasa</h3>
+<p>Sementara seeding berjalan lambat, ia menyusuri <code>examples/memory_native</code> di repo-nya, satu file per store, dan bentuknya nyaris identik setiap kali: satu daftar fakta, satu daftar pertanyaan, sebuah client, lalu add per fakta dan search. LangMem membangun sebuah memory manager dan memanggil satu percakapan per fakta; mem0 memakai <code>client.add</code> lalu sebuah search; contoh Supabase harus tambah meng-embed dulu lalu me-retrieve; Zep, yang secara default adalah graph, menambahkan setiap fakta ke sebuah graph dan bertanya dengan <code>client.graph.search</code>. Layak dicatat: contoh-contoh kode itu memakai set fakta mereka sendiri yang lebih kecil (bertemu Alex di sebuah AI meetup Lisbon; sebuah peluncuran dijadwalkan Mei, lalu dipindah ke Juni — supersede lagi), bukan skenario jamuan makan malam.</p>
+
+<h3>Hasilnya</h3>
+
+<figure>
+<svg viewBox="0 0 900 404" role="img" aria-label="Grid hasil: empat kontestan dan satu control tanpa memori terhadap tiga pertanyaan, memperlihatkan SQLite benar dalam 4.6 detik, mem0 benar dan menjawab dalam bahasa Mandarin, LangMem benar dalam 7.5 detik, Zep tidak bisa menjawab karena masih seeding, dan control group melaporkan secara benar bahwa ia tidak punya catatan">
+  <text x="14" y="30" font-size="12" font-weight="700" fill="#788682">STORE</text>
+  <rect x="170" y="12" width="230" height="60" rx="9" fill="#E1F1EE" stroke="#BFDFD8"/>
+  <text x="184" y="34" font-size="12.5" font-weight="700" fill="#0A5C50">Q1 · Jensen menjatuhkan apa</text>
+  <text x="184" y="50" font-size="12.5" font-weight="700" fill="#0A5C50">ke karpet saya?</text>
+  <text x="184" y="66" font-size="11.5" fill="#4C5A57">ditanya bahasa Inggris · 23:15</text>
+  <rect x="406" y="12" width="230" height="60" rx="9" fill="#E1F1EE" stroke="#BFDFD8"/>
+  <text x="420" y="34" font-size="12.5" font-weight="700" fill="#0A5C50">Q2 · Berapa utang Paul</text>
+  <text x="420" y="50" font-size="12.5" font-weight="700" fill="#0A5C50">Graham ke saya?</text>
+  <text x="420" y="66" font-size="11.5" fill="#4C5A57">ditanya bahasa Mandarin · 24:19</text>
+  <rect x="642" y="12" width="244" height="60" rx="9" fill="#E1F1EE" stroke="#BFDFD8"/>
+  <text x="656" y="34" font-size="12.5" font-weight="700" fill="#0A5C50">Q3 · Kapan Elon tiba?</text>
+  <text x="656" y="50" font-size="12.5" font-weight="700" fill="#0A5C50">7:00 di-supersede jadi 9:00 pm</text>
+  <text x="656" y="66" font-size="11.5" fill="#4C5A57">24:47</text>
+
+  <rect x="14" y="80" width="150" height="48" rx="9" fill="#FFFFFF" stroke="#16211F" stroke-width="1.4"/>
+  <text x="28" y="102" font-size="13" font-weight="700" fill="#16211F">SQLite FTS5</text>
+  <text x="28" y="119" font-size="11" fill="#788682">disk lokal</text>
+  <text x="184" y="100" font-size="12.5" font-weight="700" fill="#14664C">benar · 4.6s</text>
+  <text x="184" y="118" font-size="11.5" fill="#4C5A57">"chili oil onto the white rug"</text>
+  <text x="420" y="100" font-size="12.5" font-weight="700" fill="#B26A00">benar — tapi menjawab Inggris · 10.3s</text>
+  <text x="420" y="118" font-size="11.5" fill="#4C5A57">pertanyaannya bahasa Mandarin</text>
+  <text x="656" y="100" font-size="12.5" font-weight="700" fill="#14664C">benar</text>
+  <text x="656" y="118" font-size="11.5" fill="#4C5A57">memakai update 9:00 pm</text>
+
+  <rect x="14" y="134" width="150" height="48" rx="9" fill="#FFFFFF" stroke="#16211F" stroke-width="1.4"/>
+  <text x="28" y="156" font-size="13" font-weight="700" fill="#16211F">mem0</text>
+  <text x="28" y="173" font-size="11" fill="#788682">hosted · jaringan</text>
+  <text x="184" y="154" font-size="12.5" font-weight="700" fill="#14664C">benar · "very fast" (tanpa angka)</text>
+  <text x="184" y="172" font-size="11.5" fill="#4C5A57">sedikit lebih lambat dari SQLite</text>
+  <text x="420" y="154" font-size="12.5" font-weight="700" fill="#14664C">benar — dan menjawab Mandarin</text>
+  <text x="420" y="172" font-size="11.5" fill="#4C5A57">menyebut taruhannya dan Lisbon</text>
+  <text x="656" y="154" font-size="12.5" font-weight="700" fill="#14664C">benar</text>
+
+  <rect x="14" y="188" width="150" height="48" rx="9" fill="#FFFFFF" stroke="#16211F" stroke-width="1.4"/>
+  <text x="28" y="210" font-size="13" font-weight="700" fill="#16211F">LangMem</text>
+  <text x="28" y="227" font-size="11" fill="#788682">package, bukan store</text>
+  <text x="184" y="208" font-size="12.5" font-weight="700" fill="#B26A00">benar · 7.5s</text>
+  <text x="184" y="226" font-size="11.5" fill="#4C5A57">paling lambat dari tiga yang menjawab</text>
+  <text x="420" y="208" font-size="12.5" font-weight="700" fill="#14664C">benar</text>
+  <text x="656" y="208" font-size="12.5" font-weight="700" fill="#14664C">benar</text>
+
+  <rect x="14" y="242" width="150" height="48" rx="9" fill="#FCF0EE" stroke="#C4372B" stroke-width="1.4"/>
+  <text x="28" y="264" font-size="13" font-weight="700" fill="#A32C21">Zep</text>
+  <text x="28" y="281" font-size="11" fill="#A32C21">temporal graph · jaringan</text>
+  <text x="184" y="262" font-size="12.5" font-weight="700" fill="#A32C21">tak menjawab — graph masih di-seed</text>
+  <text x="184" y="280" font-size="11.5" fill="#7A2A21">ia lanjut dua kali lalu kembali nanti</text>
+  <text x="656" y="262" font-size="12.5" font-weight="700" fill="#A32C21">tidak di ronde ini</text>
+  <text x="656" y="280" font-size="11.5" fill="#7A2A21">usai seeding: 4.9s · 4.9s · 6.4s (29:41)</text>
+
+  <rect x="14" y="296" width="150" height="48" rx="9" fill="#F5FAF8" stroke="#788682" stroke-width="1.4" stroke-dasharray="5 4"/>
+  <text x="28" y="318" font-size="13" font-weight="700" fill="#16211F">Control</text>
+  <text x="28" y="335" font-size="11" fill="#788682">tanpa memori sama sekali</text>
+  <text x="184" y="316" font-size="12.5" font-weight="700" fill="#14664C">lulus — lapor tak ada catatan</text>
+  <text x="184" y="334" font-size="11.5" fill="#4C5A57">"which the answer is correct"</text>
+  <text x="420" y="316" font-size="12.5" font-weight="700" fill="#4C5A57">tidak ada</text>
+  <text x="656" y="316" font-size="12.5" font-weight="700" fill="#14664C">lulus — tak ada acara kalender</text>
+  <text x="656" y="334" font-size="11.5" fill="#4C5A57">mencari memori, lalu cek kalender</text>
+
+  <rect x="14" y="356" width="872" height="38" rx="9" fill="#FCF0EE" stroke="#C4372B" stroke-width="1.3" stroke-dasharray="6 5"/>
+  <text x="32" y="381" font-size="12" fill="#A32C21">n = 1 · waktu wall-clock dari dashboard-nya · SQLite di disk lokal, mem0/LangMem/Zep lewat jaringan — sebagian selisihnya latensi, bukan kualitas retrieval.</text>
+</svg>
+<figcaption><b>Gambar 6. Direkonstruksi dari hasil yang diucapkan</b> (23:15–24:47, plus waktu Zep pada 29:41). Setiap angka di sini adalah angka yang ia bacakan; tata letak grid-nya milik saya, bukan salinan tabel dashboard-nya. Grid ini disusun agar dua hal yang tidak pernah ditaruh bersebelahan oleh video terlihat sekaligus: control group yang lulus, dan kenyataan bahwa store tercepat justru yang paling tidak canggih. Nama store dan label "Control" dibiarkan dalam bahasa Inggris.</figcaption>
+</figure>
+
+<h3>Pertanyaan berbahasa Mandarin adalah hasil yang paling mendidik</h3>
+<p>Ditanya dalam bahasa Mandarin berapa utang Paul Graham, SQLite berhasil me-retrieve fakta yang benar lalu menjawab <b>dalam bahasa Inggris</b>, dengan waktu 10.3s. mem0 menjawab benar <i>dalam bahasa Mandarin</i>, menyebut taruhannya dan Lisbon. Bacaannya atas hasil ini:</p>
+
+<div class="quote">
+  <p>"I don't know. Maybe because … SQLite is a little bit too simple for keyword searching, so it doesn't really know how to search in Chinese because the memory was in English."</p>
+  <cite>— Shen Sean Chen, 24:31</cite>
+</div>
+
+<p class="lede"><b>Maksudnya:</b> ia tidak tahu; mungkin SQLite terlalu sederhana untuk keyword search sehingga tidak tahu cara mencari dalam bahasa Mandarin, karena memorinya tertulis dalam bahasa Inggris.</p>
+
+<p>Perhatikan keraguannya — "I don't know. Maybe" — dan pertahankan keraguan itu. Ini sebuah mekanisme yang masuk akal, bukan sebuah diagnosis: pencocokan keyword tidak punya jalan melintasi batas bahasa, karena kata-katanya memang tidak bertumpang, sementara embedding dari pertanyaan bisa mendarat dekat sebuah fakta berbahasa Inggris dengan makna yang sama. Tapi gejala yang terlihat adalah <i>bahasa jawabannya</i>, bukan retrieval yang gagal, dan video ini tidak memisahkan "tidak menemukan apa pun yang berguna" dari "menemukannya lalu menjawab dalam bahasa yang salah". Sebagaimana disampaikan, ini justru jenis hasil yang layak dijalankan ulang dengan benar — dan itu juga bacaan yang jujur atas satu kali percobaan.</p>
+
+<hr class="rule">
+
+<h2><span class="num">8</span>Di dalam graph Zep: satu kemenangan nyata, dan satu masalah kecepatan</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p class="lede">26:32 – 30:04 · <a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1592s" target="_blank" rel="noopener">lompat ke 26:32</a></p>
+
+<p>Ini bagian demo yang paling menarik justru karena ia menolak berakhir rapi. Graph-nya terlambat, sulit dinavigasi — ia terus terang bilang tidak tahu harus mencari sesuatu di mana di dalamnya — dan begitu ia membuka tampilan yang tepat, graph itu menunjukkan sesuatu yang tidak dihasilkan store lain mana pun:</p>
+
+<div class="quote">
+  <p>"…you see this edge carries information because Tom Holland and his next film it means nothing. But look at this edge. This edge is saying revealed ending of."</p>
+  <cite>— Shen Sean Chen, 28:08</cite>
+</div>
+
+<p class="lede"><b>Maksudnya:</b> edge inilah yang membawa informasi — "Tom Holland" dan "his next film" saja tidak berarti apa-apa, tapi edge di antara keduanya berbunyi <i>revealed ending of</i>.</p>
+
+<p>Itulah klaim Graph RAG dari bagian 4, yang benar-benar terbukti. Dua node yang cuma dihubungkan tautan kosong akan jadi noise; sebuah edge yang sudah <i>diringkas</i> menjadi "revealed ending of" adalah relasi yang bisa di-retrieve. Namun di tampilan yang sama, hal-hal lain lebih tipis: Paul Graham berutang 20 quid (benar), tapi juga "owes" ke Waku Agent Arena (yang ia bilang sendiri tidak ia pahami), dan relasi chili oil datang membawa noda tapi tanpa tamu yang menempel padanya.</p>
+
+<figure>
+<svg viewBox="0 0 900 342" role="img" aria-label="Pecahan dari temporal graph: Tom Holland terhubung ke his next film oleh sebuah edge berlabel revealed ending of, Paul Graham terhubung ke 20 quid dan juga ke Waku Agent Arena, dan chili oil terhubung ke the white rug tanpa tamu yang menempel">
+  <defs>
+    <marker id="f7green" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#1B8A54"/></marker>
+    <marker id="f7ink" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#5A6B67"/></marker>
+    <marker id="f7amber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#B26A00"/></marker>
+  </defs>
+
+  <rect x="40" y="48" width="170" height="46" rx="23" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="125" y="77" font-size="13.5" font-weight="700" fill="#0A5C50" text-anchor="middle">Tom Holland</text>
+  <path d="M212 71 L404 71" stroke="#1B8A54" stroke-width="2.2" fill="none" marker-end="url(#f7green)"/>
+  <rect x="232" y="46" width="156" height="24" rx="6" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.2"/>
+  <text x="310" y="63" font-size="12.5" font-weight="700" fill="#14664C" text-anchor="middle">revealed ending of</text>
+  <rect x="408" y="48" width="170" height="46" rx="23" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="493" y="77" font-size="13.5" font-weight="700" fill="#0A5C50" text-anchor="middle">his next film</text>
+  <rect x="620" y="40" width="266" height="62" rx="11" fill="#E4F3EA" stroke="#1B8A54" stroke-width="1.5"/>
+  <text x="638" y="64" font-size="12.5" font-weight="700" fill="#14664C">Edge-nya sendiri membawa makna</text>
+  <text x="638" y="84" font-size="11.5" fill="#1E5B45">ringkasan sungguhan, bukan tautan kosong</text>
+
+  <rect x="40" y="146" width="170" height="46" rx="23" fill="#E1F1EE" stroke="#0E7C6B" stroke-width="1.6"/>
+  <text x="125" y="175" font-size="13.5" font-weight="700" fill="#0A5C50" text-anchor="middle">Paul Graham</text>
+  <path d="M212 169 L404 169" stroke="#5A6B67" stroke-width="1.7" fill="none" marker-end="url(#f7ink)"/>
+  <text x="308" y="162" font-size="12" font-weight="700" fill="#4C5A57" text-anchor="middle">owes</text>
+  <rect x="408" y="146" width="140" height="46" rx="23" fill="#FFFFFF" stroke="#16211F" stroke-width="1.5"/>
+  <text x="478" y="175" font-size="13.5" font-weight="700" fill="#16211F" text-anchor="middle">20 quid</text>
+  <path d="M180 192 C 240 250, 480 236, 616 246" stroke="#B26A00" stroke-width="1.7" fill="none" marker-end="url(#f7amber)"/>
+  <text x="352" y="238" font-size="12" font-weight="700" fill="#B26A00" text-anchor="middle">owes</text>
+  <rect x="620" y="224" width="220" height="46" rx="23" fill="#FDF3E3" stroke="#B26A00" stroke-width="1.5"/>
+  <text x="730" y="253" font-size="13" font-weight="700" fill="#8A5200" text-anchor="middle">Waku Agent Arena</text>
+  <text x="620" y="290" font-size="11.5" fill="#B26A00">"which I don't understand" — 28:27</text>
+
+  <rect x="40" y="276" width="150" height="44" rx="22" fill="#FFFFFF" stroke="#16211F" stroke-width="1.5"/>
+  <text x="115" y="304" font-size="13" font-weight="700" fill="#16211F" text-anchor="middle">chili oil</text>
+  <path d="M192 298 L344 298" stroke="#5A6B67" stroke-width="1.7" fill="none" marker-end="url(#f7ink)"/>
+  <text x="268" y="291" font-size="12" font-weight="700" fill="#4C5A57" text-anchor="middle">stained</text>
+  <rect x="348" y="276" width="150" height="44" rx="22" fill="#FFFFFF" stroke="#16211F" stroke-width="1.5"/>
+  <text x="423" y="304" font-size="13" font-weight="700" fill="#16211F" text-anchor="middle">the white rug</text>
+  <rect x="512" y="278" width="84" height="40" rx="20" fill="#FCF0EE" stroke="#C4372B" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="554" y="303" font-size="12" font-weight="700" fill="#A32C21" text-anchor="middle">tanpa tamu</text>
+  <path d="M508 298 L470 298" stroke="#C4372B" stroke-width="1.4" fill="none" stroke-dasharray="4 4"/>
+  <text x="606" y="303" font-size="11.5" fill="#A32C21">relasinya datang tanpa orangnya</text>
+</svg>
+<figcaption><b>Gambar 7. Direkonstruksi dari apa yang ia bacakan</b> sambil menavigasi graph (28:08–28:51) — sebuah pecahan, bukan keseluruhan graph, dan bukan reproduksi UI-nya. Gambar ini menaruh dua temuan bagian ini dalam satu bidang: edge <i>"revealed ending of"</i> adalah bukti terkuat di video ini soal apa yang kamu beli dengan sebuah graph, dan dua edge yang lebih lemah di sebelahnya adalah alasan ia tetap ragu. Label node dan edge dibiarkan dalam bahasa Inggris karena itu isi graph-nya sebagaimana ia bacakan.</figcaption>
+</figure>
+
+<p>Penilaiannya, di depan kamera, campur aduk — dan justru lebih baik karena begitu:</p>
+
+<div class="quote">
+  <p>"I feel like it lost some information here. And it's taking forever." … "Maybe it's an overkill for a lot of these smaller use cases…"</p>
+  <cite>— Shen Sean Chen, 29:03 dan 29:07 · Maksudnya: ia merasa ada informasi yang hilang di sini, dan prosesnya lama sekali; mungkin ini overkill untuk banyak use case yang lebih kecil.</cite>
+</div>
+
+<p>Lalu, ditujukan langsung ke vendornya dengan menyebut nama:</p>
+
+<div class="quote">
+  <p>"Zep team, if you're watching this, I think this is a big pain point. Love the product, love the visualization, but please fix speed or at least do something about it for making simpler tasks faster."</p>
+  <cite>— Shen Sean Chen, 29:53 · Maksudnya: ia menyapa tim Zep — ia menyukai produk dan visualisasinya, tapi tolong perbaiki kecepatannya, atau setidaknya buat tugas-tugas yang lebih sederhana jadi lebih cepat.</cite>
+</div>
+
+<div class="note warn">
+  <div class="lbl">Dua peringatan untuk bagian ini</div>
+  <p><b>Keterlambatan seeding tidak diukur.</b> Ia kehilangan kesabaran, memotong adegan dua kali, dan di satu titik mengisi waktu dengan promosi komunitasnya — jadi "taking forever" adalah kesan wall-clock dari satu kali percobaan lewat jaringan, bukan sebuah benchmark. Setelah selesai di-seed, store itu menjawab dalam 4.9s, 4.9s dan 6.4s, yang kompetitif dibanding semua yang lain.</p>
+  <p><b>Bacaannya atas edge chili oil tidak bisa diandalkan.</b> Menjelang akhir video ia menyebut tamu yang salah sebagai pelaku tumpahan — fakta yang di-seed menisbatkannya ke Jensen Huang — sehingga keluhan spesifiknya soal edge itu tidak bisa diterima apa adanya. Yang jelas ditunjukkan graph adalah sebuah relasi noda <i>tanpa</i> tamu yang menempel, dan itu tetap sebuah celah nyata. Kekeliruan ini tidak menyentuh angka waktu maupun hasil-hasil sebelumnya.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">9</span>Satu tabel: lima lapisan, plus apa yang diuji dan apa yang tidak</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:15%">Lapisan</th><th style="width:20%">Apa itu memorinya</th><th style="width:20%">Bagaimana ia ditemukan</th><th style="width:22%">Bagaimana ia dirawat</th><th>Di dalam lomba</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>1 · Teks biasa</b><br><span style="color:var(--muted);font-size:13px">Hermes, Waku Agent</span></td>
+      <td><code>SOUL.md</code>, skills, <code>memory.md</code> — file di disk</td>
+      <td><b>Do nothing.</b> Dimuat lebih dulu ke context window</td>
+      <td>Edit dengan tangan, atau biarkan consolidation menulisnya ulang</td>
+      <td>Bukan kontestan; ini pendekatan yang dibela penulisnya</td>
+    </tr>
+    <tr>
+      <td><b>2 · SQLite</b><br><span style="color:var(--muted);font-size:13px">state.db</span></td>
+      <td>Baris di dalam tabel relasional</td>
+      <td>Keyword search (FTS5)</td>
+      <td>Edit dengan tangan, atau lewat modul consolidation</td>
+      <td><b>Tercepat menjawab</b> (4.6s) · gagal ikut pindah bahasa (10.3s, menjawab dalam bahasa Inggris)</td>
+    </tr>
+    <tr>
+      <td><b>3 · Vector store</b><br><span style="color:var(--muted);font-size:13px">PGVector, Weaviate, Pinecone</span></td>
+      <td>Vektor plus metadata — tetap baris, dalam kasus PGVector</td>
+      <td>Similarity search atas embedding</td>
+      <td>Upsert / delete — atau tambahkan consolidation-mu sendiri</td>
+      <td><b>Tidak pernah diuji.</b> Sengaja dikeluarkan: "we're not testing embeddings here"</td>
+    </tr>
+    <tr>
+      <td><b>4 · mem0</b></td>
+      <td>Row memory dan graph memory — keduanya disimpan sebagai vektor</td>
+      <td>Tidak diungkap untuk versi hosted; ia mengatakannya sendiri</td>
+      <td>Add / update / delete / noop / supersede</td>
+      <td>Mode row: benar di ketiga pertanyaan, dan <b>menjawab dalam bahasa Mandarin</b> di tempat SQLite menjawab dalam bahasa Inggris. <b>Mode graph tidak diuji</b> — terkunci tier berbayar</td>
+    </tr>
+    <tr>
+      <td><b>5 · Zep</b></td>
+      <td>Temporal graph: node, edge, validity window</td>
+      <td>Vector search atas node <i>dan</i> edge, plus traversal</td>
+      <td>Ditandai tidak berlaku lewat rentang waktu; sejarahnya selamat</td>
+      <td>Ketinggalan ronde live karena masih seeding; 4.9 / 4.9 / 6.4s setelah siap. Menghasilkan satu-satunya edge yang bermakna — dan beberapa detail yang hilang</td>
+    </tr>
+    <tr>
+      <td><b>+ LangMem</b><br><span style="color:var(--muted);font-size:13px">LangChain</span></td>
+      <td>Tidak punya apa pun sendiri — <b>sebuah package, bukan sebuah store</b></td>
+      <td>Apa pun yang didukung store yang kamu bawa</td>
+      <td>Mengekstraksi dan menyelesaikan update sebelum menulis</td>
+      <td>Benar di ketiga pertanyaan; paling lambat menjawab Q1 dengan 7.5s. Kosong di store viewer, sesuai dugaan</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">10</span>Apa yang bisa dibawa pulang</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>Argumen penutupnya justru datang, agak aneh, di tengah video dan bukan di akhirnya — pada 12:13, saat ia masih membahas teks biasa:</p>
+
+<div class="quote">
+  <p>"What lasts forever or what matters most to you eventually is the memories. … If you're committing these memories and then store them well and prepare them well and then take care of them, then these memories are the most valuable assets for any AI agent harness."</p>
+  <cite>— Shen Sean Chen, 12:13–12:24 · Maksudnya: yang bertahan selamanya dan paling berarti pada akhirnya adalah memorinya — kalau kamu meng-commit, menyimpan, menyiapkan dan merawatnya dengan baik, memori itulah aset paling bernilai bagi agent harness mana pun.</cite>
+</div>
+
+<p>Perhatikan syaratnya, yang mudah sekali hilang: memori itu aset <i>kalau</i> kamu meng-commit-nya, menyimpannya dengan baik dan merawatnya — pilar 3 yang bekerja di sini. Dipasangkan dengan kalimat tepat sebelumnya — <i>"agent harness is very flexible. You don't have to stick to any standard"</i> (12:06), maksudnya harness itu sangat fleksibel dan kamu tidak harus terikat standar apa pun — argumennya adalah sebuah asimetri: harness ditulis ulang, model ditukar, framework datang dan pergi, dan memorinya harus selamat melewati semua itu. Dan itu alasan bagus untuk lebih memilih store yang bisa kamu buka, baca dan edit dengan tangan ketimbang store yang hanya bisa kamu jangkau lewat API orang lain.</p>
+
+<div class="card">
+  <ul class="clean" style="margin:0">
+    <li><b>Jawab tiga pertanyaan itu secara eksplisit</b> untuk apa pun yang kamu bangun. Sebagian besar perdebatan soal memori adalah orang-orang yang saling menjawab pilar yang berbeda.</li>
+    <li><b>Mulai dari "do nothing".</b> Kalau faktanya masih muat di context window, memuat sebuah file lebih dulu bukan kompromi — itu satu komponen lebih sedikit yang bisa salah. Naik ke tingkat berikutnya hanya kalau ukurannya atau kualitas retrieval-nya memaksa kamu.</li>
+    <li><b>Retire, jangan delete.</b> Memberi batas validity window pada fakta lama nyaris tidak berbiaya dan menjaga kemampuan menjelaskan jawaban yang kamu berikan minggu lalu. Ini satu ide desain di sini yang berlaku store apa pun yang kamu pakai.</li>
+    <li><b>Beri atribusi pada setiap fakta.</b> "User memberitahuku hari Selasa" dan "sebuah web search mengatakannya" pantas mendapat tingkat kepercayaan yang berbeda.</li>
+    <li><b>Selalu jalankan control group.</b> Sebuah agent tanpa memori yang dengan benar bilang "saya tidak punya catatan" adalah baseline yang mencegah kamu memberi kredit ke lapisan memori atas tebakan model.</li>
+    <li><b>Beli temporal graph untuk relasinya, bukan untuk kecepatannya.</b> Dari bukti ini, peringkasan edge-nya nyata dan latensinya juga nyata; kalau use case-mu kecil, kesimpulan video ini sendiri adalah bahwa ia mungkin overkill.</li>
+    <li><b>Untuk lingkungan yang teregulasi atau diaudit</b> — alasan untuk peduli pada pilar 3 adalah keterlacakan. Retire plus attribute-lah yang memungkinkan kamu merekonstruksi <i>mengapa</i> sebuah agent mengatakan sesuatu berbulan-bulan kemudian; store yang hanya menimpa tidak bisa memberikan itu dengan harga berapa pun.</li>
+  </ul>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">11</span>Posisi entri ini di dalam library</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<ul class="clean">
+  <li><a href="../loop-vs-graph/"><b>Loop Engineering vs Graph Engineering</b></a> (versi Inggris) — penulis yang sama, harness yang sama, seri yang sama, dan pendahulu langsungnya: entri itu menyebut retrieval gate dan pembagian procedural/semantic/episodic dalam satu baris. Video ini adalah baris itu yang jadi satu video utuh. Ia juga menutup satu permintaan terbuka di daftar <b>Wanted</b> topik ini — arsitektur memori yang dibandingkan dengan sesuatu selain perasaan — walau perbandingan yang datang adalah satu lomba informal n=1, bukan studi terukur yang diminta butir itu.</li>
+  <li><a href="../../evaluation-and-observability/signal-to-pr/"><b>From Signal to PR</b></a> (versi Inggris) — baca keduanya bersamaan untuk kesimpulan mengejutkan yang sama yang dicapai dari arah berlawanan: di sana, langkah tidak keren yang justru bekerja adalah menulis trace produksi ke dalam repo <i>sebagai file</i> karena coding harness ajaib kalau berhadapan dengan file; di sini, langkahnya adalah menyimpan memori sebagai teks biasa yang dimuat lebih dulu ke context, dengan Hermes dan Waku Agent yang tidak memakai retrieval maupun embedding sama sekali.</li>
+</ul>
+
+<hr class="rule">
+
+<h2><span class="num">12</span>Indeks chapter — lompat langsung ke satu bagian</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>Video ini punya 24 chapter; berikut judul dan batasannya sendiri, masing-masing dengan deep link. <b>Judul dibiarkan dalam bahasa Inggris persis seperti di YouTube</b> — menerjemahkannya akan memutus kaitan antara halaman ini dan sumbernya.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:14%">Waktu</th><th>Judul chapter (asli, bahasa Inggris)</th></tr></thead>
+  <tbody>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=0s" target="_blank" rel="noopener">0:00</a></td><td>Why every LLM call starts with amnesia</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=25s" target="_blank" rel="noopener">0:25</a></td><td>Harness recap: procedural, semantic, episodic memory</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=58s" target="_blank" rel="noopener">0:58</a></td><td>RAG, agentic RAG, Graph RAG, and why Hermes and Waku use none</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=112s" target="_blank" rel="noopener">1:52</a></td><td>One agent run: retrieval gate, tools, tracing</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=151s" target="_blank" rel="noopener">2:31</a></td><td><b>Pillar 1: what a memory is (text, table, graph)</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=304s" target="_blank" rel="noopener">5:04</a></td><td><b>Pillar 2: how the agent finds it (do nothing, keyword, RAG, Graph RAG)</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=449s" target="_blank" rel="noopener">7:29</a></td><td>Pillar 3: how you maintain it (add, delete, retire, attribute, reflect)</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=472s" target="_blank" rel="noopener">7:52</a></td><td><b>Retire vs delete: the 1,000 to 1,300 stars example</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=541s" target="_blank" rel="noopener">9:01</a></td><td>Reflect, and Anthropic's "dreaming"</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=587s" target="_blank" rel="noopener">9:47</a></td><td>Layer 1: plain text (SOUL.MD, skills, memory.MD)</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=672s" target="_blank" rel="noopener">11:12</a></td><td>The consolidation pipeline and the retrieval gate</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=753s" target="_blank" rel="noopener">12:33</a></td><td>Layer 2: SQLite state.db and keyword search</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=793s" target="_blank" rel="noopener">13:13</a></td><td>Layer 3: vector stores (Supabase PGVector, Weaviate, Pinecone)</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=878s" target="_blank" rel="noopener">14:38</a></td><td>Layer 4: mem0 row memory vs graph memory</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=989s" target="_blank" rel="noopener">16:29</a></td><td>Layer 5: Zep temporal graph memory</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1040s" target="_blank" rel="noopener">17:20</a></td><td>LangMem: a package, not a store</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1096s" target="_blank" rel="noopener">18:16</a></td><td><b>The dinner party: seeding 5 stores with the same facts</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1263s" target="_blank" rel="noopener">21:03</a></td><td>Code walkthrough: examples/memory_native</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1395s" target="_blank" rel="noopener">23:15</a></td><td>Test: Jensen and the chili oil</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1459s" target="_blank" rel="noopener">24:19</a></td><td><b>Test: Paul Graham's 20 quid, asked in Chinese</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1487s" target="_blank" rel="noopener">24:47</a></td><td>Test: superseding Elon's arrival time</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1592s" target="_blank" rel="noopener">26:32</a></td><td><b>Inside Zep's graph: the edge that carried meaning</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1739s" target="_blank" rel="noopener">28:59</a></td><td>Where temporal graphs become overkill</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=072eNztI06k&amp;t=1804s" target="_blank" rel="noopener">30:04</a></td><td>Final take: the memory is the asset</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="srcbox">
+  <div class="lbl">Sumber</div>
+  <p><b>"You Can Learn AI Agent Memory Layers | Graph RAG, Vector DB, SQLite, Hermes, Waku"</b> — Shen Sean Chen.<br>
+  Kanal: Sean's AI Stories (YouTube). Dipublikasikan 16 Agustus 2026. Durasi 30:26.</p>
+  <p><a href="https://www.youtube.com/watch?v=072eNztI06k" target="_blank" rel="noopener">https://www.youtube.com/watch?v=072eNztI06k</a></p>
+  <p style="color:var(--ink2); font-size:13.5px">Proyek, produk dan ide yang disebut di video: <b>Waku Agent</b> (harness open-source milik penulisnya sendiri, <code>pip install waku-agent</code>, 1,300+ star GitHub saat perekaman) · <b>Hermes</b> · <b>mem0</b> · <b>Zep</b> · <b>LangMem</b> (LangChain) · <b>Supabase PGVector</b> · <b>Weaviate</b> · <b>Pinecone</b> · SQLite FTS5 · dan "dreaming" versi Anthropic, dikutip tanpa referensi.</p>
+</div>
+
+<div class="prov">
+<p><b>Bagaimana penjelasan ini dibuat.</b> Disusun dari trek caption otomatis video (393 segmen yang membentang 0:00–30:25) dan 24 chapter milik video itu sendiri, yang memberikan setiap batas bagian serta judul-judul di indeks chapter. Tidak ada sumber lain yang dipakai; tidak ada apa pun di sini yang diambil dari dokumentasi produk-produknya. Judul-judul chapter itu adalah string milik pembuat video di rekaman data YouTube, bukan transkrip ucapannya — dua di antaranya lebih rapi daripada apa pun yang ia ucapkan, yaitu angka "1,300 stars" dan frasa "a package, not a store".</p>
+<ul>
+  <li><b>Terjemahan.</b> Halaman ini adalah terjemahan Bahasa Indonesia dari <a href="index.html">entri versi Inggris</a>, yang sudah diverifikasi lebih dulu dan tetap menjadi rujukan utama; struktur, angka, tautan dan argumennya tidak diubah. <b>Semua kutipan dibiarkan dalam bahasa Inggris asli</b> — bantuan terjemahan diberikan di luar tanda kutip, ditandai "Maksudnya:", atau di baris atribusi. Judul 24 chapter juga dibiarkan persis seperti yang dipakai YouTube. Pada Gambar 1 label kotaknya adalah tulisan di whiteboard pembicara, jadi tetap berbahasa Inggris; pada gambar lain nama store, nama strategi dan label graph tetap berbahasa Inggris karena itu istilah penulisnya, sementara keterangan dan caption diterjemahkan.</li>
+  <li><b>Kutipan.</b> Verbatim dari trek caption otomatis itu. Setiap block quote membawa timestamp-nya; frasa pendek yang dikutip di dalam prosa dan gambar juga verbatim, tapi tidak semuanya membawa timestamp. "…" menandai kata yang dihilangkan — dan bila penghilangan itu akan membuang sesuatu yang menopang makna alih-alih sekadar pengisi, kata-katanya dibiarkan. Karena transkripnya dihasilkan mesin, sebuah kutipan adalah bagaimana trek caption menuliskan apa yang diucapkan, yang berjarak satu langkah dari audionya.</li>
+  <li><b>Ejaan yang dikoreksi.</b> Caption-nya mengacak nama produk di sepanjang video — Zep muncul sebagai "Zap" dan "Zeb", mem0 sebagai "Memzer" dan "Mem Zero", LangMem sebagai "Lam Mem", Supabase sebagai "Superbase", <code>SOUL.md</code> sebagai "so.md". Bentuk yang sudah dikoreksi dipakai di prosa, tapi tidak pernah di dalam kutipan, dan tidak ada nama produk yang ditegaskan hanya berdasarkan otoritas trek caption.</li>
+  <li><b>Gambar 1</b> digambar ulang dari satu frame yang ditangkap pada 4:56 dan catatan tertulis tentang apa yang tampak di frame itu: kotak akar pink, tiga kotak pilar hijau dan daftar butirnya milik sumbernya sendiri — karena itu label-labelnya tetap berbahasa Inggris — dan catatan bahwa baru pilar 1 yang terisi mencerminkan keadaan whiteboard pada saat itu. Screenshot-nya sendiri tidak direproduksi di sini: repositori ini menerbitkan SVG yang digambar ulang, tidak pernah gambar hasil tangkapan layar.</li>
+  <li><b>Gambar 2–7 adalah rekonstruksi dari penjelasan lisan.</b> Semuanya ilustrasi atas apa yang dijelaskan video secara verbal, bukan reproduksi layar tertentu. Enam dari tujuh frame yang direncanakan gagal ditangkap (tab browser tidak bisa dijaga tetap di depan), jadi dashboard hasil, layar seeding dan UI graph semuanya dibangun ulang dari narasi. Khususnya, grid pada Gambar 6 adalah susunan saya sendiri atas angka-angka yang ia bacakan, bukan salinan tabel dashboard-nya, dan Gambar 7 adalah pecahan dari graph yang lebih besar.</li>
+  <li><b>Angka-angkanya.</b> Setiap catatan waktu adalah miliknya, diucapkan lisan, wall-clock, satu kali jalan per pertanyaan, mencampur satu file SQLite lokal dengan panggilan jaringan ke layanan hosted. Hasil Q1 untuk mem0 <i>tidak</i> punya angka — ia hanya bilang "very fast" dan "a slightly longer time than SQLite", dan tidak ada angka yang dikarang. Baris vector store pada tabel perbandingan adalah teori: store itu tidak pernah dijalankan.</li>
+  <li><b>Tidak dicek ulang terhadap halaman aslinya yang hidup.</b> Pada saat verifikasi, sumbernya tidak bisa dijangkau dari lingkungan ini — tool metadata timeout berulang kali, satu percobaan fetch halaman mengembalikan kosong, dan akses browser diblokir kebijakan — sehingga metadata di bawah bersandar pada hasil harvest yang asli dan hanya diperiksa konsistensi internalnya, bukan terhadap YouTube sebagaimana keadaannya hari ini.</li>
+  <li><b>Tanggal publikasi.</b> 16 Agustus 2026, persis dari catatan video — bukan hasil hitungan umur relatif. Sebagai catatan kecil, menu bar yang terlihat di frame yang ditangkap berbunyi Sat Aug 15, jadi video ini direkam sehari sebelum dipublikasikan.</li>
+  <li><b>Judulnya tidak stabil di sumbernya.</b> Dua judul berbeda teramati untuk video ini dalam rentang dua jam, satu dari API dan satu dari halaman watch yang hidup, dengan tanggal unggah yang tidak berubah — kemungkinan besar uji judul dari sisi kreator. Kotak sumber mencatat bentuk yang dikembalikan API. Bentuk lain yang teramati adalah <i>"You Can Learn To Store, Retrieve &amp; Maintain AI Agent Memory | Graph RAG, SQLite, Hermes, Waku"</i>. Tidak satu pun ditegaskan di sini sebagai <i>satu-satunya</i> judul.</li>
+  <li><b>"The memory is the asset"</b> adalah pemadatan dari 12:13–12:24, bukan satu kalimat yang ia ucapkan — dan letaknya di tengah video, bukan kalimat penutupnya; kata-kata verbatimnya dikutip di bagian 10. Chapter berjudul "Final take: the memory is the asset" adalah judul chapter milik video itu sendiri.</li>
+  <li><b>Satu kekeliruan yang dibiarkan tidak dikoreksi di sumbernya.</b> Menjelang akhir video ia menyebut tamu yang salah untuk tumpahan chili oil; fakta yang di-seed menisbatkannya ke Jensen Huang. Kalimat yang salah itu tidak dikutip atau diulang di sini, dan titik di mana hal itu memengaruhi bacaannya atas graph ditandai di bagian 8.</li>
+  <li><b>Penyajian.</b> Entri ini memakai palet aksen sendiri (teal di atas kertas berwarna dingin) sambil tetap memakai kosakata komponen dan aturan tata letak rumah. Palet, komponen dan seluruh blok <code>style</code> identik dengan versi Inggrisnya.</li>
+</ul>
+</div>
+
+</div>
+</body>
+</html>
