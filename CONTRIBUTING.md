@@ -68,7 +68,14 @@ component. Two hard rules:
   text-searchable, and avoid redistributing someone else's slide artwork. Label them as
   reconstructions in the caption.
 
-Do not edit the `:root` palette. Add new component classes if you need them; don't redefine the colours.
+**On the palette.** Each entry declares its **own accent palette** in its own `:root` — that is the
+convention, documented in [README.md → Design system](README.md#design-system), and every entry so far
+follows it. What must not vary is the **component vocabulary** (`.tldr`, `.note`, `.quote`, `.srcbox`
+and friends), self-containment, and the layout rules. Add new component classes if you need them; do
+not rename or repurpose the existing ones.
+
+> Earlier revisions of this file said "do not edit the `:root` palette", which contradicted the README
+> and every shipped entry. Corrected 2026-08-18.
 
 ### 5. Write the entry README
 
@@ -89,8 +96,11 @@ A new entry has to be linked from four places or nobody will find it:
 | --- | --- |
 | `topics/<topic>/README.md` | A row in that topic's **Entries** table |
 | `topics/README.md` | Increment the topic's entry count |
-| `README.md` (root) | A row in the **Catalog** table, the topic's count in the **Topics** table, and the `entries` / `updated` badges at the top |
+| `README.md` (root) | Four things: a row in the **Catalog** table, the topic's count in the **Topics** table, the `entries` / `updated` badges, **and a row in the [Design system](README.md#design-system) palette table** |
 | `index.html` (root) | An `<article class="entry">` card, a filter button if the topic is new, the topic card's count, and the header chips |
+
+> **There are five surfaces, not four.** The Design-system palette table is easy to forget and was
+> missed once already — `verification-debt` shipped without a row and had to be backfilled. Count it.
 
 ### 7. Check it before committing
 
