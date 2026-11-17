@@ -14,6 +14,8 @@ technique. An entry lands here when the story *is* the deployment.
 
 _No entries yet._ See [CONTRIBUTING.md](../../CONTRIBUTING.md) to add the first one.
 
+**Filed elsewhere, relevant here:** [Rethinking Claude Code Best Practices](../agent-architecture/rethinking-claude-code/) (in `agent-architecture`) — how Anthropic's own team runs dozens of parallel Claude Code sessions: their cited jump from about 2,500 to 30,000+ merged changes a day (a throughput figure), a separate Claude reviewing every PR, and human review scaled to risk. Told by the Claude Code team, so a vendor's account of its own practice.
+
 ## Wanted
 
 - Deployments reported with real numbers, not adjectives.

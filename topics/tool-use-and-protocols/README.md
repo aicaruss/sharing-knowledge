@@ -14,6 +14,8 @@ serving and scaling the tool backends → see [`infrastructure`](../infrastructu
 
 _No entries yet._ See [CONTRIBUTING.md](../../CONTRIBUTING.md) to add the first one.
 
+**Filed elsewhere, relevant here:** [Rethinking Claude Code Best Practices](../agent-architecture/rethinking-claude-code/) (in `agent-architecture`) — permissioning as a layered design: a deny rule checked before an auto-mode classifier, an OS-enforced sandbox that also covers child processes, and cloud sessions with network secrets and a domain allowlist. Plus hooks as guaranteed checkpoints, and why a failing hook must exit 2 rather than 1.
+
 ## Wanted
 
 - Tool schema design as a craft: how naming, granularity, and description wording change behaviour.
