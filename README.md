@@ -7,10 +7,10 @@
 Talks, papers and engineering write-ups — read properly, then rebuilt as
 self-contained HTML explainers you can actually finish.
 
-[![Entries](https://img.shields.io/badge/entries-5-E8511F?style=flat-square)](#catalog)
+[![Entries](https://img.shields.io/badge/entries-6-E8511F?style=flat-square)](#catalog)
 [![Topics](https://img.shields.io/badge/topics-7-2B2622?style=flat-square)](#topics)
 [![Format](https://img.shields.io/badge/format-self--contained%20HTML-5A5049?style=flat-square)](#anatomy-of-an-entry)
-[![Updated](https://img.shields.io/badge/updated-2026--08--18-1B8A54?style=flat-square)](#catalog)
+[![Updated](https://img.shields.io/badge/updated-2026--11--17-1B8A54?style=flat-square)](#catalog)
 
 **📖 [Read online → aicaruss.github.io/sharing-knowledge](https://aicaruss.github.io/sharing-knowledge/)**
 
@@ -108,6 +108,7 @@ Named `index.html` on purpose: GitHub Pages then serves the entry at a clean
 | 03 | **[From Signal to PR: Anatomy of a Self-Improving Agent](topics/evaluation-and-observability/signal-to-pr/)**<br><sub>Observability stops being a dashboard you click and becomes machine input. The unlock is deliberately unglamorous — production traces written into the repo as files, because harnesses are magical with files and hopeless with a dashboard. The loop inverts (agent digs, you review), and so you should now log ten times more, not less.</sub><br><sub>[📄 notes](topics/evaluation-and-observability/signal-to-pr/README.md) · [📖 read](https://aicaruss.github.io/sharing-knowledge/topics/evaluation-and-observability/signal-to-pr/) · [↗ source](https://www.youtube.com/watch?v=9HbzAWnKbo4)</sub> | `evaluation-and-observability` | Jason Lopatecki<br><sub>Arize AI</sub> | Talk explainer<br><sub>20m35s</sub> | 2026-08-11 |
 | 04 | **[Verification Debt: Guide, Verify, Solve](topics/evaluation-and-observability/verification-debt/)**<br><sub>The productivity spike from AI coding tools expires in about three months; the static-analysis warnings and complexity it leaves behind do not. That residue is verification debt, and it scales with criticality — an agent's default quality is flat while the quality a project needs rises. Human review is a leaky backstop: people follow confidently wrong AI advice 79.8% of the time. The criterion worth keeping: verify with a *different* methodology than the one that generated the code, because a model grading its own output inherits its own blind spots. A vendor talk, and the entry says so.</sub><br><sub>[📄 notes](topics/evaluation-and-observability/verification-debt/README.md) · [📖 read](https://aicaruss.github.io/sharing-knowledge/topics/evaluation-and-observability/verification-debt/) · [↗ source](https://www.youtube.com/watch?v=03l29gJXpCE)</sub> | `evaluation-and-observability` | Anirban Chatterjee<br><sub>Sonar · AI Engineer World's Fair 2026</sub> | Talk explainer<br><sub>22m31s</sub> | 2026-08-11 |
 | 05 | **[Memory Layers for AI Agents](topics/agent-architecture/memory-layers/)**<br><sub>Every LLM call starts with amnesia — what makes ChatGPT or Claude seem to remember you is a memory system somebody built around the model, not the model. Three pillars: what a memory *is* (text, table, graph), how the agent *finds* it (do nothing, keyword, RAG, Graph RAG), and how you *keep it true* (retire rather than delete, attribute, reflect). Then four real stores raced on identical facts against a no-memory control that passes by correctly reporting ignorance. An n=1 benchmark by the author of the harness it runs in — the entry says so.</sub><br><sub>[📄 notes](topics/agent-architecture/memory-layers/README.md) · [📖 read](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/memory-layers/) · [🇮🇩 versi Indonesia](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/memory-layers/index.id.html) · [↗ source](https://www.youtube.com/watch?v=072eNztI06k)</sub> | `agent-architecture` | Shen Sean Chen<br><sub>Sean's AI Stories</sub> | Talk explainer<br><sub>30m26s</sub> | 2026-08-18 |
+| 06 | **[Rethinking Claude Code Best Practices](topics/agent-architecture/rethinking-claude-code/)**<br><sub>When Claude Code sessions run for hours unattended, the five jobs a developer did in the loop — steer, approve, say no, check, start — have to move to the model, the harness or the environment. The useful line is judgement versus guarantee: an auto-mode classifier blocked 89% of planted dangerous commands where people caught 14%, yet about one in ten still got through, so what you cannot take back goes under a deny rule and into a restricted environment. Correctness comes from pass/fail checkpoints enforced by hooks (exit 2, not exit 1) and CI. A vendor talk from the Claude Code team, and the entry says so.</sub><br><sub>[📄 notes](topics/agent-architecture/rethinking-claude-code/README.md) · [📖 read](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/rethinking-claude-code/) · [🇮🇩 versi Indonesia](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/rethinking-claude-code/index.id.html) · [↗ source](https://www.youtube.com/watch?v=vlfCjWuv4es)</sub> | `agent-architecture` | Lydia Hallie<br><sub>Anthropic · AI Engineer channel</sub> | Talk explainer<br><sub>17m31s</sub> | 2026-11-17 |
 
 ---
 
@@ -119,7 +120,7 @@ scope — including what it deliberately excludes — and keeps a list of open t
 | Topic | What lands here | Entries |
 | --- | --- | :--: |
 | [**post-training**](topics/post-training/) | RL, fine-tuning, reward design, training environments, custom models | 1 |
-| [**agent-architecture**](topics/agent-architecture/) | The agent loop, planning, memory, multi-agent topologies | 2 |
+| [**agent-architecture**](topics/agent-architecture/) | The agent loop, planning, memory, multi-agent topologies | 3 |
 | [**tool-use-and-protocols**](topics/tool-use-and-protocols/) | Function calling, MCP, computer use, agent-to-agent protocols | 0 |
 | [**context-engineering**](topics/context-engineering/) | Prompting, RAG, retrieval, context-window budgeting | 0 |
 | [**evaluation-and-observability**](topics/evaluation-and-observability/) | Evals, benchmarks, tracing, guardrails, cost accounting | 2 |
@@ -276,9 +277,9 @@ Tags carry cross-cutting themes that don't deserve their own topic; the topic fo
 primary categorisation.
 
 In use so far — `agent-harness` · `agent-memory` · `agent-skills` · `agentic-harness` · `byoh` ·
-`ci-cd` · `code-review` · `dag` · `evals` · `graph-engineering` · `graph-rag` · `grpo` ·
+`ci-cd` · `claude-code` · `code-review` · `dag` · `evals` · `graph-engineering` · `graph-rag` · `grpo` ·
 `incident-response` · `llm-as-judge` · `loop-engineering` · `observability` · `orchestration` ·
-`parallelism` · `post-training` · `procedural-memory` · `quality-gates` ·
+`parallelism` · `permissions` · `post-training` · `procedural-memory` · `quality-gates` ·
 `reinforcement-learning` · `reward-hacking` · `rl-environments` · `sandboxes` ·
 `self-improvement` · `self-improving-agents` · `semantic-memory` · `sqlite` ·
 `static-analysis` · `traces` · `vector-stores`
@@ -312,6 +313,7 @@ recognisable as part of this library while letting a topic have its own identity
 | [loop-vs-graph](topics/agent-architecture/loop-vs-graph/) | off-white `#f9f9f7` | blue `#2a78d6` |
 | [verification-debt](topics/evaluation-and-observability/verification-debt/) | pale teal `#F1F5F5` | teal `#0E7C74` |
 | [memory-layers](topics/agent-architecture/memory-layers/) | pale teal `#F1F5F4` | teal `#0E7C6B` |
+| [rethinking-claude-code](topics/agent-architecture/rethinking-claude-code/) | pale rose-grey `#F7F3F4` | berry `#A12F6A` |
 
 > **This table is a fifth index surface.** It was missed when `verification-debt` shipped and had to be
 > backfilled. If you add an entry, it belongs here too — `CONTRIBUTING.md`'s wiring checklist names it.
