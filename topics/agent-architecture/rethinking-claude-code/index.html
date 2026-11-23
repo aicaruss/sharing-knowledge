@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="en" data-title-id="Memikirkan Ulang Best Practice Claude Code — Penjelasan Rinci">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rethinking Claude Code Best Practices — Detailed Explainer</title>
+<style>
+  :root{
+    --page:#F7F3F4; --paper:#FFFFFF; --band:#211A20;
+    --ink:#1F1A1E; --ink2:#5A5158; --muted:#887E85;
+    --line:#E4DADE; --line2:#EFE8EB;
+    --berry:#A12F6A; --berry-soft:#F7E6EE; --berry-deep:#7C2352;
+    --blue:#2F6BD8; --green:#1B8A54; --red:#C4372B; --amber:#B26A00; --purple:#6B4FBB;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--page); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; font-size:16.5px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px; margin:0 auto; padding:0 22px 90px}
+
+  header{background:var(--band); color:#F3E9EE; padding:44px 0 38px; margin-bottom:32px;
+         background-image:radial-gradient(900px 300px at 12% 0%, #3E2536 0%, #211A20 70%)}
+  header .wrap{padding-bottom:0}
+  .kicker{font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:#F29AC3; font-weight:700}
+  header h1{font-size:clamp(26px,4.4vw,38px); line-height:1.2; margin:12px 0 10px; letter-spacing:-.02em}
+  header p.sub{margin:0; color:#BBA9B3; font-size:15px}
+  .toplinks{display:flex; flex-wrap:wrap; gap:10px; margin-top:20px}
+  .srclink{display:inline-flex; flex-wrap:wrap; align-items:center; gap:9px; max-width:100%; background:#33262F;
+           border:1px solid #4A3743; border-radius:10px; padding:10px 15px; text-decoration:none;
+           color:#F7CBDF; font-size:14px; font-weight:600}
+  .srclink:hover{background:#3D2D38}
+  .srclink svg{flex:none}
+  .srclink span.u{color:#A8939F; font-weight:400; font-size:13px; word-break:break-all}
+  .lede{color:var(--ink2); font-size:14.5px; margin:2px 0 14px}
+  /* Language toggle. CSS-only: works offline and with JS off. The page only ever HIDES the other
+     language, so every component keeps its own display value. Browsers without :has() show both. */
+  .langswitch{display:inline-flex; border:1px solid #4A3743; border-radius:10px; overflow:hidden}
+  .langswitch input{position:absolute; opacity:0; width:1px; height:1px; margin:0; pointer-events:none}
+  .langswitch label{padding:10px 15px; color:#BBA9B3; font-size:14px; font-weight:600; cursor:pointer; user-select:none}
+  .langswitch label:hover{color:#F7CBDF}
+  .langswitch input:checked + label{background:var(--berry); color:#fff}
+  .langswitch input:focus-visible + label{outline:2px solid #F7CBDF; outline-offset:-3px}
+  body:has(#lang-id:checked) .l-en{display:none !important}
+  body:not(:has(#lang-id:checked)) .l-id{display:none !important}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px}
+  .chip{background:#33262F; border:1px solid #4A3743; color:#EBD8E2; font-size:12.5px; padding:5px 11px; border-radius:999px}
+
+  h2{font-size:clamp(20px,3vw,26px); letter-spacing:-.01em; margin:50px 0 6px; line-height:1.25}
+  h2 .num{color:var(--berry); font-variant-numeric:tabular-nums; margin-right:10px}
+  h3{font-size:17.5px; margin:28px 0 6px; letter-spacing:-.01em}
+  p{margin:10px 0}
+  a{color:var(--berry-deep)}
+  hr.rule{border:0; border-top:1px solid var(--line); margin:44px 0 0}
+  .dots{display:flex; gap:5px; margin:0 0 14px}
+  .dots i{width:9px; height:9px; display:block; border-radius:2px}
+  .dots i:nth-child(1){background:#EDBCD3} .dots i:nth-child(2){background:#CF6D9C} .dots i:nth-child(3){background:var(--berry)}
+
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:20px 22px; margin:18px 0}
+  .tldr{background:var(--band); color:#EFE3E9; border:0;
+        background-image:radial-gradient(700px 240px at 88% 0%, #3A2333 0%, #211A20 70%)}
+  .tldr h3{margin-top:0; color:#fff}
+  .tldr ol{margin:10px 0 0; padding-left:22px}
+  .tldr li{margin:9px 0; color:#E6D7DF}
+  .tldr b{color:#F6AFCF}
+  .tldr code{background:#33262F; border-color:#4A3743; color:#F7CBDF}
+  .note{border-left:4px solid var(--berry); background:#FAEFF4; border-radius:0 12px 12px 0; padding:14px 18px; margin:18px 0}
+  .note .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--berry-deep)}
+  .note p{margin:6px 0 0}
+  .note.warn{border-left-color:var(--red); background:#FCF0EE}
+  .note.warn .lbl{color:var(--red)}
+  .analogy{background:#F1F5FE; border:1px solid #CFDDF7; border-radius:12px; padding:14px 18px; margin:16px 0}
+  .analogy .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--blue)}
+  .analogy p{margin:6px 0 0}
+  .quote{background:var(--berry-soft); border:1px solid #EBC6D8; border-radius:14px; padding:22px 26px; margin:22px 0}
+  .quote p{font-size:18px; line-height:1.5; font-weight:600; margin:0}
+  .quote cite{display:block; margin-top:12px; font-size:13.5px; color:var(--ink2); font-style:italic}
+
+  figure{margin:22px 0; background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:14px 12px 12px; overflow-x:auto}
+  figure svg{width:100%; height:auto; display:block; min-width:640px}
+  figcaption{font-size:13.5px; color:var(--ink2); margin-top:11px; padding-top:10px; border-top:1px solid var(--line2)}
+  figcaption b{color:var(--ink)}
+
+  .scroll{overflow-x:auto; margin:18px 0}
+  table{width:100%; border-collapse:collapse; margin:0; font-size:14.5px; background:var(--paper);
+        border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  .scroll table{min-width:600px}
+  .scroll.narrow table{min-width:440px}
+  th,td{padding:11px 13px; text-align:left; border-bottom:1px solid var(--line2); vertical-align:top}
+  th{background:var(--berry-soft); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--berry-deep)}
+  tr:last-child td{border-bottom:0}
+  td.ts{font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:700; width:14%}
+  td.ts a{color:var(--berry-deep); text-decoration:none; border-bottom:1px dotted #D88FB2}
+
+  code{background:var(--berry-soft); border:1px solid #EBD0DD; border-radius:5px; padding:1px 5px; font-size:13.5px;
+       font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  pre.code{background:#221A20; color:#EADFE5; border-radius:12px; padding:14px 16px; margin:16px 0; overflow-x:auto;
+           font-size:13px; line-height:1.6; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  pre.code .k{color:#F29AC3} pre.code .s{color:#B9E3C6} pre.code .c{color:#A8939F}
+  .tag{display:inline-block; font-size:11.5px; font-weight:800; letter-spacing:.07em; text-transform:uppercase;
+       padding:3px 9px; border-radius:999px; background:var(--berry-soft); color:var(--berry-deep); margin-right:6px}
+  ul.clean{padding-left:20px} ul.clean li{margin:8px 0}
+  .srcbox{background:var(--paper); border:1px solid var(--line); border-left:4px solid var(--berry);
+          border-radius:0 12px 12px 0; padding:18px 20px; margin:34px 0 0}
+  .srcbox .lbl{font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--berry-deep)}
+  .srcbox p{margin:8px 0 0; font-size:14.5px}
+  .srcbox a{word-break:break-all}
+  .prov{margin-top:26px; font-size:13px; color:var(--ink2); border-top:1px solid var(--line); padding-top:18px}
+  .prov b{color:var(--ink)}
+  .prov ul{padding-left:20px} .prov li{margin:7px 0}
+  text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
+  text.mono, tspan.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+</style>
+</head>
+<body>
+
+<!-- Shared SVG symbols, referenced by every figure in both languages. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="rcPerson" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#FFFFFF" stroke="#B26A00" stroke-width="1.6"/><circle cx="12" cy="9.4" r="3.6" fill="#B26A00"/><path d="M5.6 19 C6.6 14.4 17.4 14.4 18.4 19 Z" fill="#B26A00"/></symbol>
+    <symbol id="rcCloud" viewBox="0 0 24 16"><path d="M7 14.5 H18 A3.6 3.6 0 0 0 18.4 7.3 A5.2 5.2 0 0 0 8.4 6 A4.2 4.2 0 0 0 7 14.5 Z" fill="none" stroke="#5A5158" stroke-width="1.5"/></symbol>
+    <symbol id="rcChk" viewBox="0 0 14 14"><rect width="14" height="14" rx="3" fill="#1B8A54"/><path d="M3.4 7.2 L6 9.7 L10.7 4.5" stroke="#FFFFFF" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="rcStar" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6"/><path d="M14 6.5 V21.5 M6.5 14 H21.5 M8.7 8.7 L19.3 19.3 M19.3 8.7 L8.7 19.3" stroke="#A12F6A" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="rcPR" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#FFFFFF" stroke="#1B8A54" stroke-width="1.5"/><circle cx="8.6" cy="7.4" r="1.7" fill="none" stroke="#1B8A54" stroke-width="1.3"/><circle cx="8.6" cy="16.6" r="1.7" fill="none" stroke="#1B8A54" stroke-width="1.3"/><circle cx="15.4" cy="16.6" r="1.7" fill="none" stroke="#1B8A54" stroke-width="1.3"/><path d="M8.6 9.1 V14.9 M15.4 14.9 V10.2 Q15.4 8 13.2 8 H11.6" fill="none" stroke="#1B8A54" stroke-width="1.3"/></symbol>
+    <symbol id="rcCI" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#1B8A54"/><path d="M7 12.3 L10.5 15.6 L17 8.6" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="rcRev" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#FFFFFF" stroke="#5A5158" stroke-width="1.5"/><path d="M7.4 12.3 L10.6 15.3 L16.6 8.9" stroke="#5A5158" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="rcMerge" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#6B4FBB"/><circle cx="9" cy="7.4" r="1.6" fill="#FFFFFF"/><circle cx="9" cy="16.6" r="1.6" fill="#FFFFFF"/><circle cx="15.6" cy="12" r="1.6" fill="#FFFFFF"/><path d="M9 9 V15 M9 10.4 Q9.6 12 14 12" stroke="#FFFFFF" stroke-width="1.3" fill="none"/></symbol>
+    <symbol id="rcX" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.5" fill="#C4372B"/><path d="M6.6 6.6 L13.4 13.4 M13.4 6.6 L6.6 13.4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/></symbol>
+    <marker id="rcArBerry" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#A12F6A"/></marker>
+    <marker id="rcArBlue" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2F6BD8"/></marker>
+    <marker id="rcArRed" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#C4372B"/></marker>
+    <marker id="rcArGreen" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1B8A54"/></marker>
+  </defs>
+</svg>
+
+<header>
+  <div class="wrap">
+    <div class="l-en" lang="en">
+      <div class="kicker">Talk explainer · AI Engineer channel · published 12 November 2026 (UTC)</div>
+      <h1>Rethinking Claude Code Best Practices — what takes over when you step out of the loop</h1>
+      <p class="sub">Lydia Hallie — Member of Technical Staff, Anthropic (Claude Code team) · 17 min 31 sec · recorded at home after technical difficulties during her live talk</p>
+    </div>
+    <div class="l-id" lang="id">
+      <div class="kicker">Penjelasan talk · kanal AI Engineer · terbit 12 November 2026 (UTC)</div>
+      <h1>Memikirkan Ulang Best Practice Claude Code — apa yang mengambil alih ketika kamu keluar dari loop</h1>
+      <p class="sub">Lydia Hallie — Member of Technical Staff, Anthropic (tim Claude Code) · 17 menit 31 detik · direkam di rumah setelah talk live-nya terkendala masalah teknis</p>
+    </div>
+
+    <div class="toplinks">
+      <a class="srclink" href="https://www.youtube.com/watch?v=vlfCjWuv4es" target="_blank" rel="noopener">
+        <svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true">
+        <rect x="0" y="0" width="20" height="14" rx="3.4" fill="#FF0000"/>
+        <path d="M8 4 L13.4 7 L8 10 Z" fill="#fff"/>
+        </svg>
+        <span class="l-en" lang="en">Watch the source talk</span><span class="l-id" lang="id">Tonton talk sumbernya</span> <span class="u">youtube.com/watch?v=vlfCjWuv4es</span>
+      </a>
+      <div class="langswitch" role="radiogroup" aria-label="Language / Bahasa">
+        <input type="radio" name="lang" id="lang-en" value="en" checked><label for="lang-en" lang="en">English</label>
+        <input type="radio" name="lang" id="lang-id" value="id"><label for="lang-id" lang="id">Bahasa Indonesia</label>
+      </div>
+    </div>
+
+    <p class="sub l-id" lang="id" style="margin-top:18px; max-width:74ch">Ini terjemahan Bahasa Indonesia dari <a href="?lang=en" hreflang="en" style="color:#F7CBDF">entri versi Inggris</a>, yang tetap menjadi rujukan utama. <b style="color:#F7CBDF">Semua kutipan dibiarkan dalam bahasa Inggris asli pembicara</b> — kutipan yang diterjemahkan bukan lagi kutipan verbatim. Bantuan terjemahan diletakkan di luar tanda kutip, ditandai "Maksudnya:". Judul chapter juga dibiarkan persis seperti di YouTube.</p>
+
+    <div class="meta l-en" lang="en">
+    <span class="chip">Claude Code</span>
+    <span class="chip">Agent harness</span>
+    <span class="chip">Permissions</span>
+    <span class="chip">Sandboxes</span>
+    <span class="chip">Quality gates</span>
+    <span class="chip">CI/CD</span>
+    <span class="chip">Orchestration</span>
+    <span class="chip">Code review</span>
+    </div>
+    <div class="meta l-id" lang="id">
+    <span class="chip">Claude Code</span>
+    <span class="chip">Agent harness</span>
+    <span class="chip">Permission</span>
+    <span class="chip">Sandbox</span>
+    <span class="chip">Quality gate</span>
+    <span class="chip">CI/CD</span>
+    <span class="chip">Orkestrasi</span>
+    <span class="chip">Code review</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap l-en" lang="en">
+
+<div class="card tldr">
+  <h3>The whole talk in seven points</h3>
+  <ol>
+    <li><b>The shift.</b> Earlier this year, she says, a Claude Code session was one run you steered and approved step by step. At Anthropic it is now dozens of sessions running for hours and checking their own work; developers manage sessions instead of driving one.</li>
+    <li><b>The thesis.</b> What you did in the loop — steering, approving, saying no, checking, starting — does not vanish when you leave it. Each job moves to <b>the model, the harness, or the environment</b>.</li>
+    <li><b>Leaving is easy; making it safe is not.</b> A newer model and auto mode (a permission classifier) remove most steering and approving.</li>
+    <li><b>Judgement is not a guarantee.</b> In Anthropic's study auto mode blocked 89% of planted dangerous commands where people caught 14% — and about one in ten still got through. Guarantees live in the harness: a <b>deny rule</b> is checked before the classifier sees the call. What needs one? Her test: <i>"if [Claude] gets this wrong once, can I take it back?"</i></li>
+    <li><b>Rules gate calls, not effects.</b> <code>npm test</code> runs code you did not write, so restrict the environment: an OS-enforced <b>sandbox</b>, or a <b>cloud session</b> on a machine with nothing to steal — though pushes and messages still leave it.</li>
+    <li><b>Review checkpoints, not diffs.</b> Put pass/fail checks along the way and enforce the essential ones with <b>hooks</b> — exiting with code 2, she says, because exit 1 lets the task close anyway.</li>
+    <li><b>CI under everything, then hand over starting.</b> On her team a separate Claude reviews each PR and people review by risk; where she sees things going, an orchestrator session starts the other sessions too. You start the first one and review what comes out.</li>
+  </ol>
+</div>
+
+<div class="note warn">
+  <div class="lbl">Read with the speaker's position in view</div>
+  <p>Lydia Hallie works on the Claude Code team at Anthropic, in developer relations, and most remedies here are <b>Anthropic product features</b> — auto mode, the sandbox, cloud sessions, network secrets, CI auto-fix, <code>/doctor prompt-audit</code>, an orchestration feature in beta. Both pieces of evidence she cites are Anthropic's own and unlinked. That does not make the argument wrong; it means product and principle arrive together, and this page keeps them apart. She opens by saying she had technical difficulties during her talk <i>"this morning, so I ran back home and I'm just going to record it from my computer instead"</i> (0:00).</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">0</span>Vocabulary first</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>She uses these without defining them; the definitions are reconstructed from how she uses each.</p>
+
+<div class="scroll narrow">
+<table>
+  <thead><tr><th style="width:24%">Term</th><th>What it means here</th></tr></thead>
+  <tbody>
+    <tr><td><b>Harness</b></td><td>Claude Code itself, as opposed to the model: what decides whether a tool call runs (permissions, deny rules) and runs your scripts at set points (hooks). Undefined in the talk; this is the reading her examples support.</td></tr>
+    <tr><td><b>Environment</b></td><td>Where a session runs and what it can reach — your laptop, an OS sandbox, a cloud machine.</td></tr>
+    <tr><td><b>Auto mode</b></td><td>A permission mode running <i>"a separate classifier"</i> on nearly everything except reading or editing project files (4:13). Configured in plain English.</td></tr>
+    <tr><td><b>Deny rule</b></td><td>An entry under <code>permissions.deny</code> in <code>settings.json</code>, matched before the classifier looks.</td></tr>
+    <tr><td><b>Hook</b></td><td>A script Claude Code runs at a fixed point, such as after every edit (12:28).</td></tr>
+    <tr><td><b>Thread</b></td><td>A session started by an orchestrator session — <i>"just new sessions"</i> (15:48).</td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">1</span>From one steered session to dozens of managed ones</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>She opens on the models: Opus 5.5, <i>"my favorite daily driver"</i>, and Fable, launched <i>"earlier this week"</i> and <i>"really good at verifying its own output"</i> (0:28). No slide confirms the Fable version number in the captions, so none is printed here. An on-screen SWE-bench Pro chart (<i>"As reported by Anthropic. Test settings vary by model."</i>), 52% for Opus 4.5 up to 90% for Opus 5.5, is never discussed; its newest point, 93%, has its label hidden behind her webcam.</p>
+
+<figure>
+<svg viewBox="0 0 900 650" role="img" aria-label="Two panels. Top: an earlier session for the prompt auth.test.ts is failing, can you fix it. One wavy session line, paused three times by a person steering it, with six tool calls below — Read, four Edits and Bash npm test — each but Read approved by a person; the prompt box shows mode Manual and model Opus 4.5. Bottom: today, one request in a project called acme-web fans out from a single node to eight cloud sessions running for 6 hours 30 minutes, each verifying itself at checkpoints, each ending in a PR, then either a review or auto-merge, then merged.">
+  <text x="24" y="30" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">EARLIER THIS YEAR — ONE SESSION, A PERSON AT EVERY STEP</text>
+  <rect x="590" y="46" width="286" height="30" rx="15" fill="#F2EDEF" stroke="#E4DADE"/>
+  <text x="733" y="66" font-size="12.5" text-anchor="middle" fill="#1F1A1E">auth.test.ts is failing, can you fix it?</text>
+
+  <path d="M46 150 H836" stroke="#CFC4CA" stroke-width="1.2" stroke-dasharray="2 5"/>
+  <rect x="36" y="145" width="10" height="10" rx="2" fill="#FFFFFF" stroke="#5A5158" stroke-width="1.4"/>
+  <rect x="836" y="136" width="28" height="28" rx="6" fill="#EAF6EF" stroke="#1B8A54" stroke-width="1.8"/>
+  <path d="M46 150 C90 150 120 136 160 134 S250 124 320 126 S400 150 430 156 S500 176 550 172 S640 132 690 124" stroke="#A12F6A" stroke-width="2.4" fill="none"/>
+
+  <rect x="154" y="124" width="3.6" height="20" fill="#1F1A1E"/><rect x="161" y="124" width="3.6" height="20" fill="#1F1A1E"/>
+  <rect x="424" y="146" width="3.6" height="20" fill="#1F1A1E"/><rect x="431" y="146" width="3.6" height="20" fill="#1F1A1E"/>
+  <rect x="684" y="114" width="3.6" height="20" fill="#1F1A1E"/><rect x="691" y="114" width="3.6" height="20" fill="#1F1A1E"/>
+  <path d="M160 122 V104 M430 144 V104 M690 112 V104" stroke="#B26A00" stroke-width="1.2"/>
+  <use href="#rcPerson" x="148" y="80" width="24" height="24"/>
+  <use href="#rcPerson" x="418" y="80" width="24" height="24"/>
+  <use href="#rcPerson" x="678" y="80" width="24" height="24"/>
+  <text x="712" y="98" font-size="15" font-weight="700" fill="#B26A00">steering it</text>
+
+  <path d="M100 196 V148 M200 196 V133 M280 196 V125 M380 196 V140 M500 196 V169 M600 196 V152" stroke="#B9AEB4" stroke-width="1"/>
+  <circle cx="100" cy="148" r="3" fill="#B9AEB4"/><circle cx="200" cy="133" r="3" fill="#6B4FBB"/><circle cx="280" cy="125" r="3" fill="#6B4FBB"/><circle cx="380" cy="140" r="3" fill="#6B4FBB"/><circle cx="500" cy="169" r="3" fill="#6B4FBB"/><circle cx="600" cy="152" r="3" fill="#6B4FBB"/>
+  <rect x="72" y="196" width="56" height="24" rx="6" fill="#F2EDEF" stroke="#E4DADE"/>
+  <text x="100" y="213" font-size="12" text-anchor="middle" fill="#887E85">Read</text>
+  <rect x="170" y="196" width="60" height="24" rx="6" fill="#FFFFFF" stroke="#5A5158"/>
+  <text x="200" y="213" font-size="12" text-anchor="middle" fill="#1F1A1E">Edit <tspan fill="#1B8A54">✓</tspan></text>
+  <rect x="250" y="196" width="60" height="24" rx="6" fill="#FFFFFF" stroke="#5A5158"/>
+  <text x="280" y="213" font-size="12" text-anchor="middle" fill="#1F1A1E">Edit <tspan fill="#1B8A54">✓</tspan></text>
+  <rect x="318" y="196" width="124" height="24" rx="6" fill="#FFFFFF" stroke="#5A5158"/>
+  <text x="380" y="213" font-size="12" text-anchor="middle" fill="#1F1A1E"><tspan font-weight="700">Bash</tspan> npm test <tspan fill="#1B8A54">✓</tspan></text>
+  <rect x="470" y="196" width="60" height="24" rx="6" fill="#FFFFFF" stroke="#5A5158"/>
+  <text x="500" y="213" font-size="12" text-anchor="middle" fill="#1F1A1E">Edit <tspan fill="#1B8A54">✓</tspan></text>
+  <rect x="570" y="196" width="60" height="24" rx="6" fill="#FFFFFF" stroke="#5A5158"/>
+  <text x="600" y="213" font-size="12" text-anchor="middle" fill="#1F1A1E">Edit <tspan fill="#1B8A54">✓</tspan></text>
+  <use href="#rcPerson" x="188" y="230" width="24" height="24"/>
+  <use href="#rcPerson" x="268" y="230" width="24" height="24"/>
+  <use href="#rcPerson" x="368" y="230" width="24" height="24"/>
+  <use href="#rcPerson" x="488" y="230" width="24" height="24"/>
+  <use href="#rcPerson" x="588" y="230" width="24" height="24"/>
+  <text x="624" y="248" font-size="15" font-weight="700" fill="#B26A00">approving it</text>
+  <text x="36" y="282" font-size="11.5" fill="#5A5158">Prompt box: mode <tspan font-weight="700">Manual</tspan> · model <tspan font-weight="700">Opus 4.5</tspan></text>
+
+  <path d="M24 300 H876" stroke="#E4DADE"/>
+
+  <text x="24" y="324" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">TODAY, AT ANTHROPIC — ONE REQUEST, MANY SESSIONS, HOURS EACH</text>
+  <rect x="24" y="356" width="214" height="280" rx="12" fill="#FAF7F8" stroke="#E4DADE"/>
+  <text x="38" y="378" font-size="12" font-weight="700" fill="#5A5158">acme-web</text>
+  <use href="#rcPerson" x="206" y="362" width="22" height="22"/>
+  <rect x="38" y="388" width="188" height="90" rx="8" fill="#EFE8EB"/>
+  <text x="48" y="405" font-size="10.5" fill="#1F1A1E">This week: the auth migration,</text>
+  <text x="48" y="420" font-size="10.5" fill="#1F1A1E">the flaky test, dependencies,</text>
+  <text x="48" y="435" font-size="10.5" fill="#1F1A1E">the cold start crash, docs, the</text>
+  <text x="48" y="450" font-size="10.5" fill="#1F1A1E">billing retry, the user service</text>
+  <text x="48" y="465" font-size="10.5" fill="#1F1A1E">rename and a11y.</text>
+  <text x="38" y="497" font-size="11" fill="#1F1A1E">On it. I'll start a session</text>
+  <text x="38" y="511" font-size="11" fill="#1F1A1E">for each one.</text>
+  <rect x="38" y="522" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="534" font-size="10.5" fill="#1F1A1E">Auth migration</text><text x="218" y="534" font-size="10.5" text-anchor="end" fill="#6B4FBB">Merged</text>
+  <rect x="38" y="543" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="555" font-size="10.5" fill="#1F1A1E">Flaky auth test</text><text x="218" y="555" font-size="10.5" text-anchor="end" fill="#6B4FBB">Merged</text>
+  <rect x="38" y="564" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="576" font-size="10.5" fill="#1F1A1E">Dependencies</text><text x="218" y="576" font-size="10.5" text-anchor="end" fill="#6B4FBB">Merged</text>
+  <rect x="38" y="585" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="597" font-size="10.5" fill="#1F1A1E">Cold start crash</text><text x="218" y="597" font-size="10.5" text-anchor="end" fill="#6B4FBB">Merged</text>
+  <text x="38" y="622" font-size="10.5" fill="#887E85">and 4 more</text>
+
+  <path d="M238 493 H248" stroke="#A12F6A" stroke-width="1.4"/>
+  <use href="#rcStar" x="248" y="479" width="28" height="28"/>
+  <g stroke="#B9AEB4" stroke-width="1.1" fill="none">
+    <path d="M276 493 C287 493 285 370 296 370"/><path d="M276 493 C287 493 285 405 296 405"/>
+    <path d="M276 493 C287 493 285 440 296 440"/><path d="M276 493 C287 493 285 475 296 475"/>
+    <path d="M276 493 C287 493 285 510 296 510"/><path d="M276 493 C287 493 285 545 296 545"/>
+    <path d="M276 493 C287 493 285 580 296 580"/><path d="M276 493 C287 493 285 615 296 615"/>
+  </g>
+
+  <circle cx="306" cy="342" r="6" fill="none" stroke="#5A5158" stroke-width="1.3"/><path d="M306 338.5 V342 H309" stroke="#5A5158" stroke-width="1.2" fill="none"/>
+  <text x="318" y="346" font-size="12.5" font-weight="700" fill="#1F1A1E">6h 30m</text>
+  <text x="640" y="346" font-size="12" text-anchor="middle" fill="#5A5158">PR</text>
+  <text x="726" y="346" font-size="12" text-anchor="middle" font-weight="700" fill="#6B4FBB">review</text>
+  <text x="820" y="346" font-size="12" text-anchor="middle" fill="#5A5158">merged</text>
+
+  <g font-size="12.5" fill="#1F1A1E">
+    <rect x="296" y="356" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="363" width="22" height="15"/><text x="334" y="375">flaky auth test</text>
+    <rect x="296" y="391" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="398" width="22" height="15"/><text x="334" y="410">dependencies</text>
+    <rect x="296" y="426" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="433" width="22" height="15"/><text x="334" y="445">cold start crash</text>
+    <rect x="296" y="461" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="468" width="22" height="15"/><text x="334" y="480">auth migration</text>
+    <rect x="296" y="496" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="503" width="22" height="15"/><text x="334" y="515">docs sweep</text>
+    <rect x="296" y="531" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="538" width="22" height="15"/><text x="334" y="550">billing retry</text>
+    <rect x="296" y="566" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="573" width="22" height="15"/><text x="334" y="585">user service</text>
+    <rect x="296" y="601" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="608" width="22" height="15"/><text x="334" y="620">a11y on settings</text>
+  </g>
+  <g stroke="#A12F6A" stroke-width="1.4" fill="none">
+    <path d="M470 370 q14 -6 28 0 t28 0 t28 0 t28 0"/><path d="M470 405 q14 -6 28 0 t28 0 t28 0 t28 0"/>
+    <path d="M470 440 q14 -6 28 0 t28 0 t28 0 t28 0"/><path d="M470 475 q14 -6 28 0 t28 0 t28 0 t28 0"/>
+    <path d="M470 510 q14 -6 28 0 t28 0 t28 0 t28 0"/><path d="M470 545 q14 -6 28 0 t28 0 t28 0 t28 0"/>
+    <path d="M470 580 q14 -6 28 0 t28 0 t28 0 t28 0"/><path d="M470 615 q14 -6 28 0 t28 0 t28 0 t28 0"/>
+  </g>
+  <use href="#rcChk" x="480" y="364" width="12" height="12"/><use href="#rcChk" x="510" y="364" width="12" height="12"/><use href="#rcChk" x="540" y="364" width="12" height="12"/><use href="#rcChk" x="582" y="361" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="399" width="12" height="12"/><use href="#rcChk" x="510" y="399" width="12" height="12"/><use href="#rcChk" x="540" y="399" width="12" height="12"/><use href="#rcChk" x="582" y="396" width="18" height="18"/>
+  <use href="#rcChk" x="492" y="434" width="12" height="12"/><use href="#rcChk" x="530" y="434" width="12" height="12"/><use href="#rcChk" x="582" y="431" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="469" width="12" height="12"/><use href="#rcChk" x="510" y="469" width="12" height="12"/><use href="#rcChk" x="540" y="469" width="12" height="12"/><use href="#rcChk" x="582" y="466" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="504" width="12" height="12"/><use href="#rcChk" x="510" y="504" width="12" height="12"/><use href="#rcChk" x="540" y="504" width="12" height="12"/><use href="#rcChk" x="582" y="501" width="18" height="18"/>
+  <use href="#rcChk" x="492" y="539" width="12" height="12"/><use href="#rcChk" x="530" y="539" width="12" height="12"/><use href="#rcChk" x="582" y="536" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="574" width="12" height="12"/><use href="#rcChk" x="510" y="574" width="12" height="12"/><use href="#rcChk" x="540" y="574" width="12" height="12"/><use href="#rcChk" x="582" y="571" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="609" width="12" height="12"/><use href="#rcChk" x="510" y="609" width="12" height="12"/><use href="#rcChk" x="540" y="609" width="12" height="12"/><use href="#rcChk" x="582" y="606" width="18" height="18"/>
+
+  <g stroke="#B9AEB4" stroke-width="1.1">
+    <path d="M608 370 H809"/><path d="M608 405 H809"/><path d="M608 440 H809"/><path d="M608 475 H809"/>
+    <path d="M608 510 H809"/><path d="M608 545 H809"/><path d="M608 580 H809"/><path d="M608 615 H809"/>
+  </g>
+  <use href="#rcPR" x="629" y="359" width="22" height="22"/><use href="#rcPR" x="629" y="394" width="22" height="22"/>
+  <use href="#rcPR" x="629" y="429" width="22" height="22"/><use href="#rcPR" x="629" y="464" width="22" height="22"/>
+  <use href="#rcPR" x="629" y="499" width="22" height="22"/><use href="#rcPR" x="629" y="534" width="22" height="22"/>
+  <use href="#rcPR" x="629" y="569" width="22" height="22"/><use href="#rcPR" x="629" y="604" width="22" height="22"/>
+  <use href="#rcRev" x="715" y="359" width="22" height="22"/>
+  <rect x="688" y="396" width="76" height="18" rx="9" fill="#EAF6EF" stroke="#1B8A54"/><text x="726" y="409" font-size="10" text-anchor="middle" fill="#1B8A54">auto-merge</text>
+  <use href="#rcRev" x="715" y="429" width="22" height="22"/>
+  <use href="#rcRev" x="715" y="464" width="22" height="22"/>
+  <rect x="688" y="501" width="76" height="18" rx="9" fill="#EAF6EF" stroke="#1B8A54"/><text x="726" y="514" font-size="10" text-anchor="middle" fill="#1B8A54">auto-merge</text>
+  <use href="#rcRev" x="715" y="534" width="22" height="22"/>
+  <use href="#rcRev" x="715" y="569" width="22" height="22"/>
+  <rect x="688" y="606" width="76" height="18" rx="9" fill="#EAF6EF" stroke="#1B8A54"/><text x="726" y="619" font-size="10" text-anchor="middle" fill="#1B8A54">auto-merge</text>
+  <use href="#rcMerge" x="809" y="359" width="22" height="22"/><use href="#rcMerge" x="809" y="394" width="22" height="22"/>
+  <use href="#rcMerge" x="809" y="429" width="22" height="22"/><use href="#rcMerge" x="809" y="464" width="22" height="22"/>
+  <use href="#rcMerge" x="809" y="499" width="22" height="22"/><use href="#rcMerge" x="809" y="534" width="22" height="22"/>
+  <use href="#rcMerge" x="809" y="569" width="22" height="22"/><use href="#rcMerge" x="809" y="604" width="22" height="22"/>
+</svg>
+<figcaption><b>Figure 1. Then and now — redrawn from the slides at 0:42 and 1:30.</b> Slide wording, my layout. On top, a person interrupts three times and signs off five of six tool calls; below, a person appears only at the request; five of eight rows pass through a review step (a person, on the 14:33 version of this slide) and three auto-merge. The top line stopping short may be a partial animation build. The webcam hides the right end of the last two rows; they are completed from the 14:33 frame, where the same rows reappear.</figcaption>
+</figure>
+
+<p>Opus 4.5 <i>"would just stop a lot earlier"</i> (0:48), so you kept correcting it and adding <i>"important, exclamation mark"</i> to CLAUDE.md (0:57). Without auto mode you approved everything or took <i>"the riskier approach"</i> of a flag that skips permission prompts (heard as "dangerously skip permission", 1:07–1:10). Now, <i>"at least at Anthropic"</i>, <i>"we've now essentially become managers for dozens of sessions"</i> (1:39). The payoff, per a slide citing Anthropic's October post "Redesigning source control at Anthropic": code changes merged per day to Anthropic's monorepo went from <b>2,500 in May 2026 to 30,000+ in September 2026</b> (1:49).</p>
+
+<div class="note">
+  <div class="lbl">My reading, not hers</div>
+  <p>That is throughput, not quality, and she does not claim otherwise. The rest of the talk is her answer to the question it raises: how do you know those changes are safe and correct?</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">2</span>The thesis: the loop moves, it does not vanish</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>Earlier best practice, she says, was about steering sessions, approving commands, saying no or restricting, <i>"the output"</i> (the slide: "Checking it"), and starting sessions. Then the sentence the talk hangs on:</p>
+
+<div class="quote">
+  <p>"everywhere that we now step out of that loop, something else has to take over. And this is either the model, the harness, or the environment that it's running in."</p>
+  <cite>— Lydia Hallie, 2:14–2:22</cite>
+</div>
+
+<figure>
+<svg viewBox="0 0 900 470" role="img" aria-label="Five rows pair what a person did in the loop with what takes it over, as on the closing slide: steering it goes to the model; approving every tool call to auto mode; saying no to deny rules and the environment; checking it's done to tests, hooks and CI; starting every session to Claude. Below, the earlier slide's umbrella: the same five jobs, one arrow, three owners — the model, the harness, the environment.">
+  <text x="40" y="34" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">WHAT YOU DID IN THE LOOP</text>
+  <text x="510" y="34" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">WHAT TAKES IT OVER</text>
+
+  <rect x="40" y="50" width="340" height="46" rx="10" fill="#FAF7F8" stroke="#E4DADE"/><use href="#rcPerson" x="54" y="62" width="22" height="22"/>
+  <text x="88" y="78" font-size="14.5" font-weight="600" fill="#1F1A1E">Steering it</text>
+  <rect x="40" y="110" width="340" height="46" rx="10" fill="#FAF7F8" stroke="#E4DADE"/><use href="#rcPerson" x="54" y="122" width="22" height="22"/>
+  <text x="88" y="130" font-size="14.5" font-weight="600" fill="#1F1A1E">Approving every tool call</text>
+  <text x="88" y="147" font-size="11" fill="#887E85">card at 2:18: "Approving it"</text>
+  <rect x="40" y="170" width="340" height="46" rx="10" fill="#FAF7F8" stroke="#E4DADE"/><use href="#rcPerson" x="54" y="182" width="22" height="22"/>
+  <text x="88" y="198" font-size="14.5" font-weight="600" fill="#1F1A1E">Saying no</text>
+  <rect x="40" y="230" width="340" height="46" rx="10" fill="#FAF7F8" stroke="#E4DADE"/><use href="#rcPerson" x="54" y="242" width="22" height="22"/>
+  <text x="88" y="250" font-size="14.5" font-weight="600" fill="#1F1A1E">Checking it's done</text>
+  <text x="88" y="267" font-size="11" fill="#887E85">card at 2:18: "Checking it"</text>
+  <rect x="40" y="290" width="340" height="46" rx="10" fill="#FAF7F8" stroke="#E4DADE"/><use href="#rcPerson" x="54" y="302" width="22" height="22"/>
+  <text x="88" y="310" font-size="14.5" font-weight="600" fill="#1F1A1E">Starting every session</text>
+  <text x="88" y="327" font-size="11" fill="#887E85">card at 2:18: "Starting it"</text>
+
+  <g stroke="#A12F6A" stroke-width="1.8" marker-end="url(#rcArBerry)">
+    <path d="M392 73 H498"/><path d="M392 133 H498"/><path d="M392 193 H498"/><path d="M392 253 H498"/><path d="M392 313 H498"/>
+  </g>
+
+  <g font-size="15" font-weight="700" fill="#1F1A1E">
+    <rect x="510" y="50" width="350" height="46" rx="10" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6"/><text x="530" y="78">The model</text>
+    <rect x="510" y="110" width="350" height="46" rx="10" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6"/><text x="530" y="138">Auto mode</text>
+    <rect x="510" y="170" width="350" height="46" rx="10" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6"/><text x="530" y="198">Deny rules, the environment</text>
+    <rect x="510" y="230" width="350" height="46" rx="10" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6"/><text x="530" y="258">Tests, hooks, CI</text>
+    <rect x="510" y="290" width="350" height="46" rx="10" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6"/><text x="530" y="318">Claude</text>
+  </g>
+
+  <rect x="40" y="356" width="820" height="100" rx="12" fill="#F7F3F4" stroke="#E4DADE" stroke-dasharray="5 4"/>
+  <text x="60" y="382" font-size="11.5" font-weight="800" letter-spacing="1.1" fill="#5A5158">THE SAME FIVE JOBS ON THE 2:18 SLIDE — ONE ARROW, THREE OWNERS</text>
+  <rect x="60" y="398" width="210" height="40" rx="10" fill="#FFFFFF" stroke="#E4DADE"/>
+  <use href="#rcStar" x="74" y="406" width="24" height="24"/><text x="108" y="423" font-size="15" font-weight="700" fill="#1F1A1E">The model</text>
+  <rect x="290" y="398" width="230" height="40" rx="10" fill="#FFFFFF" stroke="#E4DADE"/>
+  <text x="306" y="424" font-size="16" font-weight="700" fill="#5A5158" class="mono">{ }</text><text x="340" y="423" font-size="15" font-weight="700" fill="#1F1A1E">The harness</text>
+  <rect x="540" y="398" width="260" height="40" rx="10" fill="#FFFFFF" stroke="#E4DADE"/>
+  <rect x="556" y="409" width="18" height="18" rx="3" fill="none" stroke="#5A5158" stroke-width="1.5" stroke-dasharray="3 2.5"/><text x="586" y="423" font-size="15" font-weight="700" fill="#1F1A1E">The environment</text>
+</svg>
+<figcaption><b>Figure 2. Who takes over — redrawn from the closing slide (16:50) and the "Out of the loop" slide (2:18).</b> Every label is slide wording; the shorter 2:18 card labels sit under their rows. The opening slide promised three owners; by the end each job has a concrete mechanism. Neither slide nor speech assigns each row to model, harness or environment, so this figure does not either.</figcaption>
+</figure>
+
+<p>Two questions follow (2:23): is the code still high-quality, and — <i>"most importantly"</i> — is it running safely? The framing travels beyond Claude Code: for any agent you want to leave alone, list what you do by hand and name what takes each job over. My gloss: a job with no new owner has not been automated, only left unattended. <a href="../../evaluation-and-observability/signal-to-pr/">From Signal to PR</a> runs on the same inversion — the agent does, the person starts and reviews.</p>
+
+<hr class="rule">
+
+<h2><span class="num">3</span>Out of the loop: the easy part</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>Step one is <i>"the actual defaults we start sessions in nowadays"</i> (2:47): Opus 5.5 instead of 4.5, and auto mode instead of manual approval — Anthropic <i>"started making auto mode the default permission mode back in August"</i> (3:09). The model takes over steering; auto mode takes over approving.</p>
+
+<h3>Trim CLAUDE.md to what the code cannot tell</h3>
+<p>Emphatic rules written for older models <i>"can actually make the model go off track"</i>, giving <i>"more tool calls and overall a worse results"</i> (3:31–3:35) — asserted, not shown. Her rule: CLAUDE.md <i>"should only include the things the Claude cannot see from your code"</i> (3:38). The slide at 4:02 strikes "Think hard and be thorough.", "Keep going until it's done.", "IMPORTANT: always use the auth helper" and "We're on Node 18.", and keeps "src/legacy still serves our mobile apps" — the one line a model could not infer from the repository. <code>/doctor prompt-audit</code> checks CLAUDE.md and skills against the current model (3:57). In <a href="../memory-layers/">Memory Layers</a> terms, this is maintenance advice for preloaded plain-text memory.</p>
+
+<h3>Tell auto mode what you trust</h3>
+<p>Auto mode allows what it knows is safe, <i>"like running tests or installing dependencies"</i>, and blocks what it is unsure of (4:23). Ask for a staging deploy and the push is blocked, because <i>"by default, auto mode only trusts this folder and this repo"</i> — <i>"So, we're back in the loop"</i> (4:42–4:47). The fix is plain-English settings, which are <i>"what gets sent to the classifier"</i> (5:01). The slide at 5:11:</p>
+
+<pre class="code"><span class="c">~/.claude/settings.json</span>
+{
+  <span class="k">"autoMode"</span>: {
+    <span class="k">"environment"</span>: [
+      <span class="s">"$defaults"</span>,
+      <span class="s">"Source control: github.com/acme and all repos under it"</span>,
+      <span class="s">"Trusted cloud buckets: s3://acme-staging"</span>,
+      <span class="s">"Trusted internal domains: *.internal.acme.com"</span>
+    ],
+    <span class="k">"allow"</span>: [<span class="s">"$defaults"</span>, <span class="s">"Deploying to staging is allowed"</span>],
+    <span class="k">"hard_deny"</span>: [<span class="s">"$defaults"</span>, <span class="s">"Never send code to third-party APIs"</span>]
+  }
+}</pre>
+
+<p>Note "sent to the classifier": by her description, that whole block feeds a model's judgement. Hence the next section.</p>
+
+<hr class="rule">
+
+<h2><span class="num">4</span>Keeping it safe: guarantees live in the harness</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p><i>"But the harder question now is how do we make sure it's okay that we're not there anymore?"</i> (5:26). A model mostly does what you ask, <i>"but that's not a guarantee"</i> (5:45). Her evidence is an Anthropic study from August 2026 — per the slide, <i>"1,053 paid testers, one dangerous command swapped in per session"</i>: <b>14%</b> caught by people, <b>89%</b> blocked by auto mode.</p>
+
+<div class="quote">
+  <p>"about one in 10 of those commands still went through. So, if [you] do want the guarantee, you can only enforce that in the harness."</p>
+  <cite>— Lydia Hallie, 6:01–6:08</cite>
+</div>
+
+<p>The human figure — about one in seven — echoes <a href="../../evaluation-and-observability/verification-debt/">Verification Debt</a>'s finding from an unrelated study: the person clicking approve is a weak backstop. The connection is mine, not hers.</p>
+
+<h3>Deny rules: checked before the classifier sees anything</h3>
+<p>A deny rule is checked <i>"before the [auto mode] classifier even looks at it"</i>; <i>"if a tool [call] matches a deny rule, the classifier never even sees it"</i> (6:19–6:25). One older best practice survives unchanged. What deserves a rule? <i>"if [Claude] gets this wrong once, can I take it back?"</i> (6:40). Wrong code can be reverted — leave it to the model. Discarded uncommitted changes, or a key read into your transcript, cannot — make a rule. Her example is <code>.env</code>, which auto mode is <i>"fine with"</i> reading by default (7:02) — consistent, I would note, with the classifier skipping reads of project files — so you deny it, and then <code>cat</code> cannot open it either.</p>
+
+<div class="note">
+  <div class="lbl">The rule of thumb worth keeping</div>
+  <p><b>Irreversible goes to a rule; reversible stays with the model</b> — which is why the rule list can stay short.</p>
+</div>
+
+<h3>Permissions gate the call, not what it reaches</h3>
+<p><code>npm test</code> is ordinary, so auto mode runs it — but it runs <i>"code that you didn't write, like your dependencies"</i> (7:27). A compromised one can open <code>.env</code> or your SSH keys and <i>"send those to a server you've never heard of"</i> (7:41), and a human approver <i>"would have just clicked allow cuz there's nothing to say no to"</i> (7:48).</p>
+
+<div class="quote">
+  <p>"permissions only decide if a tool call runs, but they cannot limit what it can reach once it's running."</p>
+  <cite>— Lydia Hallie, 7:56</cite>
+</div>
+
+<p>You cannot deny the tests — they are how Claude checks its work — so <i>"we just want to limit the environment that it's running in"</i> (8:15).</p>
+
+<figure>
+<svg viewBox="0 0 900 610" role="img" aria-label="Two panels. Top: a tool call, Bash git reset --hard, goes to a deny rule and is blocked; auto mode, to the right, never sees it; the matching settings.json line denies Bash(git reset --hard *). Bottom: with deny rules for Read(./.env) and Read(~/.ssh/**), a session runs Bash npm test inside a sandbox enforced by the operating system. Of what npm test runs — vitest run, your tests in src/auth/auth.test.ts, and node_modules/some-package/index.js, code you didn't write — the last reaches for three things and is stopped at the sandbox wall: .env by a deny rule, ~/.ssh by a deny rule, and collector.example because the host is not approved.">
+  <text x="24" y="30" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">A DENY RULE IS CHECKED FIRST — REDRAWN FROM 6:25</text>
+  <rect x="40" y="48" width="250" height="62" rx="11" fill="#EEF3FC" stroke="#2F6BD8" stroke-width="1.6"/>
+  <text x="165" y="75" font-size="15" text-anchor="middle" fill="#1F1A1E"><tspan font-weight="700">Bash</tspan> git reset --hard</text>
+  <text x="165" y="96" font-size="12" text-anchor="middle" fill="#5A5158">tool call</text>
+  <path d="M294 79 H330" stroke="#2F6BD8" stroke-width="1.8" marker-end="url(#rcArBlue)"/>
+  <rect x="336" y="48" width="230" height="62" rx="11" fill="#FCEDEC" stroke="#C4372B" stroke-width="1.8"/>
+  <text x="451" y="75" font-size="15" font-weight="700" text-anchor="middle" fill="#1F1A1E">Deny rule</text>
+  <text x="451" y="96" font-size="12.5" text-anchor="middle" fill="#C4372B">blocked</text>
+  <path d="M570 79 H608" stroke="#A99EA5" stroke-width="1.8" stroke-dasharray="2 4"/>
+  <rect x="612" y="48" width="248" height="62" rx="11" fill="#F7F3F4" stroke="#D8CDD3" stroke-width="1.4"/>
+  <text x="736" y="75" font-size="15" text-anchor="middle" fill="#887E85">Auto mode</text>
+  <text x="736" y="96" font-size="12" text-anchor="middle" fill="#887E85">never sees it</text>
+  <rect x="40" y="128" width="820" height="34" rx="8" fill="#221A20"/>
+  <text x="56" y="150" font-size="12.5" class="mono" fill="#A8939F">.claude/settings.json <tspan fill="#EADFE5">  { "permissions": { </tspan><tspan fill="#F29AC3">"deny"</tspan><tspan fill="#EADFE5">: [</tspan><tspan fill="#B9E3C6">"Bash(git reset --hard *)"</tspan><tspan fill="#EADFE5">] } }</tspan></text>
+
+  <path d="M24 190 H876" stroke="#E4DADE"/>
+
+  <text x="24" y="216" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">THE SANDBOX LIMITS WHAT A RUNNING COMMAND CAN REACH — REDRAWN FROM 8:57</text>
+  <rect x="40" y="230" width="480" height="28" rx="7" fill="#221A20"/>
+  <text x="54" y="249" font-size="12" class="mono" fill="#A8939F">settings.json <tspan fill="#F29AC3">"deny"</tspan><tspan fill="#EADFE5">: [</tspan><tspan fill="#B9E3C6">"Read(./.env)"</tspan><tspan fill="#EADFE5">, </tspan><tspan fill="#B9E3C6">"Read(~/.ssh/**)"</tspan><tspan fill="#EADFE5">]</tspan></text>
+  <path d="M50 296 H832" stroke="#CFC4CA" stroke-width="1.2" stroke-dasharray="2 5"/>
+  <rect x="40" y="291" width="10" height="10" rx="2" fill="#FFFFFF" stroke="#5A5158" stroke-width="1.4"/>
+  <path d="M50 296 C140 262 260 262 340 296 S430 326 450 296 S560 262 640 280 S760 316 832 296" stroke="#A12F6A" stroke-width="2.4" fill="none"/>
+  <rect x="832" y="282" width="28" height="28" rx="6" fill="#EAF6EF" stroke="#1B8A54" stroke-width="1.8"/>
+  <rect x="445" y="291" width="10" height="10" rx="1.5" fill="#FFFFFF" stroke="#1F1A1E" stroke-width="1.4"/>
+  <path d="M450 301 V306" stroke="#1F1A1E" stroke-width="1.2"/>
+  <rect x="392" y="306" width="116" height="24" rx="6" fill="#FFFFFF" stroke="#5A5158"/>
+  <text x="450" y="323" font-size="12.5" text-anchor="middle" fill="#1F1A1E"><tspan font-weight="700">Bash</tspan> npm test</text>
+  <path d="M450 330 V368" stroke="#5A5158" stroke-width="1.2"/>
+
+  <rect x="150" y="350" width="600" height="150" rx="16" fill="none" stroke="#1F1A1E" stroke-width="2.2"/>
+  <rect x="164" y="340" width="82" height="20" fill="#FFFFFF"/>
+  <text x="172" y="356" font-size="15" font-weight="700" fill="#1F1A1E">sandbox</text>
+  <rect x="532" y="340" width="206" height="20" fill="#FFFFFF"/>
+  <text x="732" y="355" font-size="12" text-anchor="end" fill="#5A5158">enforced by the operating system</text>
+  <rect x="172" y="368" width="556" height="114" rx="10" fill="#FAF7F8" stroke="#E4DADE"/>
+  <text x="186" y="386" font-size="11.5" fill="#5A5158">What npm test runs</text>
+  <path d="M172 394 H728" stroke="#E4DADE"/>
+  <text x="186" y="414" font-size="12.5" class="mono" fill="#1F1A1E">vitest run</text>
+  <text x="714" y="414" font-size="11.5" text-anchor="end" fill="#887E85">the script in package.json</text>
+  <text x="186" y="438" font-size="12.5" class="mono" fill="#1F1A1E">src/auth/auth.test.ts</text>
+  <text x="714" y="438" font-size="11.5" text-anchor="end" fill="#887E85">your tests</text>
+  <rect x="173" y="447" width="554" height="26" fill="#FBE6E4"/>
+  <text x="186" y="465" font-size="12.5" class="mono" fill="#9E2B22">node_modules/some-package/index.js</text>
+  <text x="714" y="465" font-size="11.5" font-weight="700" text-anchor="end" fill="#C4372B">code you didn't write</text>
+  <g stroke="#C4372B" stroke-width="1.6" fill="none">
+    <path d="M450 473 V490"/><path d="M450 480 Q300 480 262 492"/><path d="M450 480 Q600 480 638 492"/>
+  </g>
+  <use href="#rcX" x="250" y="490" width="20" height="20"/>
+  <use href="#rcX" x="440" y="490" width="20" height="20"/>
+  <use href="#rcX" x="630" y="490" width="20" height="20"/>
+
+  <path d="M253 524 H264 L270 530 V546 H253 Z" fill="none" stroke="#5A5158" stroke-width="1.5"/>
+  <text x="260" y="570" font-size="14" class="mono" text-anchor="middle" fill="#1F1A1E">.env</text>
+  <text x="260" y="589" font-size="12" text-anchor="middle" fill="#C4372B">deny rule</text>
+  <path d="M443 524 H454 L460 530 V546 H443 Z" fill="none" stroke="#5A5158" stroke-width="1.5"/>
+  <text x="450" y="570" font-size="14" class="mono" text-anchor="middle" fill="#1F1A1E">~/.ssh</text>
+  <text x="450" y="589" font-size="12" text-anchor="middle" fill="#C4372B">deny rule</text>
+  <rect x="626" y="522" width="28" height="10" rx="3" fill="none" stroke="#5A5158" stroke-width="1.5"/>
+  <rect x="626" y="536" width="28" height="10" rx="3" fill="none" stroke="#5A5158" stroke-width="1.5"/>
+  <text x="640" y="570" font-size="14" class="mono" text-anchor="middle" fill="#1F1A1E">collector.example</text>
+  <text x="640" y="589" font-size="12" text-anchor="middle" fill="#C4372B">host not approved</text>
+</svg>
+<figcaption><b>Figure 3. The gate and the wall — redrawn from the slides at 6:25 and 8:57.</b> Slide wording and code, my layout. The top panel stops a call; the bottom lets the call through and stops what it does — the <code>.env</code> rule, checked by Claude Code, sees only <code>npm test</code>, but passed to the OS it stops the dependency's read. The <code>git reset --hard</code> example is on the slide only.</figcaption>
+</figure>
+
+<hr class="rule">
+
+<h2><span class="num">5</span>Change the environment, not just the rules</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>Locally, that means a <b>sandbox</b>: you choose which files a command reads, which folders it writes and which hosts it reaches, and <i>"the operating system enforces that"</i>, child processes included (8:25–8:38). The deny rule, passed to the OS, now stops the dependency itself (8:49–8:58). She states two limits: by default the sandbox can still read most of your machine, so add a rule for SSH keys (8:59); and <i>"[Claude's] own files, your MCP servers, and all of your hooks still run outside of it"</i> (9:15).</p>
+
+<p>Hence the <b>cloud session</b>, <i>"somewhere where none of that is even there in the first place"</i> (9:26): its own machine, a fresh copy of the repo, running with your laptop closed. <code>.env</code> is not in Git, and neither are SSH keys or a GitHub token (9:45). API keys become network secrets, used <i>"without actually ever sending it to the model"</i> (10:01); network access defaults to package registries and GitHub, with other domains added explicitly (10:05) — the "Edit cloud environment" dialog on the slide at 10:04.</p>
+
+<div class="quote">
+  <p>"this machine is disposable, but the things that leave it aren't."</p>
+  <cite>— Lydia Hallie, 10:28</cite>
+</div>
+
+<p>A pushed commit; a message through a connector. So auto mode still runs there, with deny rules committed to the repo, catching <i>"a forced push or a secret in a commit"</i> (10:42).</p>
+
+<figure>
+<svg viewBox="0 0 900 580" role="img" aria-label="Two checks apply before any command runs: a deny rule, checked first and enforced, then the auto-mode classifier, a judgement and not a guarantee. The path then forks into two places to run, drawn side by side. On your own machine, an OS-enforced sandbox covers the command and every process it starts and receives the deny rules; Claude's own files, MCP servers and hooks run outside it, on your machine; by default it can still read most of the machine. Ideally, a cloud session: its own machine with a fresh copy of the repo, where .env, SSH keys and the GitHub token are not in Git, network access defaults to package registries and GitHub, API keys are network secrets, and auto mode with committed deny rules stays on. A pushed commit and a message through a connector still leave that machine.">
+  <text x="24" y="28" font-size="11.5" font-weight="800" letter-spacing="1.1" fill="#5A5158">TWO CHECKS BEFORE ANY COMMAND RUNS, THEN TWO PLACES TO RUN IT</text>
+
+  <rect x="100" y="44" width="130" height="58" rx="10" fill="#EEF3FC" stroke="#2F6BD8" stroke-width="1.6"/>
+  <text x="165" y="69" font-size="13.5" font-weight="700" text-anchor="middle" fill="#1F1A1E">tool call</text>
+  <text x="165" y="88" font-size="10.5" text-anchor="middle" fill="#5A5158">e.g. Bash npm test</text>
+  <path d="M232 73 H254" stroke="#2F6BD8" stroke-width="1.8" marker-end="url(#rcArBlue)"/>
+  <rect x="258" y="44" width="222" height="58" rx="10" fill="#FCEDEC" stroke="#C4372B" stroke-width="1.6"/>
+  <text x="369" y="68" font-size="13.5" font-weight="700" text-anchor="middle" fill="#1F1A1E">1 · Deny rule</text>
+  <text x="369" y="88" font-size="11" text-anchor="middle" fill="#9E2B22">checked first · enforced (6:19)</text>
+  <path d="M482 73 H504" stroke="#2F6BD8" stroke-width="1.8" marker-end="url(#rcArBlue)"/>
+  <rect x="508" y="44" width="254" height="58" rx="10" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6" stroke-dasharray="5 3"/>
+  <text x="635" y="68" font-size="13.5" font-weight="700" text-anchor="middle" fill="#1F1A1E">2 · Auto-mode classifier</text>
+  <text x="635" y="88" font-size="11" text-anchor="middle" fill="#7C2352">a judgement, not a guarantee (6:01)</text>
+
+  <path d="M635 104 V118 M220 118 H680" stroke="#2F6BD8" stroke-width="1.8" fill="none"/>
+  <path d="M220 118 V140" stroke="#2F6BD8" stroke-width="1.8" marker-end="url(#rcArBlue)"/>
+  <path d="M680 118 V140" stroke="#2F6BD8" stroke-width="1.8" marker-end="url(#rcArBlue)"/>
+
+  <rect x="20" y="146" width="400" height="340" rx="16" fill="#FBF9FA" stroke="#5A5158" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="36" y="170" font-size="11.5" font-weight="800" letter-spacing="1" fill="#5A5158">ON YOUR OWN MACHINE (8:18)</text>
+  <rect x="36" y="184" width="368" height="126" rx="14" fill="#FFFFFF" stroke="#1F1A1E" stroke-width="2"/>
+  <text x="52" y="208" font-size="11.5" font-weight="800" letter-spacing="1" fill="#1F1A1E">SANDBOX — ENFORCED BY THE OS</text>
+  <text x="52" y="233" font-size="13" fill="#1F1A1E">the command and every process it starts</text>
+  <text x="52" y="255" font-size="11.5" fill="#5A5158">limits the files it reads, the folders it writes,</text>
+  <text x="52" y="272" font-size="11.5" fill="#5A5158">the hosts it reaches</text>
+  <text x="52" y="296" font-size="11.5" fill="#7C2352">deny rules are passed down to the OS (8:49)</text>
+  <rect x="36" y="324" width="368" height="98" rx="12" fill="#FCF0EE" stroke="#C4372B" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <text x="52" y="348" font-size="11.5" font-weight="800" letter-spacing="1" fill="#C4372B">OUTSIDE THE SANDBOX (9:15)</text>
+  <text x="52" y="373" font-size="13" fill="#1F1A1E">Claude's own files · MCP servers · hooks</text>
+  <text x="52" y="398" font-size="11" font-style="italic" fill="#5A5158">still run on your machine, with everything on it</text>
+  <text x="36" y="448" font-size="11.5" fill="#5A5158">by default it can still read most of your machine;</text>
+  <text x="36" y="465" font-size="11.5" fill="#5A5158">add a rule for SSH keys (8:59)</text>
+
+  <path d="M424 300 H474" stroke="#A12F6A" stroke-width="1.8" marker-end="url(#rcArBerry)"/>
+  <text x="449" y="290" font-size="11" font-style="italic" text-anchor="middle" fill="#7C2352">ideally</text>
+  <text x="449" y="318" font-size="10.5" text-anchor="middle" fill="#7C2352">(9:24)</text>
+
+  <rect x="480" y="146" width="400" height="340" rx="16" fill="#FBF9FA" stroke="#5A5158" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <use href="#rcCloud" x="496" y="157" width="24" height="16"/>
+  <text x="528" y="170" font-size="11.5" font-weight="800" letter-spacing="1" fill="#5A5158">IDEALLY: A CLOUD SESSION (9:30)</text>
+  <text x="496" y="192" font-size="11.5" fill="#5A5158">its own machine, a fresh copy of the repo,</text>
+  <text x="496" y="208" font-size="11.5" fill="#5A5158">running with your laptop closed (9:37)</text>
+  <rect x="496" y="220" width="368" height="62" rx="12" fill="#FFFFFF" stroke="#E4DADE"/>
+  <text x="512" y="242" font-size="11.5" font-weight="800" letter-spacing="1" fill="#5A5158">NOTHING HERE TO TAKE (9:45)</text>
+  <text x="512" y="267" font-size="12.5" fill="#1F1A1E"><tspan class="mono">.env</tspan>, SSH keys, GitHub token — not in Git</text>
+  <rect x="496" y="292" width="368" height="92" rx="12" fill="#FFFFFF" stroke="#E4DADE"/>
+  <text x="512" y="314" font-size="11.5" font-weight="800" letter-spacing="1" fill="#5A5158">NETWORK (9:52–10:12)</text>
+  <text x="512" y="336" font-size="12" fill="#1F1A1E">default: package registries, GitHub</text>
+  <text x="512" y="354" font-size="12" fill="#1F1A1E">other hosts: add the domain explicitly</text>
+  <text x="512" y="372" font-size="12" fill="#1F1A1E">API keys: network secrets, never sent to the model</text>
+  <rect x="496" y="394" width="368" height="76" rx="12" fill="#F7E6EE" stroke="#EBC6D8"/>
+  <text x="512" y="416" font-size="11.5" font-weight="800" letter-spacing="1" fill="#7C2352">STILL ON IN THE CLOUD (10:36)</text>
+  <text x="512" y="438" font-size="12" fill="#1F1A1E">auto mode, plus deny rules committed to the repo</text>
+  <text x="512" y="456" font-size="12" fill="#1F1A1E">catching a forced push or a secret in a commit</text>
+
+  <path d="M600 486 V514" stroke="#C4372B" stroke-width="1.8" marker-end="url(#rcArRed)"/>
+  <path d="M760 486 V514" stroke="#C4372B" stroke-width="1.8" marker-end="url(#rcArRed)"/>
+  <text x="600" y="534" font-size="12" font-weight="700" text-anchor="middle" fill="#C4372B">a commit pushed</text>
+  <text x="760" y="534" font-size="12" font-weight="700" text-anchor="middle" fill="#C4372B">a message through a connector</text>
+  <text x="680" y="562" font-size="11.5" text-anchor="middle" fill="#1F1A1E">These leave the disposable machine (10:28).</text>
+</svg>
+<figcaption><b>Figure 4. Two checks, then two places to run — reconstructed from the speech, 6:19–10:44.</b> Not a redrawn slide: the pieces appear on separate slides (6:25, 8:57, 9:32, 10:04), and the assembly is mine. The deny rule and the classifier apply wherever the session runs (6:19; in the cloud, 10:36). The sandbox is her answer for running on your own machine; the cloud session is her answer to what the sandbox leaves exposed. She does not say whether a cloud session also sandboxes commands, so the two are drawn side by side, not nested.</figcaption>
+</figure>
+
+<div class="note warn">
+  <div class="lbl">A consequence the talk does not draw — my observation</div>
+  <p>Locally, the hooks that section 6 uses to run your tests are among the things she says run outside the sandbox. If so, a hook running <code>npm test</code> runs Figure 3's dependency code unsandboxed. That supports her conclusion — use the cloud — but "sandbox on" is not "tests sandboxed". Check it in your own setup.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">6</span>Verification: review the checkpoints, not the diff</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>The loop used to verify for free — <i>"we'd already kind of seen every change"</i> (11:00). Now take "Move auth over to the new API": with the same prompt, one run leaves the old API in place, one moves only new logins, one logs everyone out (11:25). All look reasonable.</p>
+
+<p>So set <b>verification points</b>: anything that <i>"comes back as a pass or fail"</i> — a test, a build, a screenshot (11:44–11:47). On the slide the test is <code>auth.test.ts</code>, with one unchecked box: "nobody gets logged out". You review the checkpoints, far shorter than the diff, and the bad run <i>"doesn't get past that first check"</i> (12:02). Ask for them in the prompt — say what done looks like, split the work into tasks with their own tests, show the actual output <i>"because you weren't there to see it"</i> (12:19) — but <i>"prompting is not a guarantee"</i> (12:21). For checks that must run, use <b>hooks</b>: lint on every edit; on every task, its tests — <i>"if it touched our auth code or something, it has to pass the auth auth tests"</i> (12:49); the full suite at the end.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" aria-label="Two panels titled Hooks. Top: a session line passes four green checks and ends at a larger green check; three cards say every edit runs lint on the PostToolUse event, every task runs its tests on TaskCompleted, and the end runs all tests on Stop. Bottom: after two green checks the third check fails with a red cross; an arc labelled exit 2, goes back to fix it, returns to the previous check, while an arc labelled exit 1, marked as completed, jumps forward to the next step.">
+  <text x="24" y="30" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">WHERE THE HOOKS FIRE — REDRAWN FROM 12:55</text>
+  <path d="M50 86 H836" stroke="#CFC4CA" stroke-width="1.2" stroke-dasharray="2 5"/>
+  <rect x="40" y="81" width="10" height="10" rx="2" fill="#FFFFFF" stroke="#5A5158" stroke-width="1.4"/>
+  <path d="M50 86 C100 56 160 56 220 86 S340 116 400 86 S520 56 580 86 S700 116 760 86 C790 70 812 74 836 86" stroke="#A12F6A" stroke-width="2.4" fill="none"/>
+  <use href="#rcChk" x="209" y="75" width="22" height="22"/><use href="#rcChk" x="389" y="75" width="22" height="22"/>
+  <use href="#rcChk" x="569" y="75" width="22" height="22"/><use href="#rcChk" x="749" y="75" width="22" height="22"/>
+  <use href="#rcChk" x="836" y="71" width="30" height="30"/>
+  <rect x="40" y="128" width="262" height="72" rx="12" fill="#FAF7F8" stroke="#E4DADE"/>
+  <text x="58" y="158" font-size="15.5" fill="#1F1A1E"><tspan font-weight="700">Every edit</tspan> <tspan fill="#A12F6A">→</tspan> lint</text>
+  <text x="58" y="183" font-size="12.5" class="mono" fill="#6B4FBB">PostToolUse</text>
+  <rect x="319" y="128" width="262" height="72" rx="12" fill="#FAF7F8" stroke="#E4DADE"/>
+  <text x="337" y="158" font-size="15.5" fill="#1F1A1E"><tspan font-weight="700">Every task</tspan> <tspan fill="#A12F6A">→</tspan> its tests</text>
+  <text x="337" y="183" font-size="12.5" class="mono" fill="#6B4FBB">TaskCompleted</text>
+  <rect x="598" y="128" width="262" height="72" rx="12" fill="#FAF7F8" stroke="#E4DADE"/>
+  <text x="616" y="158" font-size="15.5" fill="#1F1A1E"><tspan font-weight="700">The end</tspan> <tspan fill="#A12F6A">→</tspan> all tests</text>
+  <text x="616" y="183" font-size="12.5" class="mono" fill="#6B4FBB">Stop</text>
+
+  <path d="M24 224 H876" stroke="#E4DADE"/>
+
+  <text x="24" y="250" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">WHEN ONE FAILS — REDRAWN FROM 13:10</text>
+  <path d="M50 356 H836" stroke="#CFC4CA" stroke-width="1.2" stroke-dasharray="2 5"/>
+  <rect x="40" y="351" width="10" height="10" rx="2" fill="#FFFFFF" stroke="#5A5158" stroke-width="1.4"/>
+  <path d="M50 356 C100 326 160 326 220 356 S340 386 400 356 S520 326 568 352" stroke="#A12F6A" stroke-width="2.4" fill="none"/>
+  <use href="#rcChk" x="209" y="345" width="22" height="22"/><use href="#rcChk" x="389" y="345" width="22" height="22"/>
+  <rect x="568" y="344" width="24" height="24" rx="5" fill="#C4372B"/>
+  <path d="M574.5 350.5 L585.5 361.5 M585.5 350.5 L574.5 361.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+  <rect x="749" y="345" width="22" height="22" rx="5" fill="#EAF6EF" stroke="#1B8A54" stroke-width="1.6"/>
+  <rect x="836" y="341" width="30" height="30" rx="6" fill="#EAF6EF" stroke="#1B8A54" stroke-width="1.8"/>
+  <path d="M574 340 C548 296 434 296 408 338" stroke="#A12F6A" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round" fill="none" marker-end="url(#rcArBerry)"/>
+  <path d="M586 340 C612 296 728 296 754 338" stroke="#1B8A54" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round" fill="none" marker-end="url(#rcArGreen)"/>
+  <text x="560" y="274" font-size="14" class="mono" text-anchor="end" fill="#A12F6A">exit 2</text>
+  <text x="560" y="292" font-size="13.5" font-weight="700" text-anchor="end" fill="#1F1A1E">goes back to fix it</text>
+  <text x="604" y="274" font-size="14" class="mono" fill="#1B8A54">exit 1</text>
+  <text x="604" y="292" font-size="13.5" font-weight="700" fill="#1F1A1E">marked as completed</text>
+</svg>
+<figcaption><b>Figure 5. Hooks, and the exit code that decides whether they bite — redrawn from the slides at 12:55 and 13:10.</b> Card text, event names and arc labels are the slides'; the event names are never spoken. The slide does not tie cards to points on the line, so neither does this figure. The forward arc, in the slide's green, is the one you do not want.</figcaption>
+</figure>
+
+<div class="quote">
+  <p>"with a one, that task by [Claude Code] just gets marked as completed anyway. So make sure that your scripts exit with a two exit code because that's what actually sends [Claude] back to fix it."</p>
+  <cite>— Lydia Hallie, 13:11–13:21</cite>
+</div>
+
+<div class="note warn">
+  <div class="lbl">Check this before you rely on it</div>
+  <p>Most test runners exit with 1 on failure — which, on her account, does not block. A hook wrapping one without remapping the code would report the failure and let the task close: a gate that looks installed and is not. This is her claim; this entry has not checked it against product documentation. A five-minute test in your own setup settles it.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">7</span>Scaling: CI as the floor, then review by risk</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>With one session she trusts, she starts more; each has its own machine, so she no longer has to think much about work trees (13:35). But you still start and review each — <i>"a pretty good place to be"</i> (13:45), and still in the loop. Next comes CI, which she calls the most important thing to have in place: every session ends in a PR, and CI <i>"runs the same checks on every one of them, no matter how that session was set up"</i> (14:07). It is the one check every session meets. CI auto-fix sends Claude back to a failing check (14:14). "Merge when ready" lets GitHub merge once checks pass — <i>"but again, that that's not the default and that really depends on how risky the change is"</i> (14:36).</p>
+
+<p>On her team Claude reviews every PR first — <i>"not by the session that wrote it"</i>, with fresh context and <i>"a separate group of agents to just double check every bug it finds"</i> (14:44–14:52). People are then added by risk. Speech and slide differ, so here are both:</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:15%">People</th><th>Spoken, 14:57–15:08</th><th>On the slide at 15:01</th></tr></thead>
+  <tbody>
+    <tr><td><b>None</b></td><td>"smaller changes like docs or copy, they don't need a person"</td><td>"Smaller changes" — "like a typo or a lint fix"</td></tr>
+    <tr><td><b>One</b></td><td>"maybe ordinary product changes just need one reviewer"</td><td>"Most changes" — "one person"</td></tr>
+    <tr><td><b>More</b></td><td>"risky changes might need two"</td><td>"Riskiest changes" — "more than one person"</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Note the hedges, and that the slide's no-person examples (a typo, a lint fix) differ from the spoken ones (docs, copy).</p>
+
+<div class="note">
+  <div class="lbl">Held against Verification Debt — my reading</div>
+  <p><a href="../../evaluation-and-observability/verification-debt/">Verification Debt</a>'s criterion is to verify with a different methodology than the one that generated the code. A fresh-context session is independent of the writer's context, not obviously of its model — and the talk does not say which model reviews. Here, the genuinely different methods are the deterministic ones: tests, hooks, CI.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">8</span>Where it is heading: a session that starts the sessions</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>The last job to hand over is starting sessions — <i>"where we see things going"</i>, she says, and something Anthropic is <i>"already kind of doing more of"</i> (15:11). Her reason: <i>"I'm terrible at context switching"</i> (15:20). One main session orchestrates: it splits the request, starts a session per task, tracks what comes back and sends back anything that <i>"isn't actually done"</i> (16:05). She points to a feature she calls, as heard, "Claude Code projects", still in beta (15:33); its threads are <i>"just new sessions"</i> (15:48). The orchestrator writes no code, so it wants a model <i>"really good at deciding what to do and judging what comes back, a model like Fable"</i>; the threads want one <i>"good at actually doing the work like Opus [5.5]"</i>, set separately (15:58–16:19). With that feature, she adds, context is managed automatically (16:25).</p>
+
+<figure>
+<svg viewBox="0 0 900 460" role="img" aria-label="An orchestrator session on the left, labelled Fable, decides and judges, holds the request for acme-web and a task list marked Done. It fans out to eight cloud sessions labelled Opus 5.5, does the work, each verifying itself at checkpoints. Each session opens a PR, passes CI, and then either goes to one person for review or is set to Merge when ready — dependencies, docs sweep and a11y on settings — before being merged. Two annotations from the speech: the orchestrator returns work that is not actually done, and every PR is first reviewed by a separate Claude with fresh context.">
+  <text x="24" y="34" fill="#1F1A1E"><tspan font-size="20" font-weight="700">Fable</tspan><tspan font-size="13" fill="#5A5158" dx="8">decides and judges</tspan></text>
+  <rect x="24" y="48" width="216" height="300" rx="12" fill="#FAF7F8" stroke="#E4DADE"/>
+  <text x="38" y="70" font-size="12" font-weight="700" fill="#5A5158">acme-web</text>
+  <use href="#rcPerson" x="206" y="56" width="22" height="22"/>
+  <rect x="38" y="80" width="188" height="90" rx="8" fill="#EFE8EB"/>
+  <text x="48" y="97" font-size="10.5" fill="#1F1A1E">This week: the auth migration,</text>
+  <text x="48" y="112" font-size="10.5" fill="#1F1A1E">the flaky test, dependencies,</text>
+  <text x="48" y="127" font-size="10.5" fill="#1F1A1E">the cold start crash, docs, the</text>
+  <text x="48" y="142" font-size="10.5" fill="#1F1A1E">billing retry, the user service</text>
+  <text x="48" y="157" font-size="10.5" fill="#1F1A1E">rename and a11y.</text>
+  <text x="38" y="189" font-size="11" fill="#1F1A1E">On it. I'll start a session</text>
+  <text x="38" y="203" font-size="11" fill="#1F1A1E">for each one.</text>
+  <rect x="38" y="214" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="226" font-size="10.5" fill="#1F1A1E">Auth migration</text><text x="218" y="226" font-size="10.5" text-anchor="end" fill="#1B8A54">Done</text>
+  <rect x="38" y="235" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="247" font-size="10.5" fill="#1F1A1E">Flaky auth test</text><text x="218" y="247" font-size="10.5" text-anchor="end" fill="#1B8A54">Done</text>
+  <rect x="38" y="256" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="268" font-size="10.5" fill="#1F1A1E">Dependencies</text><text x="218" y="268" font-size="10.5" text-anchor="end" fill="#1B8A54">Done</text>
+  <rect x="38" y="277" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="289" font-size="10.5" fill="#1F1A1E">Cold start crash</text><text x="218" y="289" font-size="10.5" text-anchor="end" fill="#1B8A54">Done</text>
+  <text x="38" y="318" font-size="10.5" fill="#887E85">and 4 more</text>
+
+  <path d="M240 204 H250" stroke="#A12F6A" stroke-width="1.4"/>
+  <use href="#rcStar" x="250" y="190" width="28" height="28"/>
+  <g stroke="#B9AEB4" stroke-width="1.1" fill="none">
+    <path d="M278 204 C287 204 286 71 294 71"/><path d="M278 204 C287 204 286 109 294 109"/>
+    <path d="M278 204 C287 204 286 147 294 147"/><path d="M278 204 C287 204 286 185 294 185"/>
+    <path d="M278 204 C287 204 286 223 294 223"/><path d="M278 204 C287 204 286 261 294 261"/>
+    <path d="M278 204 C287 204 286 299 294 299"/><path d="M278 204 C287 204 286 337 294 337"/>
+  </g>
+
+  <text x="294" y="34" fill="#1F1A1E"><tspan font-size="20" font-weight="700">Opus 5.5</tspan><tspan font-size="13" fill="#5A5158" dx="8">does the work</tspan></text>
+  <text x="622" y="34" font-size="12" text-anchor="middle" fill="#5A5158">PR</text>
+  <text x="680" y="34" font-size="12" text-anchor="middle" fill="#5A5158">CI</text>
+
+  <g font-size="12.5" fill="#1F1A1E">
+    <rect x="294" y="56" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="64" width="20" height="14"/><text x="330" y="76">flaky auth test</text>
+    <rect x="294" y="94" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="102" width="20" height="14"/><text x="330" y="114">dependencies</text>
+    <rect x="294" y="132" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="140" width="20" height="14"/><text x="330" y="152">cold start crash</text>
+    <rect x="294" y="170" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="178" width="20" height="14"/><text x="330" y="190">auth migration</text>
+    <rect x="294" y="208" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="216" width="20" height="14"/><text x="330" y="228">docs sweep</text>
+    <rect x="294" y="246" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="254" width="20" height="14"/><text x="330" y="266">billing retry</text>
+    <rect x="294" y="284" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="292" width="20" height="14"/><text x="330" y="304">user service</text>
+    <rect x="294" y="322" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="330" width="20" height="14"/><text x="330" y="342">a11y on settings</text>
+  </g>
+  <g stroke="#A12F6A" stroke-width="1.4" fill="none">
+    <path d="M466 71 q13 -5 26 0 t26 0 t26 0 t26 0"/><path d="M466 109 q13 -5 26 0 t26 0 t26 0 t26 0"/>
+    <path d="M466 147 q13 -5 26 0 t26 0 t26 0 t26 0"/><path d="M466 185 q13 -5 26 0 t26 0 t26 0 t26 0"/>
+    <path d="M466 223 q13 -5 26 0 t26 0 t26 0 t26 0"/><path d="M466 261 q13 -5 26 0 t26 0 t26 0 t26 0"/>
+    <path d="M466 299 q13 -5 26 0 t26 0 t26 0 t26 0"/><path d="M466 337 q13 -5 26 0 t26 0 t26 0 t26 0"/>
+  </g>
+  <use href="#rcChk" x="474" y="65" width="12" height="12"/><use href="#rcChk" x="496" y="65" width="12" height="12"/><use href="#rcChk" x="518" y="65" width="12" height="12"/><use href="#rcChk" x="540" y="65" width="12" height="12"/><use href="#rcChk" x="570" y="62" width="18" height="18"/>
+  <use href="#rcChk" x="474" y="103" width="12" height="12"/><use href="#rcChk" x="496" y="103" width="12" height="12"/><use href="#rcChk" x="518" y="103" width="12" height="12"/><use href="#rcChk" x="540" y="103" width="12" height="12"/><use href="#rcChk" x="570" y="100" width="18" height="18"/>
+  <use href="#rcChk" x="488" y="141" width="12" height="12"/><use href="#rcChk" x="526" y="141" width="12" height="12"/><use href="#rcChk" x="570" y="138" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="179" width="12" height="12"/><use href="#rcChk" x="506" y="179" width="12" height="12"/><use href="#rcChk" x="532" y="179" width="12" height="12"/><use href="#rcChk" x="570" y="176" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="217" width="12" height="12"/><use href="#rcChk" x="506" y="217" width="12" height="12"/><use href="#rcChk" x="532" y="217" width="12" height="12"/><use href="#rcChk" x="570" y="214" width="18" height="18"/>
+  <use href="#rcChk" x="488" y="255" width="12" height="12"/><use href="#rcChk" x="526" y="255" width="12" height="12"/><use href="#rcChk" x="570" y="252" width="18" height="18"/>
+  <use href="#rcChk" x="474" y="293" width="12" height="12"/><use href="#rcChk" x="496" y="293" width="12" height="12"/><use href="#rcChk" x="518" y="293" width="12" height="12"/><use href="#rcChk" x="540" y="293" width="12" height="12"/><use href="#rcChk" x="570" y="290" width="18" height="18"/>
+  <use href="#rcChk" x="474" y="331" width="12" height="12"/><use href="#rcChk" x="496" y="331" width="12" height="12"/><use href="#rcChk" x="518" y="331" width="12" height="12"/><use href="#rcChk" x="540" y="331" width="12" height="12"/><use href="#rcChk" x="570" y="328" width="18" height="18"/>
+
+  <g stroke="#B9AEB4" stroke-width="1.1">
+    <path d="M594 71 H832"/><path d="M594 109 H832"/><path d="M594 147 H832"/><path d="M594 185 H832"/>
+    <path d="M594 223 H832"/><path d="M594 261 H832"/><path d="M594 299 H832"/><path d="M594 337 H832"/>
+  </g>
+  <use href="#rcPR" x="611" y="60" width="22" height="22"/><use href="#rcPR" x="611" y="98" width="22" height="22"/>
+  <use href="#rcPR" x="611" y="136" width="22" height="22"/><use href="#rcPR" x="611" y="174" width="22" height="22"/>
+  <use href="#rcPR" x="611" y="212" width="22" height="22"/><use href="#rcPR" x="611" y="250" width="22" height="22"/>
+  <use href="#rcPR" x="611" y="288" width="22" height="22"/><use href="#rcPR" x="611" y="326" width="22" height="22"/>
+  <use href="#rcCI" x="669" y="60" width="22" height="22"/><use href="#rcCI" x="669" y="98" width="22" height="22"/>
+  <use href="#rcCI" x="669" y="136" width="22" height="22"/><use href="#rcCI" x="669" y="174" width="22" height="22"/>
+  <use href="#rcCI" x="669" y="212" width="22" height="22"/><use href="#rcCI" x="669" y="250" width="22" height="22"/>
+  <use href="#rcCI" x="669" y="288" width="22" height="22"/><use href="#rcCI" x="669" y="326" width="22" height="22"/>
+  <use href="#rcPerson" x="749" y="60" width="22" height="22"/>
+  <rect x="706" y="99" width="108" height="20" rx="10" fill="#EAF6EF" stroke="#1B8A54"/><text x="760" y="113" font-size="10.5" text-anchor="middle" fill="#1B8A54">Merge when ready</text>
+  <use href="#rcPerson" x="749" y="136" width="22" height="22"/>
+  <use href="#rcPerson" x="749" y="174" width="22" height="22"/>
+  <rect x="706" y="213" width="108" height="20" rx="10" fill="#EAF6EF" stroke="#1B8A54"/><text x="760" y="227" font-size="10.5" text-anchor="middle" fill="#1B8A54">Merge when ready</text>
+  <use href="#rcPerson" x="749" y="250" width="22" height="22"/>
+  <use href="#rcPerson" x="749" y="288" width="22" height="22"/>
+  <rect x="706" y="327" width="108" height="20" rx="10" fill="#EAF6EF" stroke="#1B8A54"/><text x="760" y="341" font-size="10.5" text-anchor="middle" fill="#1B8A54">Merge when ready</text>
+  <use href="#rcMerge" x="832" y="60" width="22" height="22"/><use href="#rcMerge" x="832" y="98" width="22" height="22"/>
+  <use href="#rcMerge" x="832" y="136" width="22" height="22"/><use href="#rcMerge" x="832" y="174" width="22" height="22"/>
+  <use href="#rcMerge" x="832" y="212" width="22" height="22"/><use href="#rcMerge" x="832" y="250" width="22" height="22"/>
+  <use href="#rcMerge" x="832" y="288" width="22" height="22"/><use href="#rcMerge" x="832" y="326" width="22" height="22"/>
+
+  <path d="M440 356 V382 Q440 388 434 388 H270 Q264 388 264 382 V224" stroke="#A12F6A" stroke-width="1.6" stroke-dasharray="5 4" fill="none" marker-end="url(#rcArBerry)"/>
+  <text x="276" y="408" font-size="11.5" font-style="italic" fill="#7C2352">sends back what isn't actually done — 16:05, from the speech</text>
+  <rect x="652" y="366" width="230" height="82" rx="10" fill="#FFFFFF" stroke="#5A5158" stroke-dasharray="4 3"/>
+  <text x="666" y="386" font-size="11.5" font-style="italic" fill="#1F1A1E">Before any person: every PR is</text>
+  <text x="666" y="402" font-size="11.5" font-style="italic" fill="#1F1A1E">first reviewed by a separate</text>
+  <text x="666" y="418" font-size="11.5" font-style="italic" fill="#1F1A1E">Claude with fresh context —</text>
+  <text x="666" y="434" font-size="11.5" font-style="italic" fill="#1F1A1E">14:41–14:48, from the speech</text>
+</svg>
+<figcaption><b>Figure 6. The orchestrator and the pipeline behind it — a composite of the slides at 16:08 and 14:33.</b> Left half and rows from 16:08, which labels the main session only "Fable"; PR, CI and review columns from 14:33. The two dashed, italic annotations come from her narration. The webcam hides the right end of the last two rows at 14:33; they are completed here. Every visible reviewed row shows one person — none shows the two-person tier.</figcaption>
+</figure>
+
+<p>It is the shape <a href="../loop-vs-graph/">Loop Engineering vs Graph Engineering</a> describes — a coordinating layer wrapping worker loops — with deciding and doing split across models. Her close:</p>
+
+<div class="quote">
+  <p>"we're really just here to start that first one and to just review what comes out."</p>
+  <cite>— Lydia Hallie, 16:58</cite>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">9</span>One table: each in-loop job, its new owner, what still gets through</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>The first two columns are the closing slide's wording; the fourth is my classification, not hers.</p>
+
+<div class="scroll">
+<table style="min-width:720px">
+  <thead><tr><th style="width:16%">In-loop job</th><th style="width:15%">Taken over by</th><th>How, in the talk</th><th style="width:12%">Kind of control</th><th style="width:27%">What still gets through</th></tr></thead>
+  <tbody>
+    <tr><td><b>Steering it</b></td><td>The model</td><td>Opus 5.5 reads intent; CLAUDE.md holds only what the code cannot show</td><td>Judgement</td><td>The same prompt still lands in different places</td></tr>
+    <tr><td><b>Approving every tool call</b></td><td>Auto mode</td><td>A classifier, configured in plain English</td><td>Judgement</td><td>About one in ten planted dangerous commands</td></tr>
+    <tr><td><b>Saying no</b></td><td>Deny rules, the environment</td><td>Deny rules before the classifier; OS sandbox; a cloud machine with nothing to steal</td><td>Enforced</td><td>What a running command reaches outside the sandbox; Claude's own files, MCP servers, hooks; pushes and connector messages</td></tr>
+    <tr><td><b>Checking it's done</b></td><td>Tests, hooks, CI</td><td>Verification points; hooks; CI with auto-fix; a separate Claude reviews; people by risk</td><td>Enforced, plus judgement</td><td>Whatever the checks do not test; a hook that exits 1, on her account</td></tr>
+    <tr><td><b>Starting every session</b></td><td>Claude</td><td>An orchestrator session starts and judges threads</td><td>Judgement</td><td>You still start the first and review what comes out</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+  <div class="lbl">Worth noting for our own context</div>
+  <p>In a regulated or audited setting, the talk's line between judgement and guarantee is an auditor's line between a statistic and a control. Deny rules, an OS sandbox, committed configuration, CI gates and written review tiers can be inspected and evidenced; a classifier's catch rate says nothing about any single action. Her "things that leave [the machine]" — pushes, messages through connectors — are where the audit trail has to sit.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">10</span>Still open</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p><b>What she concedes:</b> auto mode and prompting are each <i>"not a guarantee"</i> (5:45, 12:21); about one in ten planted commands got through (6:01); the sandbox can read most of the machine by default and leaves Claude's own files, MCP servers and hooks outside it (8:59, 9:15); merge-when-ready is <i>"not the default"</i> (14:36); the review tiers are hedged.</p>
+
+<p><b>Where I would push — my assessment, not hers:</b></p>
+<ul class="clean">
+  <li><b>Throughput is not quality.</b> 2,500 → 30,000+ a day comes from Anthropic's own post; no defect, revert or incident rate is shown.</li>
+  <li><b>Cost is absent.</b> Dozens of hours-long sessions, a reviewing Claude per PR and agents double-checking each bug all carry a token bill the talk never mentions.</li>
+  <li><b>Who decides a change is risky?</b> Review tiers need the risk known before review; the talk does not say who or what makes that call.</li>
+  <li><b>Her own example auto-merges a row labelled "dependencies"</b> (1:30, 14:33), while her threat model is a compromised dependency. CI and the sandbox may cover it; the talk does not connect the two.</li>
+  <li><b><code>autoMode.hard_deny</code> versus <code>permissions.deny</code>.</b> By her description the <code>autoMode</code> block goes to the classifier, and she does not say whether <code>hard_deny</code> is treated differently. If not, the name promises more than a classifier gives; the guarantee she describes is <code>permissions.deny</code>.</li>
+  <li><b>The evidence cannot be checked from the talk.</b> Study and blog post are named on slides only — no links, no study title.</li>
+</ul>
+
+<hr class="rule">
+
+<h2><span class="num">11</span>Timestamp index</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>Bold rows are the video's own chapter titles.</p>
+
+<div class="scroll narrow">
+<table>
+  <thead><tr><th style="width:14%">Time</th><th>Section</th></tr></thead>
+  <tbody>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=0s" target="_blank" rel="noopener">0:00</a></td><td><b>Evolution of workflow</b> — then and now; 2,500 → 30,000+ at 1:43</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=134s" target="_blank" rel="noopener">2:14</a></td><td><b>Rethinking best practices</b> — out of the loop; defaults; CLAUDE.md</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=251s" target="_blank" rel="noopener">4:11</a></td><td><b>Managing auto mode</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=330s" target="_blank" rel="noopener">5:30</a></td><td><b>Safety and environment</b> — the study; deny rules</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=398s" target="_blank" rel="noopener">6:38</a></td><td>"Can I take it back?"</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=438s" target="_blank" rel="noopener">7:18</a></td><td><code>npm test</code> runs code you didn't write</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=496s" target="_blank" rel="noopener">8:16</a></td><td><b>Cloud-based environments</b> — sandbox, then cloud session (9:30)</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=653s" target="_blank" rel="noopener">10:53</a></td><td><b>Verification strategies</b> — hooks at 12:24, exit codes at 13:00</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=840s" target="_blank" rel="noopener">14:00</a></td><td><b>Scaling with CI and PRs</b> — separate Claude review at 14:40</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=910s" target="_blank" rel="noopener">15:10</a></td><td><b>Orchestration and conclusion</b> — old practices, new owners at 16:34</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="srcbox">
+  <div class="lbl">Source</div>
+  <p><b>Rethinking Claude Code Best Practices —&nbsp;Lydia Hallie, Anthropic.</b> Lydia Hallie, Member of Technical Staff, Anthropic. Published on the AI Engineer YouTube channel, 12 November 2026 (UTC). 17:31. Recorded at home after technical difficulties during a live talk (her account, 0:00) whose venue and date are not stated.</p>
+  <p><a href="https://www.youtube.com/watch?v=vlfCjWuv4es" target="_blank" rel="noopener">https://www.youtube.com/watch?v=vlfCjWuv4es</a></p>
+  <p style="color:var(--ink2); font-size:13.5px"><b>Also referenced — on slides, no links.</b> "Redesigning source control at Anthropic", Anthropic blog post, October 2026 (2,500 → 30,000+ merged changes a day, May → September 2026). · An untitled Anthropic study, August 2026: "1,053 paid testers, one dangerous command swapped in per session"; 14% caught by people, 89% blocked by auto mode. · A SWE-bench Pro chart, "As reported by Anthropic. Test settings vary by model." (0:22, not discussed). · Anthropic's best-practices docs, recommended at 17:26 without a title or link.</p>
+  <p style="color:var(--ink2); font-size:13.5px"><b>Related.</b> <a href="../../evaluation-and-observability/verification-debt/">Verification Debt</a> · <a href="../../evaluation-and-observability/signal-to-pr/">From Signal to PR</a> · <a href="../loop-vs-graph/">Loop Engineering vs Graph Engineering</a> · <a href="../memory-layers/">Memory Layers for AI Agents</a></p>
+</div>
+
+<div class="prov">
+<p><b>How this was produced.</b> From the video's <b>auto-generated caption track</b> (3,566 words, 0:00–17:30), descriptions of <b>20 captured frames</b>, the creator's eight chapters and the video description. No product documentation was consulted: every statement about how Claude Code behaves is the speaker's claim.</p>
+<ul>
+  <li><b>Quotes</b> are verbatim from the caption track, slips included ("a worse results", "the Claude", "that that's"). <b>[Square brackets]</b> mark corrections or insertions: garbled names — "Cloud Code"/"Cloud", "Cloud MD", "Opus 55"/"Opus 45", "doctor prompt audit", "or end file", "automo" — are corrected only where the title or a slide confirms the spelling, and "[you]" (6:05) and "[call]" (6:22) are supplied. Inline timestamps mark where the cited words begin, to the second; the timestamp index points to chapter and section starts.</li>
+  <li><b>Not corroborated.</b> Fable's version number (0:20) is omitted — the chart label is behind the webcam and the orchestrator slide prints only "Fable". "Claude Code projects" is heard twice, once garbled, and on no slide: named as heard. The permission-skipping flag (1:09) is on no slide and is not spelled out. "A Cloud session" (9:30 on) could be "Claude session" or "cloud session"; it is read as cloud because the slides show a cloud icon and "Edit cloud environment", and she later says "start in the cloud" (17:18).</li>
+  <li><b>Speech versus slide.</b> Kept visible, not merged: the review tiers, the fourth "Out of the loop" card, and the 2,500 → 30,000 figure (only the slide says "merged" and "monorepo"). <code>git reset --hard</code> and the hook event names are on slides only.</li>
+  <li><b>Figures.</b> Six inline SVGs, no screenshots: 1, 2, 3 and 5 redrawn from the frames their captions name; 6 a composite of two frames plus two annotations from speech; 4 assembled from speech.</li>
+  <li><b>Metadata.</b> 12 November 2026 is the UTC upload date; the same instant is 11 November in US Pacific time, as YouTube's page shows. No event or delivery date is stated anywhere — only "this morning". <code>source_type: conference-talk</code> is the closest value in the repository's fixed list for a conference-style talk recorded at home after the live delivery hit technical difficulties; AI Engineer is the publishing channel, not a confirmed venue.</li>
+  <li><b>Whose words.</b> Passages marked "my reading", "my observation" or "my assessment", and the "Kind of control" column, are this entry's judgement. Palette: berry <code>#A12F6A</code> on pale rose-grey <code>#F7F3F4</code>, house components unchanged.</li>
+</ul>
+</div>
+
+</div>
+
+<div class="wrap l-id" lang="id">
+
+<div class="card tldr">
+  <h3>Seluruh talk dalam tujuh poin</h3>
+  <ol>
+    <li><b>Pergeserannya.</b> Awal tahun ini, katanya, satu session Claude Code adalah satu run yang kamu arahkan dan setujui langkah demi langkah. Di Anthropic sekarang, itu berarti puluhan session yang berjalan berjam-jam dan memeriksa hasil kerjanya sendiri; developer mengelola banyak session alih-alih menyetir satu.</li>
+    <li><b>Tesisnya.</b> Apa yang dulu kamu kerjakan di dalam loop — mengarahkan, menyetujui, berkata tidak, memeriksa, memulai — tidak hilang ketika kamu keluar. Setiap pekerjaan itu pindah ke <b>model, harness, atau environment</b>.</li>
+    <li><b>Keluar itu mudah; membuatnya aman yang sulit.</b> Model yang lebih baru dan auto mode (sebuah classifier untuk permission) menghapus sebagian besar pekerjaan mengarahkan dan menyetujui.</li>
+    <li><b>Penilaian bukan jaminan.</b> Dalam studi Anthropic, auto mode memblokir 89% command berbahaya yang sengaja disisipkan, sementara manusia hanya menangkap 14% — dan sekitar satu dari sepuluh tetap lolos. Jaminan ada di harness: <b>deny rule</b> diperiksa sebelum classifier melihat call-nya. Apa yang perlu dijadikan rule? Ujinya: kalau Claude salah sekali di sini, bisakah itu dibatalkan?</li>
+    <li><b>Rule menyaring call, bukan efeknya.</b> <code>npm test</code> menjalankan kode yang tidak kamu tulis, jadi batasi environment-nya: <b>sandbox</b> yang ditegakkan OS, atau <b>cloud session</b> di mesin yang tidak menyimpan apa pun yang layak dicuri — meski push dan pesan tetap bisa keluar darinya.</li>
+    <li><b>Review checkpoint, bukan diff.</b> Pasang pemeriksaan pass/fail di sepanjang jalan dan tegakkan yang wajib dengan <b>hook</b> — yang keluar dengan exit code 2, katanya, karena exit 1 membuat task tetap ditutup.</li>
+    <li><b>CI di bawah segalanya, lalu serahkan urusan memulai.</b> Di timnya, Claude terpisah me-review setiap PR dan manusia me-review sesuai risiko; ke arah yang ia lihat, sebuah session orchestrator juga memulai session-session lain. Kamu memulai yang pertama dan me-review apa yang keluar.</li>
+  </ol>
+</div>
+
+<div class="note warn">
+  <div class="lbl">Baca dengan posisi pembicara di kepala</div>
+  <p>Lydia Hallie bekerja di tim Claude Code di Anthropic, di bagian developer relations, dan sebagian besar solusi di sini adalah <b>fitur produk Anthropic</b> — auto mode, sandbox, cloud session, network secret, CI auto-fix, <code>/doctor prompt-audit</code>, fitur orkestrasi yang masih beta. Dua bukti yang ia kutip sama-sama milik Anthropic sendiri dan tidak ditautkan. Itu tidak membuat argumennya salah; artinya produk dan prinsip datang bersamaan, dan halaman ini memisahkan keduanya. Ia membuka dengan mengatakan talk-nya pagi itu terkendala masalah teknis: <i>"this morning, so I ran back home and I'm just going to record it from my computer instead"</i> (0:00) — maksudnya, ia pulang dan merekamnya dari komputernya.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">0</span>Kosakata lebih dulu</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>Ia memakai istilah-istilah ini tanpa mendefinisikannya; definisi di bawah direkonstruksi dari cara ia memakainya.</p>
+
+<div class="scroll narrow">
+<table>
+  <thead><tr><th style="width:24%">Istilah</th><th>Artinya di sini</th></tr></thead>
+  <tbody>
+    <tr><td><b>Harness</b></td><td>Claude Code itu sendiri, sebagai lawan dari model: bagian yang memutuskan apakah sebuah tool call boleh jalan (permission, deny rule) dan menjalankan script-mu di titik-titik tertentu (hook). Tidak didefinisikan di talk; ini pembacaan yang didukung contoh-contohnya.</td></tr>
+    <tr><td><b>Environment</b></td><td>Tempat session berjalan dan apa yang bisa ia jangkau — laptopmu, sandbox OS, atau mesin cloud.</td></tr>
+    <tr><td><b>Auto mode</b></td><td>Permission mode yang menjalankan <i>"a separate classifier"</i> pada hampir semua hal kecuali membaca atau mengedit file di project (4:13). Dikonfigurasi dengan bahasa Inggris biasa.</td></tr>
+    <tr><td><b>Deny rule</b></td><td>Entri di bawah <code>permissions.deny</code> dalam <code>settings.json</code>, dicocokkan sebelum classifier melihat.</td></tr>
+    <tr><td><b>Hook</b></td><td>Script yang dijalankan Claude Code di titik tertentu, misalnya setelah setiap edit (12:28).</td></tr>
+    <tr><td><b>Thread</b></td><td>Session yang dimulai oleh session orchestrator — <i>"just new sessions"</i> (15:48), maksudnya session baru biasa.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">1</span>Dari satu session yang disetir ke puluhan session yang dikelola</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>Ia membuka dengan model-modelnya: Opus 5.5, <i>"my favorite daily driver"</i>, dan Fable, yang katanya diluncurkan <i>"earlier this week"</i> dan sangat bagus dalam memverifikasi hasilnya sendiri (0:28). Tidak ada slide yang mengonfirmasi nomor versi Fable di caption, jadi di sini tidak dicantumkan. Grafik SWE-bench Pro di layar (<i>"As reported by Anthropic. Test settings vary by model."</i>), dari 52% untuk Opus 4.5 sampai 90% untuk Opus 5.5, tidak pernah dibahas; label titik terbarunya, 93%, tertutup webcam-nya.</p>
+
+<figure>
+<svg viewBox="0 0 900 650" role="img" aria-label="Dua panel. Atas: session lama untuk prompt auth.test.ts is failing, can you fix it. Satu garis session bergelombang, dijeda tiga kali oleh manusia yang mengarahkannya, dengan enam tool call di bawahnya — Read, empat Edit dan Bash npm test — semuanya kecuali Read disetujui manusia; kotak prompt menunjukkan mode Manual dan model Opus 4.5. Bawah: hari ini, satu permintaan di project acme-web menyebar dari satu node ke delapan cloud session yang berjalan 6 jam 30 menit, masing-masing memverifikasi dirinya di checkpoint, masing-masing berakhir di PR, lalu review atau auto-merge, lalu di-merge.">
+  <text x="24" y="30" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">AWAL TAHUN INI — SATU SESSION, SEORANG MANUSIA DI SETIAP LANGKAH</text>
+  <rect x="590" y="46" width="286" height="30" rx="15" fill="#F2EDEF" stroke="#E4DADE"/>
+  <text x="733" y="66" font-size="12.5" text-anchor="middle" fill="#1F1A1E">auth.test.ts is failing, can you fix it?</text>
+
+  <path d="M46 150 H836" stroke="#CFC4CA" stroke-width="1.2" stroke-dasharray="2 5"/>
+  <rect x="36" y="145" width="10" height="10" rx="2" fill="#FFFFFF" stroke="#5A5158" stroke-width="1.4"/>
+  <rect x="836" y="136" width="28" height="28" rx="6" fill="#EAF6EF" stroke="#1B8A54" stroke-width="1.8"/>
+  <path d="M46 150 C90 150 120 136 160 134 S250 124 320 126 S400 150 430 156 S500 176 550 172 S640 132 690 124" stroke="#A12F6A" stroke-width="2.4" fill="none"/>
+
+  <rect x="154" y="124" width="3.6" height="20" fill="#1F1A1E"/><rect x="161" y="124" width="3.6" height="20" fill="#1F1A1E"/>
+  <rect x="424" y="146" width="3.6" height="20" fill="#1F1A1E"/><rect x="431" y="146" width="3.6" height="20" fill="#1F1A1E"/>
+  <rect x="684" y="114" width="3.6" height="20" fill="#1F1A1E"/><rect x="691" y="114" width="3.6" height="20" fill="#1F1A1E"/>
+  <path d="M160 122 V104 M430 144 V104 M690 112 V104" stroke="#B26A00" stroke-width="1.2"/>
+  <use href="#rcPerson" x="148" y="80" width="24" height="24"/>
+  <use href="#rcPerson" x="418" y="80" width="24" height="24"/>
+  <use href="#rcPerson" x="678" y="80" width="24" height="24"/>
+  <text x="712" y="98" font-size="15" font-weight="700" fill="#B26A00">mengarahkannya</text>
+
+  <path d="M100 196 V148 M200 196 V133 M280 196 V125 M380 196 V140 M500 196 V169 M600 196 V152" stroke="#B9AEB4" stroke-width="1"/>
+  <circle cx="100" cy="148" r="3" fill="#B9AEB4"/><circle cx="200" cy="133" r="3" fill="#6B4FBB"/><circle cx="280" cy="125" r="3" fill="#6B4FBB"/><circle cx="380" cy="140" r="3" fill="#6B4FBB"/><circle cx="500" cy="169" r="3" fill="#6B4FBB"/><circle cx="600" cy="152" r="3" fill="#6B4FBB"/>
+  <rect x="72" y="196" width="56" height="24" rx="6" fill="#F2EDEF" stroke="#E4DADE"/>
+  <text x="100" y="213" font-size="12" text-anchor="middle" fill="#887E85">Read</text>
+  <rect x="170" y="196" width="60" height="24" rx="6" fill="#FFFFFF" stroke="#5A5158"/>
+  <text x="200" y="213" font-size="12" text-anchor="middle" fill="#1F1A1E">Edit <tspan fill="#1B8A54">✓</tspan></text>
+  <rect x="250" y="196" width="60" height="24" rx="6" fill="#FFFFFF" stroke="#5A5158"/>
+  <text x="280" y="213" font-size="12" text-anchor="middle" fill="#1F1A1E">Edit <tspan fill="#1B8A54">✓</tspan></text>
+  <rect x="318" y="196" width="124" height="24" rx="6" fill="#FFFFFF" stroke="#5A5158"/>
+  <text x="380" y="213" font-size="12" text-anchor="middle" fill="#1F1A1E"><tspan font-weight="700">Bash</tspan> npm test <tspan fill="#1B8A54">✓</tspan></text>
+  <rect x="470" y="196" width="60" height="24" rx="6" fill="#FFFFFF" stroke="#5A5158"/>
+  <text x="500" y="213" font-size="12" text-anchor="middle" fill="#1F1A1E">Edit <tspan fill="#1B8A54">✓</tspan></text>
+  <rect x="570" y="196" width="60" height="24" rx="6" fill="#FFFFFF" stroke="#5A5158"/>
+  <text x="600" y="213" font-size="12" text-anchor="middle" fill="#1F1A1E">Edit <tspan fill="#1B8A54">✓</tspan></text>
+  <use href="#rcPerson" x="188" y="230" width="24" height="24"/>
+  <use href="#rcPerson" x="268" y="230" width="24" height="24"/>
+  <use href="#rcPerson" x="368" y="230" width="24" height="24"/>
+  <use href="#rcPerson" x="488" y="230" width="24" height="24"/>
+  <use href="#rcPerson" x="588" y="230" width="24" height="24"/>
+  <text x="624" y="248" font-size="15" font-weight="700" fill="#B26A00">menyetujuinya</text>
+  <text x="36" y="282" font-size="11.5" fill="#5A5158">Kotak prompt: mode <tspan font-weight="700">Manual</tspan> · model <tspan font-weight="700">Opus 4.5</tspan></text>
+
+  <path d="M24 300 H876" stroke="#E4DADE"/>
+
+  <text x="24" y="324" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">HARI INI, DI ANTHROPIC — SATU PERMINTAAN, BANYAK SESSION, MASING-MASING BERJAM-JAM</text>
+  <rect x="24" y="356" width="214" height="280" rx="12" fill="#FAF7F8" stroke="#E4DADE"/>
+  <text x="38" y="378" font-size="12" font-weight="700" fill="#5A5158">acme-web</text>
+  <use href="#rcPerson" x="206" y="362" width="22" height="22"/>
+  <rect x="38" y="388" width="188" height="90" rx="8" fill="#EFE8EB"/>
+  <text x="48" y="405" font-size="10.5" fill="#1F1A1E">This week: the auth migration,</text>
+  <text x="48" y="420" font-size="10.5" fill="#1F1A1E">the flaky test, dependencies,</text>
+  <text x="48" y="435" font-size="10.5" fill="#1F1A1E">the cold start crash, docs, the</text>
+  <text x="48" y="450" font-size="10.5" fill="#1F1A1E">billing retry, the user service</text>
+  <text x="48" y="465" font-size="10.5" fill="#1F1A1E">rename and a11y.</text>
+  <text x="38" y="497" font-size="11" fill="#1F1A1E">On it. I'll start a session</text>
+  <text x="38" y="511" font-size="11" fill="#1F1A1E">for each one.</text>
+  <rect x="38" y="522" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="534" font-size="10.5" fill="#1F1A1E">Auth migration</text><text x="218" y="534" font-size="10.5" text-anchor="end" fill="#6B4FBB">Merged</text>
+  <rect x="38" y="543" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="555" font-size="10.5" fill="#1F1A1E">Flaky auth test</text><text x="218" y="555" font-size="10.5" text-anchor="end" fill="#6B4FBB">Merged</text>
+  <rect x="38" y="564" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="576" font-size="10.5" fill="#1F1A1E">Dependencies</text><text x="218" y="576" font-size="10.5" text-anchor="end" fill="#6B4FBB">Merged</text>
+  <rect x="38" y="585" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="597" font-size="10.5" fill="#1F1A1E">Cold start crash</text><text x="218" y="597" font-size="10.5" text-anchor="end" fill="#6B4FBB">Merged</text>
+  <text x="38" y="622" font-size="10.5" fill="#887E85">and 4 more</text>
+
+  <path d="M238 493 H248" stroke="#A12F6A" stroke-width="1.4"/>
+  <use href="#rcStar" x="248" y="479" width="28" height="28"/>
+  <g stroke="#B9AEB4" stroke-width="1.1" fill="none">
+    <path d="M276 493 C287 493 285 370 296 370"/><path d="M276 493 C287 493 285 405 296 405"/>
+    <path d="M276 493 C287 493 285 440 296 440"/><path d="M276 493 C287 493 285 475 296 475"/>
+    <path d="M276 493 C287 493 285 510 296 510"/><path d="M276 493 C287 493 285 545 296 545"/>
+    <path d="M276 493 C287 493 285 580 296 580"/><path d="M276 493 C287 493 285 615 296 615"/>
+  </g>
+
+  <circle cx="306" cy="342" r="6" fill="none" stroke="#5A5158" stroke-width="1.3"/><path d="M306 338.5 V342 H309" stroke="#5A5158" stroke-width="1.2" fill="none"/>
+  <text x="318" y="346" font-size="12.5" font-weight="700" fill="#1F1A1E">6h 30m</text>
+  <text x="640" y="346" font-size="12" text-anchor="middle" fill="#5A5158">PR</text>
+  <text x="726" y="346" font-size="12" text-anchor="middle" font-weight="700" fill="#6B4FBB">review</text>
+  <text x="820" y="346" font-size="12" text-anchor="middle" fill="#5A5158">merged</text>
+
+  <g font-size="12.5" fill="#1F1A1E">
+    <rect x="296" y="356" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="363" width="22" height="15"/><text x="334" y="375">flaky auth test</text>
+    <rect x="296" y="391" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="398" width="22" height="15"/><text x="334" y="410">dependencies</text>
+    <rect x="296" y="426" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="433" width="22" height="15"/><text x="334" y="445">cold start crash</text>
+    <rect x="296" y="461" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="468" width="22" height="15"/><text x="334" y="480">auth migration</text>
+    <rect x="296" y="496" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="503" width="22" height="15"/><text x="334" y="515">docs sweep</text>
+    <rect x="296" y="531" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="538" width="22" height="15"/><text x="334" y="550">billing retry</text>
+    <rect x="296" y="566" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="573" width="22" height="15"/><text x="334" y="585">user service</text>
+    <rect x="296" y="601" width="312" height="29" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="304" y="608" width="22" height="15"/><text x="334" y="620">a11y on settings</text>
+  </g>
+  <g stroke="#A12F6A" stroke-width="1.4" fill="none">
+    <path d="M470 370 q14 -6 28 0 t28 0 t28 0 t28 0"/><path d="M470 405 q14 -6 28 0 t28 0 t28 0 t28 0"/>
+    <path d="M470 440 q14 -6 28 0 t28 0 t28 0 t28 0"/><path d="M470 475 q14 -6 28 0 t28 0 t28 0 t28 0"/>
+    <path d="M470 510 q14 -6 28 0 t28 0 t28 0 t28 0"/><path d="M470 545 q14 -6 28 0 t28 0 t28 0 t28 0"/>
+    <path d="M470 580 q14 -6 28 0 t28 0 t28 0 t28 0"/><path d="M470 615 q14 -6 28 0 t28 0 t28 0 t28 0"/>
+  </g>
+  <use href="#rcChk" x="480" y="364" width="12" height="12"/><use href="#rcChk" x="510" y="364" width="12" height="12"/><use href="#rcChk" x="540" y="364" width="12" height="12"/><use href="#rcChk" x="582" y="361" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="399" width="12" height="12"/><use href="#rcChk" x="510" y="399" width="12" height="12"/><use href="#rcChk" x="540" y="399" width="12" height="12"/><use href="#rcChk" x="582" y="396" width="18" height="18"/>
+  <use href="#rcChk" x="492" y="434" width="12" height="12"/><use href="#rcChk" x="530" y="434" width="12" height="12"/><use href="#rcChk" x="582" y="431" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="469" width="12" height="12"/><use href="#rcChk" x="510" y="469" width="12" height="12"/><use href="#rcChk" x="540" y="469" width="12" height="12"/><use href="#rcChk" x="582" y="466" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="504" width="12" height="12"/><use href="#rcChk" x="510" y="504" width="12" height="12"/><use href="#rcChk" x="540" y="504" width="12" height="12"/><use href="#rcChk" x="582" y="501" width="18" height="18"/>
+  <use href="#rcChk" x="492" y="539" width="12" height="12"/><use href="#rcChk" x="530" y="539" width="12" height="12"/><use href="#rcChk" x="582" y="536" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="574" width="12" height="12"/><use href="#rcChk" x="510" y="574" width="12" height="12"/><use href="#rcChk" x="540" y="574" width="12" height="12"/><use href="#rcChk" x="582" y="571" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="609" width="12" height="12"/><use href="#rcChk" x="510" y="609" width="12" height="12"/><use href="#rcChk" x="540" y="609" width="12" height="12"/><use href="#rcChk" x="582" y="606" width="18" height="18"/>
+
+  <g stroke="#B9AEB4" stroke-width="1.1">
+    <path d="M608 370 H809"/><path d="M608 405 H809"/><path d="M608 440 H809"/><path d="M608 475 H809"/>
+    <path d="M608 510 H809"/><path d="M608 545 H809"/><path d="M608 580 H809"/><path d="M608 615 H809"/>
+  </g>
+  <use href="#rcPR" x="629" y="359" width="22" height="22"/><use href="#rcPR" x="629" y="394" width="22" height="22"/>
+  <use href="#rcPR" x="629" y="429" width="22" height="22"/><use href="#rcPR" x="629" y="464" width="22" height="22"/>
+  <use href="#rcPR" x="629" y="499" width="22" height="22"/><use href="#rcPR" x="629" y="534" width="22" height="22"/>
+  <use href="#rcPR" x="629" y="569" width="22" height="22"/><use href="#rcPR" x="629" y="604" width="22" height="22"/>
+  <use href="#rcRev" x="715" y="359" width="22" height="22"/>
+  <rect x="688" y="396" width="76" height="18" rx="9" fill="#EAF6EF" stroke="#1B8A54"/><text x="726" y="409" font-size="10" text-anchor="middle" fill="#1B8A54">auto-merge</text>
+  <use href="#rcRev" x="715" y="429" width="22" height="22"/>
+  <use href="#rcRev" x="715" y="464" width="22" height="22"/>
+  <rect x="688" y="501" width="76" height="18" rx="9" fill="#EAF6EF" stroke="#1B8A54"/><text x="726" y="514" font-size="10" text-anchor="middle" fill="#1B8A54">auto-merge</text>
+  <use href="#rcRev" x="715" y="534" width="22" height="22"/>
+  <use href="#rcRev" x="715" y="569" width="22" height="22"/>
+  <rect x="688" y="606" width="76" height="18" rx="9" fill="#EAF6EF" stroke="#1B8A54"/><text x="726" y="619" font-size="10" text-anchor="middle" fill="#1B8A54">auto-merge</text>
+  <use href="#rcMerge" x="809" y="359" width="22" height="22"/><use href="#rcMerge" x="809" y="394" width="22" height="22"/>
+  <use href="#rcMerge" x="809" y="429" width="22" height="22"/><use href="#rcMerge" x="809" y="464" width="22" height="22"/>
+  <use href="#rcMerge" x="809" y="499" width="22" height="22"/><use href="#rcMerge" x="809" y="534" width="22" height="22"/>
+  <use href="#rcMerge" x="809" y="569" width="22" height="22"/><use href="#rcMerge" x="809" y="604" width="22" height="22"/>
+</svg>
+<figcaption><b>Gambar 1. Dulu dan sekarang — digambar ulang dari slide di 0:42 dan 1:30.</b> Isi dari slide, tata letak dariku. Di atas, seorang manusia menyela tiga kali dan menyetujui lima dari enam tool call; di bawah, manusia hanya muncul saat membuat permintaan; lima dari delapan baris melewati satu langkah review (berupa seorang manusia di versi slide 14:33) dan tiga di-merge otomatis. Garis atas yang berhenti sebelum ujungnya mungkin hanya animasi yang belum selesai. Webcam menutupi ujung kanan dua baris terakhir; keduanya dilengkapi dari frame 14:33, tempat baris yang sama muncul lagi. Contoh prompt dan teks chat di slide dibiarkan berbahasa Inggris.</figcaption>
+</figure>
+
+<p>Opus 4.5 cepat berhenti — <i>"would just stop a lot earlier"</i> (0:48) — jadi kamu terus mengoreksinya dan menambahkan <i>"important, exclamation mark"</i> ke CLAUDE.md (0:57). Tanpa auto mode, kamu menyetujui semuanya secara manual atau mengambil <i>"the riskier approach"</i>: sebuah flag yang melewati prompt permission (terdengar sebagai "dangerously skip permission", 1:07–1:10). Sekarang, <i>"at least at Anthropic"</i>, mereka sudah menjadi <i>"managers for dozens of sessions"</i> (1:39). Hasilnya, menurut slide yang mengutip tulisan blog Anthropic bulan Oktober, "Redesigning source control at Anthropic": perubahan kode yang di-merge per hari ke monorepo Anthropic naik dari <b>2,500 di Mei 2026 menjadi 30,000+ di September 2026</b> (1:49).</p>
+
+<div class="note">
+  <div class="lbl">Pembacaanku, bukan pembacaannya</div>
+  <p>Itu angka throughput, bukan kualitas, dan ia tidak mengklaim sebaliknya. Sisa talk ini adalah jawabannya atas pertanyaan yang dimunculkan angka itu: bagaimana kamu tahu perubahan-perubahan itu aman dan benar?</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">2</span>Tesisnya: loop-nya pindah, bukan hilang</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>Best practice sebelumnya, katanya, berkisar pada mengarahkan session, menyetujui command, berkata tidak atau membatasi, <i>"the output"</i> (di slide: "Checking it"), dan memulai session. Lalu kalimat yang menjadi poros talk ini:</p>
+
+<div class="quote">
+  <p>"everywhere that we now step out of that loop, something else has to take over. And this is either the model, the harness, or the environment that it's running in."</p>
+  <cite>— Lydia Hallie, 2:14–2:22</cite>
+</div>
+<p class="lede"><b>Maksudnya:</b> setiap kali kita keluar dari loop, sesuatu yang lain harus mengambil alih — model, harness, atau environment tempat session itu berjalan.</p>
+
+<figure>
+<svg viewBox="0 0 900 470" role="img" aria-label="Lima baris memasangkan apa yang dikerjakan manusia di dalam loop dengan apa yang mengambil alihnya, seperti di slide penutup: mengarahkannya ke model; menyetujui setiap tool call ke auto mode; berkata tidak ke deny rule dan environment; memeriksa bahwa sudah selesai ke test, hook dan CI; memulai setiap session ke Claude. Di bawahnya, payung dari slide sebelumnya: lima pekerjaan yang sama, satu panah, tiga pemilik — model, harness, environment.">
+  <text x="40" y="34" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">YANG DULU KAMU KERJAKAN DI DALAM LOOP</text>
+  <text x="510" y="34" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">YANG MENGAMBIL ALIH</text>
+
+  <rect x="40" y="50" width="340" height="46" rx="10" fill="#FAF7F8" stroke="#E4DADE"/><use href="#rcPerson" x="54" y="62" width="22" height="22"/>
+  <text x="88" y="78" font-size="14.5" font-weight="600" fill="#1F1A1E">Mengarahkannya</text>
+  <rect x="40" y="110" width="340" height="46" rx="10" fill="#FAF7F8" stroke="#E4DADE"/><use href="#rcPerson" x="54" y="122" width="22" height="22"/>
+  <text x="88" y="130" font-size="14.5" font-weight="600" fill="#1F1A1E">Menyetujui setiap tool call</text>
+  <text x="88" y="147" font-size="11" fill="#887E85">kartu di 2:18: "Menyetujuinya"</text>
+  <rect x="40" y="170" width="340" height="46" rx="10" fill="#FAF7F8" stroke="#E4DADE"/><use href="#rcPerson" x="54" y="182" width="22" height="22"/>
+  <text x="88" y="198" font-size="14.5" font-weight="600" fill="#1F1A1E">Berkata tidak</text>
+  <rect x="40" y="230" width="340" height="46" rx="10" fill="#FAF7F8" stroke="#E4DADE"/><use href="#rcPerson" x="54" y="242" width="22" height="22"/>
+  <text x="88" y="250" font-size="14.5" font-weight="600" fill="#1F1A1E">Memeriksa bahwa sudah selesai</text>
+  <text x="88" y="267" font-size="11" fill="#887E85">kartu di 2:18: "Memeriksanya"</text>
+  <rect x="40" y="290" width="340" height="46" rx="10" fill="#FAF7F8" stroke="#E4DADE"/><use href="#rcPerson" x="54" y="302" width="22" height="22"/>
+  <text x="88" y="310" font-size="14.5" font-weight="600" fill="#1F1A1E">Memulai setiap session</text>
+  <text x="88" y="327" font-size="11" fill="#887E85">kartu di 2:18: "Memulainya"</text>
+
+  <g stroke="#A12F6A" stroke-width="1.8" marker-end="url(#rcArBerry)">
+    <path d="M392 73 H498"/><path d="M392 133 H498"/><path d="M392 193 H498"/><path d="M392 253 H498"/><path d="M392 313 H498"/>
+  </g>
+
+  <g font-size="15" font-weight="700" fill="#1F1A1E">
+    <rect x="510" y="50" width="350" height="46" rx="10" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6"/><text x="530" y="78">Model</text>
+    <rect x="510" y="110" width="350" height="46" rx="10" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6"/><text x="530" y="138">Auto mode</text>
+    <rect x="510" y="170" width="350" height="46" rx="10" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6"/><text x="530" y="198">Deny rule, environment</text>
+    <rect x="510" y="230" width="350" height="46" rx="10" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6"/><text x="530" y="258">Test, hook, CI</text>
+    <rect x="510" y="290" width="350" height="46" rx="10" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6"/><text x="530" y="318">Claude</text>
+  </g>
+
+  <rect x="40" y="356" width="820" height="100" rx="12" fill="#F7F3F4" stroke="#E4DADE" stroke-dasharray="5 4"/>
+  <text x="60" y="382" font-size="11.5" font-weight="800" letter-spacing="1.1" fill="#5A5158">LIMA PEKERJAAN YANG SAMA DI SLIDE 2:18 — SATU PANAH, TIGA PEMILIK</text>
+  <rect x="60" y="398" width="210" height="40" rx="10" fill="#FFFFFF" stroke="#E4DADE"/>
+  <use href="#rcStar" x="74" y="406" width="24" height="24"/><text x="108" y="423" font-size="15" font-weight="700" fill="#1F1A1E">Model</text>
+  <rect x="290" y="398" width="230" height="40" rx="10" fill="#FFFFFF" stroke="#E4DADE"/>
+  <text x="306" y="424" font-size="16" font-weight="700" fill="#5A5158" class="mono">{ }</text><text x="340" y="423" font-size="15" font-weight="700" fill="#1F1A1E">Harness</text>
+  <rect x="540" y="398" width="260" height="40" rx="10" fill="#FFFFFF" stroke="#E4DADE"/>
+  <rect x="556" y="409" width="18" height="18" rx="3" fill="none" stroke="#5A5158" stroke-width="1.5" stroke-dasharray="3 2.5"/><text x="586" y="423" font-size="15" font-weight="700" fill="#1F1A1E">Environment</text>
+</svg>
+<figcaption><b>Gambar 2. Siapa yang mengambil alih — digambar ulang dari slide penutup (16:50) dan slide "Out of the loop" (2:18).</b> Label diterjemahkan dari kata-kata slide; label kartu 2:18 yang lebih pendek ada di bawah barisnya. Slide pembuka menjanjikan tiga pemilik; di akhir, setiap pekerjaan punya mekanisme konkret. Baik slide maupun ucapannya tidak memasangkan setiap baris ke model, harness, atau environment, jadi gambar ini juga tidak.</figcaption>
+</figure>
+
+<p>Dua pertanyaan menyusul (2:23): apakah kodenya masih berkualitas tinggi, dan — <i>"most importantly"</i> — apakah ia berjalan dengan aman? Kerangka ini berlaku di luar Claude Code: untuk agent apa pun yang ingin kamu biarkan berjalan sendiri, daftar apa yang kamu kerjakan dengan tangan lalu sebutkan apa yang mengambil alih setiap pekerjaan itu. Catatanku: pekerjaan yang tidak punya pemilik baru belum diotomasi, hanya ditinggal tanpa pengawasan. <a href="../../evaluation-and-observability/signal-to-pr/">From Signal to PR</a> bertumpu pada pembalikan yang sama — agent yang mengerjakan, manusia yang memulai dan me-review.</p>
+
+<hr class="rule">
+
+<h2><span class="num">3</span>Keluar dari loop: bagian yang mudah</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>Langkah pertama adalah <i>"the actual defaults we start sessions in nowadays"</i> (2:47): Opus 5.5 menggantikan 4.5, dan auto mode menggantikan persetujuan manual — Anthropic <i>"started making auto mode the default permission mode back in August"</i> (3:09). Model mengambil alih urusan mengarahkan; auto mode mengambil alih urusan menyetujui.</p>
+
+<h3>Pangkas CLAUDE.md menjadi hal yang tidak bisa dibaca dari kode</h3>
+<p>Aturan bernada keras yang ditulis untuk model lama <i>"can actually make the model go off track"</i>, menghasilkan <i>"more tool calls and overall a worse results"</i> (3:31–3:35) — sebuah klaim, tanpa data yang ditunjukkan. Aturannya: CLAUDE.md <i>"should only include the things the Claude cannot see from your code"</i> (3:38). Slide di 4:02 mencoret "Think hard and be thorough.", "Keep going until it's done.", "IMPORTANT: always use the auth helper" dan "We're on Node 18.", lalu menyisakan "src/legacy still serves our mobile apps" — satu-satunya baris yang tidak bisa disimpulkan model dari membaca repo. <code>/doctor prompt-audit</code> memeriksa CLAUDE.md dan skill-mu terhadap model yang sedang dipakai (3:57). Dalam istilah <a href="../memory-layers/">Memory Layers</a>, ini nasihat perawatan untuk memori teks biasa yang dimuat lebih dulu ke context.</p>
+
+<h3>Beri tahu auto mode apa yang kamu percayai</h3>
+<p>Auto mode mengizinkan apa yang ia tahu aman, <i>"like running tests or installing dependencies"</i>, dan memblokir yang ia ragukan (4:23). Minta deploy ke staging dan push-nya diblokir, karena <i>"by default, auto mode only trusts this folder and this repo"</i> — <i>"So, we're back in the loop"</i> (4:42–4:47). Solusinya adalah setting dalam bahasa Inggris biasa, yang menjadi <i>"what gets sent to the classifier"</i> (5:01). Slide di 5:11:</p>
+
+<pre class="code"><span class="c">~/.claude/settings.json</span>
+{
+  <span class="k">"autoMode"</span>: {
+    <span class="k">"environment"</span>: [
+      <span class="s">"$defaults"</span>,
+      <span class="s">"Source control: github.com/acme and all repos under it"</span>,
+      <span class="s">"Trusted cloud buckets: s3://acme-staging"</span>,
+      <span class="s">"Trusted internal domains: *.internal.acme.com"</span>
+    ],
+    <span class="k">"allow"</span>: [<span class="s">"$defaults"</span>, <span class="s">"Deploying to staging is allowed"</span>],
+    <span class="k">"hard_deny"</span>: [<span class="s">"$defaults"</span>, <span class="s">"Never send code to third-party APIs"</span>]
+  }
+}</pre>
+
+<p>Perhatikan frasa "sent to the classifier": menurut penjelasannya, seluruh blok itu menjadi masukan bagi penilaian sebuah model. Karena itulah bagian berikutnya ada.</p>
+
+<hr class="rule">
+
+<h2><span class="num">4</span>Menjaga keamanan: jaminan ada di harness</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p><i>"But the harder question now is how do we make sure it's okay that we're not there anymore?"</i> (5:26) — pertanyaan yang lebih sulit: bagaimana memastikan tidak apa-apa kalau kita tidak ada di sana lagi. Model biasanya melakukan apa yang kamu minta, <i>"but that's not a guarantee"</i> (5:45). Buktinya adalah studi Anthropic dari Agustus 2026 — menurut slide, <i>"1,053 paid testers, one dangerous command swapped in per session"</i>: <b>14%</b> ditangkap manusia, <b>89%</b> diblokir auto mode.</p>
+
+<div class="quote">
+  <p>"about one in 10 of those commands still went through. So, if [you] do want the guarantee, you can only enforce that in the harness."</p>
+  <cite>— Lydia Hallie, 6:01–6:08</cite>
+</div>
+<p class="lede"><b>Maksudnya:</b> sekitar satu dari sepuluh command itu tetap lolos; kalau kamu mau jaminan, satu-satunya tempat menegakkannya adalah harness.</p>
+
+<p>Angka manusianya — kira-kira satu dari tujuh — senada dengan temuan <a href="../../evaluation-and-observability/verification-debt/">Verification Debt</a> dari studi yang tidak berhubungan: orang yang mengklik approve adalah benteng terakhir yang lemah. Kaitan ini dariku, bukan darinya.</p>
+
+<h3>Deny rule: diperiksa sebelum classifier melihat apa pun</h3>
+<p>Deny rule diperiksa <i>"before the [auto mode] classifier even looks at it"</i>; <i>"if a tool [call] matches a deny rule, the classifier never even sees it"</i> (6:19–6:25). Satu best practice lama bertahan tanpa perubahan. Apa yang layak dijadikan rule? <i>"if [Claude] gets this wrong once, can I take it back?"</i> (6:40) — kalau Claude salah sekali, bisakah aku membatalkannya? Kode yang salah bisa di-revert — serahkan ke model. Perubahan yang belum di-commit lalu terbuang, atau key yang terbaca dan kini ada di transkrip, tidak bisa dibatalkan — jadikan rule. Contohnya <code>.env</code>: secara default auto mode <i>"is fine with this"</i> (7:02) — sejalan, menurutku, dengan classifier yang melewatkan pembacaan file project — jadi kamu men-deny-nya, dan setelah itu <code>cat</code> pun tidak bisa membukanya.</p>
+
+<div class="note">
+  <div class="lbl">Aturan praktis yang layak disimpan</div>
+  <p><b>Yang tidak bisa dibatalkan masuk ke rule; yang bisa dibatalkan tetap di tangan model</b> — karena itulah daftar rule bisa tetap pendek.</p>
+</div>
+
+<h3>Permission menyaring call, bukan apa yang dijangkaunya</h3>
+<p><code>npm test</code> itu biasa, jadi auto mode menjalankannya — tapi ia menjalankan <i>"code that you didn't write, like your dependencies"</i> (7:27). Dependency yang disusupi bisa membuka <code>.env</code> atau SSH key-mu dan <i>"send those to a server you've never heard of"</i> (7:41), dan manusia yang bertugas menyetujui pun <i>"would have just clicked allow cuz there's nothing to say no to"</i> (7:48) — tidak ada yang bisa ditolak.</p>
+
+<div class="quote">
+  <p>"permissions only decide if a tool call runs, but they cannot limit what it can reach once it's running."</p>
+  <cite>— Lydia Hallie, 7:56</cite>
+</div>
+<p class="lede"><b>Maksudnya:</b> permission hanya memutuskan apakah sebuah tool call boleh jalan; ia tidak bisa membatasi apa yang dijangkau call itu setelah berjalan.</p>
+
+<p>Kamu tidak bisa men-deny test-nya — test adalah cara Claude memeriksa kerjanya — jadi <i>"we just want to limit the environment that it's running in"</i> (8:15).</p>
+
+<figure>
+<svg viewBox="0 0 900 610" role="img" aria-label="Dua panel. Atas: sebuah tool call, Bash git reset --hard, menuju deny rule dan diblokir; auto mode, di kanan, tidak pernah melihatnya; baris settings.json yang cocok men-deny Bash(git reset --hard *). Bawah: dengan deny rule untuk Read(./.env) dan Read(~/.ssh/**), sebuah session menjalankan Bash npm test di dalam sandbox yang ditegakkan sistem operasi. Dari yang dijalankan npm test — vitest run, test milikmu di src/auth/auth.test.ts, dan node_modules/some-package/index.js, kode yang tidak kamu tulis — yang terakhir mencoba menjangkau tiga hal dan dihentikan di dinding sandbox: .env oleh deny rule, ~/.ssh oleh deny rule, dan collector.example karena host-nya tidak disetujui.">
+  <text x="24" y="30" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">DENY RULE DIPERIKSA LEBIH DULU — DIGAMBAR ULANG DARI 6:25</text>
+  <rect x="40" y="48" width="250" height="62" rx="11" fill="#EEF3FC" stroke="#2F6BD8" stroke-width="1.6"/>
+  <text x="165" y="75" font-size="15" text-anchor="middle" fill="#1F1A1E"><tspan font-weight="700">Bash</tspan> git reset --hard</text>
+  <text x="165" y="96" font-size="12" text-anchor="middle" fill="#5A5158">tool call</text>
+  <path d="M294 79 H330" stroke="#2F6BD8" stroke-width="1.8" marker-end="url(#rcArBlue)"/>
+  <rect x="336" y="48" width="230" height="62" rx="11" fill="#FCEDEC" stroke="#C4372B" stroke-width="1.8"/>
+  <text x="451" y="75" font-size="15" font-weight="700" text-anchor="middle" fill="#1F1A1E">Deny rule</text>
+  <text x="451" y="96" font-size="12.5" text-anchor="middle" fill="#C4372B">diblokir</text>
+  <path d="M570 79 H608" stroke="#A99EA5" stroke-width="1.8" stroke-dasharray="2 4"/>
+  <rect x="612" y="48" width="248" height="62" rx="11" fill="#F7F3F4" stroke="#D8CDD3" stroke-width="1.4"/>
+  <text x="736" y="75" font-size="15" text-anchor="middle" fill="#887E85">Auto mode</text>
+  <text x="736" y="96" font-size="12" text-anchor="middle" fill="#887E85">tidak pernah melihatnya</text>
+  <rect x="40" y="128" width="820" height="34" rx="8" fill="#221A20"/>
+  <text x="56" y="150" font-size="12.5" class="mono" fill="#A8939F">.claude/settings.json <tspan fill="#EADFE5">  { "permissions": { </tspan><tspan fill="#F29AC3">"deny"</tspan><tspan fill="#EADFE5">: [</tspan><tspan fill="#B9E3C6">"Bash(git reset --hard *)"</tspan><tspan fill="#EADFE5">] } }</tspan></text>
+
+  <path d="M24 190 H876" stroke="#E4DADE"/>
+
+  <text x="24" y="216" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">SANDBOX MEMBATASI JANGKAUAN COMMAND YANG SEDANG BERJALAN — DIGAMBAR ULANG DARI 8:57</text>
+  <rect x="40" y="230" width="480" height="28" rx="7" fill="#221A20"/>
+  <text x="54" y="249" font-size="12" class="mono" fill="#A8939F">settings.json <tspan fill="#F29AC3">"deny"</tspan><tspan fill="#EADFE5">: [</tspan><tspan fill="#B9E3C6">"Read(./.env)"</tspan><tspan fill="#EADFE5">, </tspan><tspan fill="#B9E3C6">"Read(~/.ssh/**)"</tspan><tspan fill="#EADFE5">]</tspan></text>
+  <path d="M50 296 H832" stroke="#CFC4CA" stroke-width="1.2" stroke-dasharray="2 5"/>
+  <rect x="40" y="291" width="10" height="10" rx="2" fill="#FFFFFF" stroke="#5A5158" stroke-width="1.4"/>
+  <path d="M50 296 C140 262 260 262 340 296 S430 326 450 296 S560 262 640 280 S760 316 832 296" stroke="#A12F6A" stroke-width="2.4" fill="none"/>
+  <rect x="832" y="282" width="28" height="28" rx="6" fill="#EAF6EF" stroke="#1B8A54" stroke-width="1.8"/>
+  <rect x="445" y="291" width="10" height="10" rx="1.5" fill="#FFFFFF" stroke="#1F1A1E" stroke-width="1.4"/>
+  <path d="M450 301 V306" stroke="#1F1A1E" stroke-width="1.2"/>
+  <rect x="392" y="306" width="116" height="24" rx="6" fill="#FFFFFF" stroke="#5A5158"/>
+  <text x="450" y="323" font-size="12.5" text-anchor="middle" fill="#1F1A1E"><tspan font-weight="700">Bash</tspan> npm test</text>
+  <path d="M450 330 V368" stroke="#5A5158" stroke-width="1.2"/>
+
+  <rect x="150" y="350" width="600" height="150" rx="16" fill="none" stroke="#1F1A1E" stroke-width="2.2"/>
+  <rect x="164" y="340" width="82" height="20" fill="#FFFFFF"/>
+  <text x="172" y="356" font-size="15" font-weight="700" fill="#1F1A1E">sandbox</text>
+  <rect x="545" y="340" width="193" height="20" fill="#FFFFFF"/>
+  <text x="732" y="355" font-size="12" text-anchor="end" fill="#5A5158">ditegakkan oleh sistem operasi</text>
+  <rect x="172" y="368" width="556" height="114" rx="10" fill="#FAF7F8" stroke="#E4DADE"/>
+  <text x="186" y="386" font-size="11.5" fill="#5A5158">Yang dijalankan npm test</text>
+  <path d="M172 394 H728" stroke="#E4DADE"/>
+  <text x="186" y="414" font-size="12.5" class="mono" fill="#1F1A1E">vitest run</text>
+  <text x="714" y="414" font-size="11.5" text-anchor="end" fill="#887E85">script di package.json</text>
+  <text x="186" y="438" font-size="12.5" class="mono" fill="#1F1A1E">src/auth/auth.test.ts</text>
+  <text x="714" y="438" font-size="11.5" text-anchor="end" fill="#887E85">test milikmu</text>
+  <rect x="173" y="447" width="554" height="26" fill="#FBE6E4"/>
+  <text x="186" y="465" font-size="12.5" class="mono" fill="#9E2B22">node_modules/some-package/index.js</text>
+  <text x="714" y="465" font-size="11.5" font-weight="700" text-anchor="end" fill="#C4372B">kode yang tidak kamu tulis</text>
+  <g stroke="#C4372B" stroke-width="1.6" fill="none">
+    <path d="M450 473 V490"/><path d="M450 480 Q300 480 262 492"/><path d="M450 480 Q600 480 638 492"/>
+  </g>
+  <use href="#rcX" x="250" y="490" width="20" height="20"/>
+  <use href="#rcX" x="440" y="490" width="20" height="20"/>
+  <use href="#rcX" x="630" y="490" width="20" height="20"/>
+
+  <path d="M253 524 H264 L270 530 V546 H253 Z" fill="none" stroke="#5A5158" stroke-width="1.5"/>
+  <text x="260" y="570" font-size="14" class="mono" text-anchor="middle" fill="#1F1A1E">.env</text>
+  <text x="260" y="589" font-size="12" text-anchor="middle" fill="#C4372B">deny rule</text>
+  <path d="M443 524 H454 L460 530 V546 H443 Z" fill="none" stroke="#5A5158" stroke-width="1.5"/>
+  <text x="450" y="570" font-size="14" class="mono" text-anchor="middle" fill="#1F1A1E">~/.ssh</text>
+  <text x="450" y="589" font-size="12" text-anchor="middle" fill="#C4372B">deny rule</text>
+  <rect x="626" y="522" width="28" height="10" rx="3" fill="none" stroke="#5A5158" stroke-width="1.5"/>
+  <rect x="626" y="536" width="28" height="10" rx="3" fill="none" stroke="#5A5158" stroke-width="1.5"/>
+  <text x="640" y="570" font-size="14" class="mono" text-anchor="middle" fill="#1F1A1E">collector.example</text>
+  <text x="640" y="589" font-size="12" text-anchor="middle" fill="#C4372B">host tidak disetujui</text>
+</svg>
+<figcaption><b>Gambar 3. Gerbang dan tembok — digambar ulang dari slide di 6:25 dan 8:57.</b> Isi dan kode dari slide, tata letak dariku. Panel atas menghentikan sebuah call; panel bawah membiarkan call-nya lewat lalu menghentikan apa yang dilakukannya — rule <code>.env</code>, bila diperiksa Claude Code, hanya melihat <code>npm test</code>, tapi bila diteruskan ke OS ia menghentikan pembacaan oleh dependency itu. Contoh <code>git reset --hard</code> hanya ada di slide.</figcaption>
+</figure>
+
+<hr class="rule">
+
+<h2><span class="num">5</span>Ubah environment-nya, bukan hanya rule-nya</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>Di mesin lokal, itu berarti <b>sandbox</b>: kamu menentukan file mana yang boleh dibaca sebuah command, folder mana yang boleh ditulisnya dan host mana yang boleh dijangkaunya, dan <i>"the operating system enforces that"</i>, termasuk child process (8:25–8:38). Deny rule yang diteruskan ke OS kini menghentikan dependency itu sendiri (8:49–8:58). Ia menyebut dua batasan: secara default sandbox masih bisa membaca sebagian besar mesinmu, jadi tambahkan rule untuk SSH key (8:59); dan <i>"[Claude's] own files, your MCP servers, and all of your hooks still run outside of it"</i> (9:15) — file milik Claude, MCP server dan semua hook tetap berjalan di luarnya.</p>
+
+<p>Karena itu <b>cloud session</b>, <i>"somewhere where none of that is even there in the first place"</i> (9:26): mesin sendiri, salinan repo yang baru, dan tetap berjalan saat laptopmu ditutup. <code>.env</code> tidak ada di Git, begitu juga SSH key dan token GitHub (9:45). API key dijadikan network secret, dipakai <i>"without actually ever sending it to the model"</i> (10:01); akses jaringan secara default terbatas pada package registry dan GitHub, dan domain lain ditambahkan secara eksplisit (10:05) — dialog "Edit cloud environment" di slide 10:04.</p>
+
+<div class="quote">
+  <p>"this machine is disposable, but the things that leave it aren't."</p>
+  <cite>— Lydia Hallie, 10:28</cite>
+</div>
+<p class="lede"><b>Maksudnya:</b> mesinnya sekali pakai, tapi apa yang keluar dari mesin itu tidak.</p>
+
+<p>Commit yang di-push; pesan lewat connector. Jadi auto mode tetap berjalan di sana, dengan deny rule yang di-commit ke repo, dan masih bisa menangkap <i>"a forced push or a secret in a commit"</i> (10:42).</p>
+
+<figure>
+<svg viewBox="0 0 900 580" role="img" aria-label="Dua pemeriksaan berlaku sebelum command apa pun berjalan: deny rule, diperiksa pertama dan ditegakkan, lalu classifier auto mode, sebuah penilaian dan bukan jaminan. Jalurnya lalu bercabang ke dua tempat menjalankan, digambar berdampingan. Di mesinmu sendiri, sandbox yang ditegakkan OS mencakup command itu dan setiap proses yang ia mulai serta menerima deny rule; file milik Claude, MCP server dan hook berjalan di luarnya, di mesinmu; secara default ia masih bisa membaca sebagian besar mesin. Idealnya, cloud session: mesin sendiri dengan salinan repo yang baru, tempat .env, SSH key dan token GitHub tidak ada di Git, akses jaringan default terbatas pada package registry dan GitHub, API key disimpan sebagai network secret, dan auto mode dengan deny rule yang di-commit tetap menyala. Commit yang di-push dan pesan lewat connector tetap keluar dari mesin itu.">
+  <text x="24" y="28" font-size="11.5" font-weight="800" letter-spacing="1.1" fill="#5A5158">DUA PEMERIKSAAN SEBELUM COMMAND BERJALAN, LALU DUA TEMPAT MENJALANKANNYA</text>
+
+  <rect x="100" y="44" width="130" height="58" rx="10" fill="#EEF3FC" stroke="#2F6BD8" stroke-width="1.6"/>
+  <text x="165" y="69" font-size="13.5" font-weight="700" text-anchor="middle" fill="#1F1A1E">tool call</text>
+  <text x="165" y="88" font-size="10.5" text-anchor="middle" fill="#5A5158">mis. Bash npm test</text>
+  <path d="M232 73 H254" stroke="#2F6BD8" stroke-width="1.8" marker-end="url(#rcArBlue)"/>
+  <rect x="258" y="44" width="222" height="58" rx="10" fill="#FCEDEC" stroke="#C4372B" stroke-width="1.6"/>
+  <text x="369" y="68" font-size="13.5" font-weight="700" text-anchor="middle" fill="#1F1A1E">1 · Deny rule</text>
+  <text x="369" y="88" font-size="11" text-anchor="middle" fill="#9E2B22">diperiksa pertama · ditegakkan (6:19)</text>
+  <path d="M482 73 H504" stroke="#2F6BD8" stroke-width="1.8" marker-end="url(#rcArBlue)"/>
+  <rect x="508" y="44" width="254" height="58" rx="10" fill="#FFFFFF" stroke="#A12F6A" stroke-width="1.6" stroke-dasharray="5 3"/>
+  <text x="635" y="68" font-size="13.5" font-weight="700" text-anchor="middle" fill="#1F1A1E">2 · Classifier auto mode</text>
+  <text x="635" y="88" font-size="11" text-anchor="middle" fill="#7C2352">penilaian, bukan jaminan (6:01)</text>
+
+  <path d="M635 104 V118 M220 118 H680" stroke="#2F6BD8" stroke-width="1.8" fill="none"/>
+  <path d="M220 118 V140" stroke="#2F6BD8" stroke-width="1.8" marker-end="url(#rcArBlue)"/>
+  <path d="M680 118 V140" stroke="#2F6BD8" stroke-width="1.8" marker-end="url(#rcArBlue)"/>
+
+  <rect x="20" y="146" width="400" height="340" rx="16" fill="#FBF9FA" stroke="#5A5158" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="36" y="170" font-size="11.5" font-weight="800" letter-spacing="1" fill="#5A5158">DI MESINMU SENDIRI (8:18)</text>
+  <rect x="36" y="184" width="368" height="126" rx="14" fill="#FFFFFF" stroke="#1F1A1E" stroke-width="2"/>
+  <text x="52" y="208" font-size="11.5" font-weight="800" letter-spacing="1" fill="#1F1A1E">SANDBOX — DITEGAKKAN OLEH OS</text>
+  <text x="52" y="233" font-size="13" fill="#1F1A1E">command itu dan setiap proses yang ia mulai</text>
+  <text x="52" y="255" font-size="11.5" fill="#5A5158">membatasi file yang ia baca, folder yang ia tulis,</text>
+  <text x="52" y="272" font-size="11.5" fill="#5A5158">dan host yang ia jangkau</text>
+  <text x="52" y="296" font-size="11.5" fill="#7C2352">deny rule diteruskan ke OS (8:49)</text>
+  <rect x="36" y="324" width="368" height="98" rx="12" fill="#FCF0EE" stroke="#C4372B" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <text x="52" y="348" font-size="11.5" font-weight="800" letter-spacing="1" fill="#C4372B">DI LUAR SANDBOX (9:15)</text>
+  <text x="52" y="373" font-size="13" fill="#1F1A1E">file milik Claude · MCP server · hook</text>
+  <text x="52" y="398" font-size="11" font-style="italic" fill="#5A5158">tetap berjalan di mesinmu, bersama semua isinya</text>
+  <text x="36" y="448" font-size="11.5" fill="#5A5158">secara default ia masih bisa membaca sebagian</text>
+  <text x="36" y="465" font-size="11.5" fill="#5A5158">besar mesinmu; tambahkan rule untuk SSH key (8:59)</text>
+
+  <path d="M424 300 H474" stroke="#A12F6A" stroke-width="1.8" marker-end="url(#rcArBerry)"/>
+  <text x="449" y="290" font-size="11" font-style="italic" text-anchor="middle" fill="#7C2352">idealnya</text>
+  <text x="449" y="318" font-size="10.5" text-anchor="middle" fill="#7C2352">(9:24)</text>
+
+  <rect x="480" y="146" width="400" height="340" rx="16" fill="#FBF9FA" stroke="#5A5158" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <use href="#rcCloud" x="496" y="157" width="24" height="16"/>
+  <text x="528" y="170" font-size="11.5" font-weight="800" letter-spacing="1" fill="#5A5158">IDEALNYA: CLOUD SESSION (9:30)</text>
+  <text x="496" y="192" font-size="11.5" fill="#5A5158">mesin sendiri, salinan repo yang baru,</text>
+  <text x="496" y="208" font-size="11.5" fill="#5A5158">tetap berjalan saat laptopmu ditutup (9:37)</text>
+  <rect x="496" y="220" width="368" height="62" rx="12" fill="#FFFFFF" stroke="#E4DADE"/>
+  <text x="512" y="242" font-size="11.5" font-weight="800" letter-spacing="1" fill="#5A5158">TIDAK ADA YANG BISA DIAMBIL (9:45)</text>
+  <text x="512" y="267" font-size="12.5" fill="#1F1A1E"><tspan class="mono">.env</tspan>, SSH key, token GitHub — tidak ada di Git</text>
+  <rect x="496" y="292" width="368" height="92" rx="12" fill="#FFFFFF" stroke="#E4DADE"/>
+  <text x="512" y="314" font-size="11.5" font-weight="800" letter-spacing="1" fill="#5A5158">JARINGAN (9:52–10:12)</text>
+  <text x="512" y="336" font-size="12" fill="#1F1A1E">default: package registry, GitHub</text>
+  <text x="512" y="354" font-size="12" fill="#1F1A1E">host lain: tambahkan domainnya secara eksplisit</text>
+  <text x="512" y="372" font-size="12" fill="#1F1A1E">API key: network secret, tak pernah dikirim ke model</text>
+  <rect x="496" y="394" width="368" height="76" rx="12" fill="#F7E6EE" stroke="#EBC6D8"/>
+  <text x="512" y="416" font-size="11.5" font-weight="800" letter-spacing="1" fill="#7C2352">TETAP MENYALA DI CLOUD (10:36)</text>
+  <text x="512" y="438" font-size="12" fill="#1F1A1E">auto mode, plus deny rule yang di-commit ke repo</text>
+  <text x="512" y="456" font-size="12" fill="#1F1A1E">menangkap force push atau secret di dalam commit</text>
+
+  <path d="M600 486 V514" stroke="#C4372B" stroke-width="1.8" marker-end="url(#rcArRed)"/>
+  <path d="M760 486 V514" stroke="#C4372B" stroke-width="1.8" marker-end="url(#rcArRed)"/>
+  <text x="600" y="534" font-size="12" font-weight="700" text-anchor="middle" fill="#C4372B">commit yang di-push</text>
+  <text x="760" y="534" font-size="12" font-weight="700" text-anchor="middle" fill="#C4372B">pesan lewat connector</text>
+  <text x="680" y="562" font-size="11.5" text-anchor="middle" fill="#1F1A1E">Keduanya keluar dari mesin sekali pakai itu (10:28).</text>
+</svg>
+<figcaption><b>Gambar 4. Dua pemeriksaan, lalu dua tempat menjalankan — direkonstruksi dari ucapannya, 6:19–10:44.</b> Bukan slide yang digambar ulang: potongan-potongannya muncul di slide terpisah (6:25, 8:57, 9:32, 10:04), dan perakitannya dariku. Deny rule dan classifier berlaku di mana pun session berjalan (6:19; di cloud, 10:36). Sandbox adalah jawabannya untuk menjalankan di mesinmu sendiri; cloud session adalah jawabannya atas apa yang dibiarkan terbuka oleh sandbox. Ia tidak menyebut apakah cloud session juga menjalankan command di dalam sandbox, jadi keduanya digambar berdampingan, bukan bersarang.</figcaption>
+</figure>
+
+<div class="note warn">
+  <div class="lbl">Konsekuensi yang tidak ditarik talk ini — pengamatanku</div>
+  <p>Di mesin lokal, hook yang dipakai bagian 6 untuk menjalankan test-mu termasuk hal yang menurutnya berjalan di luar sandbox. Kalau begitu, hook yang menjalankan <code>npm test</code> menjalankan kode dependency di Gambar 3 tanpa sandbox. Itu mendukung kesimpulannya — pakai cloud — tapi "sandbox menyala" tidak sama dengan "test berjalan di dalam sandbox". Periksa di setup-mu sendiri.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">6</span>Verifikasi: review checkpoint-nya, bukan diff-nya</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>Dulu loop memberi verifikasi secara gratis — <i>"we'd already kind of seen every change"</i> (11:00). Sekarang ambil contoh "Move auth over to the new API": dengan prompt yang persis sama, satu run menyisakan API lama, satu hanya memindahkan login baru, satu lagi membuat semua orang ter-logout (11:25). Ketiganya tampak masuk akal.</p>
+
+<p>Jadi pasang <b>verification point</b>: apa saja yang <i>"comes back as a pass or fail"</i> — test, build, screenshot (11:44–11:47). Di slide, test-nya adalah <code>auth.test.ts</code> dengan satu kotak yang belum dicentang: "nobody gets logged out". Kamu me-review checkpoint-nya, yang jauh lebih pendek daripada diff, dan run yang buruk <i>"doesn't get past that first check"</i> (12:02). Mintalah checkpoint itu di prompt — jelaskan seperti apa "selesai", pecah pekerjaan menjadi task dengan test-nya sendiri, dan minta output aslinya ditunjukkan <i>"because you weren't there to see it"</i> (12:19) — tapi <i>"prompting is not a guarantee"</i> (12:21). Untuk pemeriksaan yang wajib jalan, pakai <b>hook</b>: lint di setiap edit; di setiap task, test untuk bagian itu — <i>"if it touched our auth code or something, it has to pass the auth auth tests"</i> (12:49); seluruh suite di akhir.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" aria-label="Dua panel tentang hook. Atas: garis session melewati empat centang hijau dan berakhir di centang hijau yang lebih besar; tiga kartu menyebut setiap edit menjalankan lint pada event PostToolUse, setiap task menjalankan test-nya pada TaskCompleted, dan di akhir semua test dijalankan pada Stop. Bawah: setelah dua centang hijau, pemeriksaan ketiga gagal dengan tanda silang merah; panah berlabel exit 2, kembali untuk memperbaikinya, kembali ke pemeriksaan sebelumnya, sementara panah berlabel exit 1, ditandai selesai, melompat maju ke langkah berikutnya.">
+  <text x="24" y="30" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">DI MANA HOOK DIJALANKAN — DIGAMBAR ULANG DARI 12:55</text>
+  <path d="M50 86 H836" stroke="#CFC4CA" stroke-width="1.2" stroke-dasharray="2 5"/>
+  <rect x="40" y="81" width="10" height="10" rx="2" fill="#FFFFFF" stroke="#5A5158" stroke-width="1.4"/>
+  <path d="M50 86 C100 56 160 56 220 86 S340 116 400 86 S520 56 580 86 S700 116 760 86 C790 70 812 74 836 86" stroke="#A12F6A" stroke-width="2.4" fill="none"/>
+  <use href="#rcChk" x="209" y="75" width="22" height="22"/><use href="#rcChk" x="389" y="75" width="22" height="22"/>
+  <use href="#rcChk" x="569" y="75" width="22" height="22"/><use href="#rcChk" x="749" y="75" width="22" height="22"/>
+  <use href="#rcChk" x="836" y="71" width="30" height="30"/>
+  <rect x="40" y="128" width="262" height="72" rx="12" fill="#FAF7F8" stroke="#E4DADE"/>
+  <text x="58" y="158" font-size="15.5" fill="#1F1A1E"><tspan font-weight="700">Setiap edit</tspan> <tspan fill="#A12F6A">→</tspan> lint</text>
+  <text x="58" y="183" font-size="12.5" class="mono" fill="#6B4FBB">PostToolUse</text>
+  <rect x="319" y="128" width="262" height="72" rx="12" fill="#FAF7F8" stroke="#E4DADE"/>
+  <text x="337" y="158" font-size="15.5" fill="#1F1A1E"><tspan font-weight="700">Setiap task</tspan> <tspan fill="#A12F6A">→</tspan> test-nya</text>
+  <text x="337" y="183" font-size="12.5" class="mono" fill="#6B4FBB">TaskCompleted</text>
+  <rect x="598" y="128" width="262" height="72" rx="12" fill="#FAF7F8" stroke="#E4DADE"/>
+  <text x="616" y="158" font-size="15.5" fill="#1F1A1E"><tspan font-weight="700">Di akhir</tspan> <tspan fill="#A12F6A">→</tspan> semua test</text>
+  <text x="616" y="183" font-size="12.5" class="mono" fill="#6B4FBB">Stop</text>
+
+  <path d="M24 224 H876" stroke="#E4DADE"/>
+
+  <text x="24" y="250" font-size="11.5" font-weight="800" letter-spacing="1.2" fill="#5A5158">KETIKA SATU GAGAL — DIGAMBAR ULANG DARI 13:10</text>
+  <path d="M50 356 H836" stroke="#CFC4CA" stroke-width="1.2" stroke-dasharray="2 5"/>
+  <rect x="40" y="351" width="10" height="10" rx="2" fill="#FFFFFF" stroke="#5A5158" stroke-width="1.4"/>
+  <path d="M50 356 C100 326 160 326 220 356 S340 386 400 356 S520 326 568 352" stroke="#A12F6A" stroke-width="2.4" fill="none"/>
+  <use href="#rcChk" x="209" y="345" width="22" height="22"/><use href="#rcChk" x="389" y="345" width="22" height="22"/>
+  <rect x="568" y="344" width="24" height="24" rx="5" fill="#C4372B"/>
+  <path d="M574.5 350.5 L585.5 361.5 M585.5 350.5 L574.5 361.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+  <rect x="749" y="345" width="22" height="22" rx="5" fill="#EAF6EF" stroke="#1B8A54" stroke-width="1.6"/>
+  <rect x="836" y="341" width="30" height="30" rx="6" fill="#EAF6EF" stroke="#1B8A54" stroke-width="1.8"/>
+  <path d="M574 340 C548 296 434 296 408 338" stroke="#A12F6A" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round" fill="none" marker-end="url(#rcArBerry)"/>
+  <path d="M586 340 C612 296 728 296 754 338" stroke="#1B8A54" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round" fill="none" marker-end="url(#rcArGreen)"/>
+  <text x="560" y="274" font-size="14" class="mono" text-anchor="end" fill="#A12F6A">exit 2</text>
+  <text x="560" y="292" font-size="13.5" font-weight="700" text-anchor="end" fill="#1F1A1E">kembali untuk memperbaikinya</text>
+  <text x="604" y="274" font-size="14" class="mono" fill="#1B8A54">exit 1</text>
+  <text x="604" y="292" font-size="13.5" font-weight="700" fill="#1F1A1E">ditandai selesai</text>
+</svg>
+<figcaption><b>Gambar 5. Hook, dan exit code yang menentukan apakah ia benar-benar menahan — digambar ulang dari slide di 12:55 dan 13:10.</b> Teks kartu dan label panah diterjemahkan dari slide; nama event-nya tetap seperti di slide dan tidak pernah diucapkan. Slide tidak memasangkan kartu dengan titik tertentu di garis, jadi gambar ini juga tidak. Panah ke depan, dalam warna hijau slide, justru yang tidak kamu inginkan.</figcaption>
+</figure>
+
+<div class="quote">
+  <p>"with a one, that task by [Claude Code] just gets marked as completed anyway. So make sure that your scripts exit with a two exit code because that's what actually sends [Claude] back to fix it."</p>
+  <cite>— Lydia Hallie, 13:11–13:21</cite>
+</div>
+<p class="lede"><b>Maksudnya:</b> dengan exit code 1, task itu tetap ditandai selesai oleh Claude Code; pastikan script-mu keluar dengan exit code 2, karena itulah yang mengirim Claude kembali untuk memperbaikinya.</p>
+
+<div class="note warn">
+  <div class="lbl">Periksa ini sebelum mengandalkannya</div>
+  <p>Kebanyakan test runner keluar dengan 1 saat gagal — yang, menurut penjelasannya, tidak memblokir. Hook yang membungkus test runner tanpa memetakan ulang exit code-nya akan melaporkan kegagalan lalu tetap membiarkan task ditutup: gerbang yang terlihat terpasang padahal tidak. Ini klaimnya di talk; entri ini belum memeriksanya terhadap dokumentasi produk. Uji lima menit di setup-mu sendiri sudah cukup untuk memastikannya.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">7</span>Skala: CI sebagai lantai, lalu review sesuai risiko</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>Dengan satu session yang ia percayai, ia memulai lebih banyak; masing-masing punya mesin sendiri, jadi ia tidak perlu lagi banyak memikirkan work tree (13:35). Tapi kamu masih memulai dan me-review setiap session — <i>"a pretty good place to be"</i> (13:45), dan masih di dalam loop. Berikutnya CI, yang ia sebut hal terpenting untuk dimiliki: setiap session berakhir dengan PR, dan CI <i>"runs the same checks on every one of them, no matter how that session was set up"</i> (14:07). Itulah satu pemeriksaan yang ditemui setiap session. CI auto-fix mengirim Claude kembali ke pemeriksaan yang gagal (14:14). "Merge when ready" membuat GitHub me-merge begitu semua pemeriksaan lolos — <i>"but again, that that's not the default and that really depends on how risky the change is"</i> (14:36), maksudnya itu bukan default dan sangat bergantung pada seberapa berisiko perubahannya.</p>
+
+<p>Di timnya, Claude me-review setiap PR lebih dulu — <i>"not by the session that wrote it"</i>, dengan konteks baru dan <i>"a separate group of agents to just double check every bug it finds"</i> (14:44–14:52). Manusia lalu ditambahkan sesuai risiko. Ucapan dan slide berbeda, jadi keduanya ditampilkan:</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:15%">Orang</th><th>Diucapkan, 14:57–15:08</th><th>Di slide 15:01</th></tr></thead>
+  <tbody>
+    <tr><td><b>Tidak ada</b></td><td>"smaller changes like docs or copy, they don't need a person"</td><td>"Smaller changes" — "like a typo or a lint fix"</td></tr>
+    <tr><td><b>Satu</b></td><td>"maybe ordinary product changes just need one reviewer"</td><td>"Most changes" — "one person"</td></tr>
+    <tr><td><b>Lebih</b></td><td>"risky changes might need two"</td><td>"Riskiest changes" — "more than one person"</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Perhatikan hedging-nya ("maybe", "might"), dan bahwa contoh tanpa-manusia di slide (salah ketik, perbaikan lint) berbeda dari yang diucapkan (dokumentasi, copy).</p>
+
+<div class="note">
+  <div class="lbl">Disandingkan dengan Verification Debt — pembacaanku</div>
+  <p>Kriteria <a href="../../evaluation-and-observability/verification-debt/">Verification Debt</a> adalah memverifikasi dengan metodologi yang berbeda dari yang menghasilkan kode. Session dengan konteks baru independen dari konteks penulisnya, tapi belum tentu dari modelnya — dan talk ini tidak menyebut model mana yang me-review. Di sini, metode yang benar-benar berbeda adalah yang deterministik: test, hook, CI.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">8</span>Arah ke depan: session yang memulai session lain</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p>Pekerjaan terakhir yang diserahkan adalah memulai session — <i>"where we see things going"</i>, katanya, dan sesuatu yang di Anthropic <i>"already kind of doing more of"</i> (15:11), maksudnya sudah mulai makin banyak dijalankan. Alasannya: <i>"I'm terrible at context switching"</i> (15:20). Satu session utama menjadi orchestrator: ia memecah permintaan, memulai satu session per task, melacak apa yang kembali, dan mengembalikan apa pun yang <i>"isn't actually done"</i> (16:05). Ia menunjuk sebuah fitur yang ia sebut, sebagaimana terdengar, "Claude Code projects", yang masih beta (15:33); thread-nya adalah <i>"just new sessions"</i> (15:48). Orchestrator tidak menulis kode, jadi ia butuh model yang <i>"really good at deciding what to do and judging what comes back, a model like Fable"</i>; thread butuh model yang <i>"good at actually doing the work like Opus [5.5]"</i>, dan keduanya diatur terpisah (15:58–16:19). Dengan fitur itu, tambahnya, konteks dikelola otomatis (16:25).</p>
+
+<figure>
+<svg viewBox="0 0 900 460" role="img" aria-label="Session orchestrator di kiri, berlabel Fable, memutuskan dan menilai, memegang permintaan untuk acme-web dan daftar task bertanda Done. Ia menyebar ke delapan cloud session berlabel Opus 5.5, mengerjakan pekerjaannya, masing-masing memverifikasi dirinya di checkpoint. Setiap session membuka PR, lolos CI, lalu ke satu orang untuk review atau diatur Merge when ready — dependencies, docs sweep dan a11y on settings — sebelum di-merge. Dua anotasi dari ucapannya: orchestrator mengembalikan pekerjaan yang belum benar-benar selesai, dan setiap PR lebih dulu di-review oleh Claude terpisah dengan konteks baru.">
+  <text x="24" y="34" fill="#1F1A1E"><tspan font-size="20" font-weight="700">Fable</tspan><tspan font-size="13" fill="#5A5158" dx="8">memutuskan dan menilai</tspan></text>
+  <rect x="24" y="48" width="216" height="300" rx="12" fill="#FAF7F8" stroke="#E4DADE"/>
+  <text x="38" y="70" font-size="12" font-weight="700" fill="#5A5158">acme-web</text>
+  <use href="#rcPerson" x="206" y="56" width="22" height="22"/>
+  <rect x="38" y="80" width="188" height="90" rx="8" fill="#EFE8EB"/>
+  <text x="48" y="97" font-size="10.5" fill="#1F1A1E">This week: the auth migration,</text>
+  <text x="48" y="112" font-size="10.5" fill="#1F1A1E">the flaky test, dependencies,</text>
+  <text x="48" y="127" font-size="10.5" fill="#1F1A1E">the cold start crash, docs, the</text>
+  <text x="48" y="142" font-size="10.5" fill="#1F1A1E">billing retry, the user service</text>
+  <text x="48" y="157" font-size="10.5" fill="#1F1A1E">rename and a11y.</text>
+  <text x="38" y="189" font-size="11" fill="#1F1A1E">On it. I'll start a session</text>
+  <text x="38" y="203" font-size="11" fill="#1F1A1E">for each one.</text>
+  <rect x="38" y="214" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="226" font-size="10.5" fill="#1F1A1E">Auth migration</text><text x="218" y="226" font-size="10.5" text-anchor="end" fill="#1B8A54">Done</text>
+  <rect x="38" y="235" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="247" font-size="10.5" fill="#1F1A1E">Flaky auth test</text><text x="218" y="247" font-size="10.5" text-anchor="end" fill="#1B8A54">Done</text>
+  <rect x="38" y="256" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="268" font-size="10.5" fill="#1F1A1E">Dependencies</text><text x="218" y="268" font-size="10.5" text-anchor="end" fill="#1B8A54">Done</text>
+  <rect x="38" y="277" width="188" height="17" rx="4" fill="#F2EDEF"/><text x="46" y="289" font-size="10.5" fill="#1F1A1E">Cold start crash</text><text x="218" y="289" font-size="10.5" text-anchor="end" fill="#1B8A54">Done</text>
+  <text x="38" y="318" font-size="10.5" fill="#887E85">and 4 more</text>
+
+  <path d="M240 204 H250" stroke="#A12F6A" stroke-width="1.4"/>
+  <use href="#rcStar" x="250" y="190" width="28" height="28"/>
+  <g stroke="#B9AEB4" stroke-width="1.1" fill="none">
+    <path d="M278 204 C287 204 286 71 294 71"/><path d="M278 204 C287 204 286 109 294 109"/>
+    <path d="M278 204 C287 204 286 147 294 147"/><path d="M278 204 C287 204 286 185 294 185"/>
+    <path d="M278 204 C287 204 286 223 294 223"/><path d="M278 204 C287 204 286 261 294 261"/>
+    <path d="M278 204 C287 204 286 299 294 299"/><path d="M278 204 C287 204 286 337 294 337"/>
+  </g>
+
+  <text x="294" y="34" fill="#1F1A1E"><tspan font-size="20" font-weight="700">Opus 5.5</tspan><tspan font-size="13" fill="#5A5158" dx="8">mengerjakan pekerjaannya</tspan></text>
+  <text x="622" y="34" font-size="12" text-anchor="middle" fill="#5A5158">PR</text>
+  <text x="680" y="34" font-size="12" text-anchor="middle" fill="#5A5158">CI</text>
+
+  <g font-size="12.5" fill="#1F1A1E">
+    <rect x="294" y="56" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="64" width="20" height="14"/><text x="330" y="76">flaky auth test</text>
+    <rect x="294" y="94" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="102" width="20" height="14"/><text x="330" y="114">dependencies</text>
+    <rect x="294" y="132" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="140" width="20" height="14"/><text x="330" y="152">cold start crash</text>
+    <rect x="294" y="170" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="178" width="20" height="14"/><text x="330" y="190">auth migration</text>
+    <rect x="294" y="208" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="216" width="20" height="14"/><text x="330" y="228">docs sweep</text>
+    <rect x="294" y="246" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="254" width="20" height="14"/><text x="330" y="266">billing retry</text>
+    <rect x="294" y="284" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="292" width="20" height="14"/><text x="330" y="304">user service</text>
+    <rect x="294" y="322" width="300" height="30" rx="8" fill="#FFFFFF" stroke="#5A5158"/><use href="#rcCloud" x="302" y="330" width="20" height="14"/><text x="330" y="342">a11y on settings</text>
+  </g>
+  <g stroke="#A12F6A" stroke-width="1.4" fill="none">
+    <path d="M466 71 q13 -5 26 0 t26 0 t26 0 t26 0"/><path d="M466 109 q13 -5 26 0 t26 0 t26 0 t26 0"/>
+    <path d="M466 147 q13 -5 26 0 t26 0 t26 0 t26 0"/><path d="M466 185 q13 -5 26 0 t26 0 t26 0 t26 0"/>
+    <path d="M466 223 q13 -5 26 0 t26 0 t26 0 t26 0"/><path d="M466 261 q13 -5 26 0 t26 0 t26 0 t26 0"/>
+    <path d="M466 299 q13 -5 26 0 t26 0 t26 0 t26 0"/><path d="M466 337 q13 -5 26 0 t26 0 t26 0 t26 0"/>
+  </g>
+  <use href="#rcChk" x="474" y="65" width="12" height="12"/><use href="#rcChk" x="496" y="65" width="12" height="12"/><use href="#rcChk" x="518" y="65" width="12" height="12"/><use href="#rcChk" x="540" y="65" width="12" height="12"/><use href="#rcChk" x="570" y="62" width="18" height="18"/>
+  <use href="#rcChk" x="474" y="103" width="12" height="12"/><use href="#rcChk" x="496" y="103" width="12" height="12"/><use href="#rcChk" x="518" y="103" width="12" height="12"/><use href="#rcChk" x="540" y="103" width="12" height="12"/><use href="#rcChk" x="570" y="100" width="18" height="18"/>
+  <use href="#rcChk" x="488" y="141" width="12" height="12"/><use href="#rcChk" x="526" y="141" width="12" height="12"/><use href="#rcChk" x="570" y="138" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="179" width="12" height="12"/><use href="#rcChk" x="506" y="179" width="12" height="12"/><use href="#rcChk" x="532" y="179" width="12" height="12"/><use href="#rcChk" x="570" y="176" width="18" height="18"/>
+  <use href="#rcChk" x="480" y="217" width="12" height="12"/><use href="#rcChk" x="506" y="217" width="12" height="12"/><use href="#rcChk" x="532" y="217" width="12" height="12"/><use href="#rcChk" x="570" y="214" width="18" height="18"/>
+  <use href="#rcChk" x="488" y="255" width="12" height="12"/><use href="#rcChk" x="526" y="255" width="12" height="12"/><use href="#rcChk" x="570" y="252" width="18" height="18"/>
+  <use href="#rcChk" x="474" y="293" width="12" height="12"/><use href="#rcChk" x="496" y="293" width="12" height="12"/><use href="#rcChk" x="518" y="293" width="12" height="12"/><use href="#rcChk" x="540" y="293" width="12" height="12"/><use href="#rcChk" x="570" y="290" width="18" height="18"/>
+  <use href="#rcChk" x="474" y="331" width="12" height="12"/><use href="#rcChk" x="496" y="331" width="12" height="12"/><use href="#rcChk" x="518" y="331" width="12" height="12"/><use href="#rcChk" x="540" y="331" width="12" height="12"/><use href="#rcChk" x="570" y="328" width="18" height="18"/>
+
+  <g stroke="#B9AEB4" stroke-width="1.1">
+    <path d="M594 71 H832"/><path d="M594 109 H832"/><path d="M594 147 H832"/><path d="M594 185 H832"/>
+    <path d="M594 223 H832"/><path d="M594 261 H832"/><path d="M594 299 H832"/><path d="M594 337 H832"/>
+  </g>
+  <use href="#rcPR" x="611" y="60" width="22" height="22"/><use href="#rcPR" x="611" y="98" width="22" height="22"/>
+  <use href="#rcPR" x="611" y="136" width="22" height="22"/><use href="#rcPR" x="611" y="174" width="22" height="22"/>
+  <use href="#rcPR" x="611" y="212" width="22" height="22"/><use href="#rcPR" x="611" y="250" width="22" height="22"/>
+  <use href="#rcPR" x="611" y="288" width="22" height="22"/><use href="#rcPR" x="611" y="326" width="22" height="22"/>
+  <use href="#rcCI" x="669" y="60" width="22" height="22"/><use href="#rcCI" x="669" y="98" width="22" height="22"/>
+  <use href="#rcCI" x="669" y="136" width="22" height="22"/><use href="#rcCI" x="669" y="174" width="22" height="22"/>
+  <use href="#rcCI" x="669" y="212" width="22" height="22"/><use href="#rcCI" x="669" y="250" width="22" height="22"/>
+  <use href="#rcCI" x="669" y="288" width="22" height="22"/><use href="#rcCI" x="669" y="326" width="22" height="22"/>
+  <use href="#rcPerson" x="749" y="60" width="22" height="22"/>
+  <rect x="706" y="99" width="108" height="20" rx="10" fill="#EAF6EF" stroke="#1B8A54"/><text x="760" y="113" font-size="10.5" text-anchor="middle" fill="#1B8A54">Merge when ready</text>
+  <use href="#rcPerson" x="749" y="136" width="22" height="22"/>
+  <use href="#rcPerson" x="749" y="174" width="22" height="22"/>
+  <rect x="706" y="213" width="108" height="20" rx="10" fill="#EAF6EF" stroke="#1B8A54"/><text x="760" y="227" font-size="10.5" text-anchor="middle" fill="#1B8A54">Merge when ready</text>
+  <use href="#rcPerson" x="749" y="250" width="22" height="22"/>
+  <use href="#rcPerson" x="749" y="288" width="22" height="22"/>
+  <rect x="706" y="327" width="108" height="20" rx="10" fill="#EAF6EF" stroke="#1B8A54"/><text x="760" y="341" font-size="10.5" text-anchor="middle" fill="#1B8A54">Merge when ready</text>
+  <use href="#rcMerge" x="832" y="60" width="22" height="22"/><use href="#rcMerge" x="832" y="98" width="22" height="22"/>
+  <use href="#rcMerge" x="832" y="136" width="22" height="22"/><use href="#rcMerge" x="832" y="174" width="22" height="22"/>
+  <use href="#rcMerge" x="832" y="212" width="22" height="22"/><use href="#rcMerge" x="832" y="250" width="22" height="22"/>
+  <use href="#rcMerge" x="832" y="288" width="22" height="22"/><use href="#rcMerge" x="832" y="326" width="22" height="22"/>
+
+  <path d="M440 356 V382 Q440 388 434 388 H270 Q264 388 264 382 V224" stroke="#A12F6A" stroke-width="1.6" stroke-dasharray="5 4" fill="none" marker-end="url(#rcArBerry)"/>
+  <text x="276" y="408" font-size="11.5" font-style="italic" fill="#7C2352">mengembalikan yang belum selesai — 16:05, dari ucapan</text>
+  <rect x="652" y="366" width="230" height="82" rx="10" fill="#FFFFFF" stroke="#5A5158" stroke-dasharray="4 3"/>
+  <text x="666" y="386" font-size="11.5" font-style="italic" fill="#1F1A1E">Sebelum ada manusia: setiap PR</text>
+  <text x="666" y="402" font-size="11.5" font-style="italic" fill="#1F1A1E">lebih dulu di-review oleh Claude</text>
+  <text x="666" y="418" font-size="11.5" font-style="italic" fill="#1F1A1E">terpisah, dengan konteks baru —</text>
+  <text x="666" y="434" font-size="11.5" font-style="italic" fill="#1F1A1E">14:41–14:48, dari ucapan</text>
+</svg>
+<figcaption><b>Gambar 6. Orchestrator dan pipeline di belakangnya — gabungan slide di 16:08 dan 14:33.</b> Separuh kiri dan baris-barisnya dari 16:08, yang melabeli session utama hanya "Fable"; kolom PR, CI dan review dari 14:33. Dua anotasi miring bergaris putus-putus berasal dari narasinya. Webcam menutupi ujung kanan dua baris terakhir di 14:33; keduanya dilengkapi di sini. Setiap baris review yang terlihat menunjukkan satu orang — tidak ada yang menunjukkan tingkat dua orang.</figcaption>
+</figure>
+
+<p>Ini bentuk yang dijelaskan <a href="../loop-vs-graph/">Loop Engineering vs Graph Engineering</a> — lapisan koordinasi yang membungkus loop-loop pekerja — dengan urusan memutuskan dan mengerjakan dibagi ke dua model. Penutupnya:</p>
+
+<div class="quote">
+  <p>"we're really just here to start that first one and to just review what comes out."</p>
+  <cite>— Lydia Hallie, 16:58</cite>
+</div>
+<p class="lede"><b>Maksudnya:</b> kita sebenarnya hanya ada untuk memulai session pertama dan me-review apa yang keluar.</p>
+
+<hr class="rule">
+
+<h2><span class="num">9</span>Satu tabel: setiap pekerjaan di loop, pemilik barunya, apa yang masih lolos</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>Dua kolom pertama diterjemahkan dari kata-kata slide penutup; kolom keempat adalah klasifikasiku, bukan klasifikasinya.</p>
+
+<div class="scroll">
+<table style="min-width:720px">
+  <thead><tr><th style="width:16%">Pekerjaan di loop</th><th style="width:15%">Diambil alih oleh</th><th>Caranya, di talk ini</th><th style="width:12%">Jenis kontrol</th><th style="width:27%">Yang masih lolos</th></tr></thead>
+  <tbody>
+    <tr><td><b>Mengarahkannya</b></td><td>Model</td><td>Opus 5.5 membaca maksud; CLAUDE.md hanya berisi apa yang tidak terlihat dari kode</td><td>Penilaian</td><td>Prompt yang sama tetap bisa berakhir di tempat berbeda</td></tr>
+    <tr><td><b>Menyetujui setiap tool call</b></td><td>Auto mode</td><td>Sebuah classifier, dikonfigurasi dengan bahasa biasa</td><td>Penilaian</td><td>Sekitar satu dari sepuluh command berbahaya yang disisipkan</td></tr>
+    <tr><td><b>Berkata tidak</b></td><td>Deny rule, environment</td><td>Deny rule sebelum classifier; sandbox OS; mesin cloud tanpa apa pun untuk dicuri</td><td>Ditegakkan</td><td>Apa yang dijangkau command di luar sandbox; file milik Claude, MCP server, hook; push dan pesan lewat connector</td></tr>
+    <tr><td><b>Memeriksa bahwa sudah selesai</b></td><td>Test, hook, CI</td><td>Verification point; hook; CI dengan auto-fix; Claude terpisah me-review; manusia sesuai risiko</td><td>Ditegakkan, plus penilaian</td><td>Apa pun yang tidak diuji; hook yang keluar dengan exit 1, menurutnya</td></tr>
+    <tr><td><b>Memulai setiap session</b></td><td>Claude</td><td>Session orchestrator memulai dan menilai thread</td><td>Penilaian</td><td>Kamu tetap memulai yang pertama dan me-review hasilnya</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+  <div class="lbl">Layak dicatat untuk konteks kita sendiri</div>
+  <p>Di lingkungan yang teregulasi atau diaudit, garis yang ditarik talk ini antara penilaian dan jaminan adalah garis yang ditarik auditor antara statistik dan kontrol. Deny rule, sandbox OS, konfigurasi yang di-commit, gerbang CI dan tingkat review yang tertulis bisa diperiksa dan dibuktikan; tingkat tangkapan sebuah classifier tidak mengatakan apa pun tentang satu aksi tertentu. Apa yang ia sebut <i>"the things that leave [the machine]"</i> — push dan pesan lewat connector — adalah tempat jejak audit harus berada.</p>
+</div>
+
+<hr class="rule">
+
+<h2><span class="num">10</span>Yang masih terbuka</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+
+<p><b>Yang ia akui:</b> auto mode dan prompting masing-masing <i>"not a guarantee"</i> (5:45, 12:21); sekitar satu dari sepuluh command yang disisipkan tetap lolos (6:01); sandbox secara default masih bisa membaca sebagian besar mesin dan membiarkan file milik Claude, MCP server dan hook di luarnya (8:59, 9:15); merge-when-ready <i>"not the default"</i> (14:36); tingkat review-nya penuh hedging.</p>
+
+<p><b>Di mana aku akan menekan — penilaianku, bukan penilaiannya:</b></p>
+<ul class="clean">
+  <li><b>Throughput bukan kualitas.</b> 2,500 → 30,000+ per hari berasal dari tulisan Anthropic sendiri; tidak ada tingkat cacat, revert atau insiden yang ditunjukkan.</li>
+  <li><b>Biaya tidak disebut.</b> Puluhan session yang berjalan berjam-jam, satu Claude reviewer per PR dan sekelompok agent yang mengecek ulang setiap bug semuanya punya tagihan token yang tidak pernah disebut.</li>
+  <li><b>Siapa yang memutuskan sebuah perubahan berisiko?</b> Tingkat review butuh risiko yang sudah diketahui sebelum review; talk ini tidak menyebut siapa atau apa yang memutuskannya.</li>
+  <li><b>Contohnya sendiri me-merge otomatis baris berlabel "dependencies"</b> (1:30, 14:33), padahal model ancamannya adalah dependency yang disusupi. CI dan sandbox mungkin menutupinya; talk ini tidak menghubungkan keduanya.</li>
+  <li><b><code>autoMode.hard_deny</code> versus <code>permissions.deny</code>.</b> Menurut penjelasannya, blok <code>autoMode</code> dikirim ke classifier, dan ia tidak menyebut apakah <code>hard_deny</code> diperlakukan berbeda. Kalau tidak, namanya menjanjikan lebih dari yang bisa diberikan classifier; jaminan yang ia jelaskan ada di <code>permissions.deny</code>.</li>
+  <li><b>Buktinya tidak bisa dicek dari talk ini.</b> Studi dan tulisan blognya hanya disebut di slide — tanpa tautan, tanpa judul studi.</li>
+</ul>
+
+<hr class="rule">
+
+<h2><span class="num">11</span>Indeks timestamp</h2>
+<div class="dots"><i></i><i></i><i></i></div>
+<p>Baris tebal adalah judul chapter milik video itu sendiri, dibiarkan dalam bahasa Inggris.</p>
+
+<div class="scroll narrow">
+<table>
+  <thead><tr><th style="width:14%">Waktu</th><th>Bagian</th></tr></thead>
+  <tbody>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=0s" target="_blank" rel="noopener">0:00</a></td><td><b>Evolution of workflow</b> — dulu dan sekarang; 2,500 → 30,000+ di 1:43</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=134s" target="_blank" rel="noopener">2:14</a></td><td><b>Rethinking best practices</b> — keluar dari loop; default; CLAUDE.md</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=251s" target="_blank" rel="noopener">4:11</a></td><td><b>Managing auto mode</b></td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=330s" target="_blank" rel="noopener">5:30</a></td><td><b>Safety and environment</b> — studinya; deny rule</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=398s" target="_blank" rel="noopener">6:38</a></td><td>"Can I take it back?"</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=438s" target="_blank" rel="noopener">7:18</a></td><td><code>npm test</code> menjalankan kode yang tidak kamu tulis</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=496s" target="_blank" rel="noopener">8:16</a></td><td><b>Cloud-based environments</b> — sandbox, lalu cloud session (9:30)</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=653s" target="_blank" rel="noopener">10:53</a></td><td><b>Verification strategies</b> — hook di 12:24, exit code di 13:00</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=840s" target="_blank" rel="noopener">14:00</a></td><td><b>Scaling with CI and PRs</b> — review oleh Claude terpisah di 14:40</td></tr>
+    <tr><td class="ts"><a href="https://www.youtube.com/watch?v=vlfCjWuv4es&amp;t=910s" target="_blank" rel="noopener">15:10</a></td><td><b>Orchestration and conclusion</b> — praktik lama, pemilik baru di 16:34</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="srcbox">
+  <div class="lbl">Sumber</div>
+  <p><b>Rethinking Claude Code Best Practices —&nbsp;Lydia Hallie, Anthropic.</b> Lydia Hallie, Member of Technical Staff, Anthropic. Terbit di kanal YouTube AI Engineer, 12 November 2026 (UTC). 17:31. Direkam di rumah setelah sebuah talk live terkendala masalah teknis (menurut penuturannya, 0:00); tempat dan tanggal talk itu tidak disebutkan.</p>
+  <p><a href="https://www.youtube.com/watch?v=vlfCjWuv4es" target="_blank" rel="noopener">https://www.youtube.com/watch?v=vlfCjWuv4es</a></p>
+  <p style="color:var(--ink2); font-size:13.5px"><b>Juga dirujuk — di slide, tanpa tautan.</b> "Redesigning source control at Anthropic", tulisan blog Anthropic, Oktober 2026 (2,500 → 30,000+ perubahan yang di-merge per hari, Mei → September 2026). · Sebuah studi Anthropic tanpa judul, Agustus 2026: "1,053 paid testers, one dangerous command swapped in per session"; 14% ditangkap manusia, 89% diblokir auto mode. · Grafik SWE-bench Pro, "As reported by Anthropic. Test settings vary by model." (0:22, tidak dibahas). · Dokumentasi best practice dari Anthropic, disarankan di 17:26 tanpa judul atau tautan.</p>
+  <p style="color:var(--ink2); font-size:13.5px"><b>Terkait.</b> <a href="../../evaluation-and-observability/verification-debt/">Verification Debt</a> · <a href="../../evaluation-and-observability/signal-to-pr/">From Signal to PR</a> · <a href="../loop-vs-graph/">Loop Engineering vs Graph Engineering</a> · <a href="../memory-layers/">Memory Layers for AI Agents</a></p>
+</div>
+
+<div class="prov">
+<p><b>Bagaimana penjelasan ini dibuat.</b> Dari <b>trek caption otomatis</b> video (3,566 kata, 0:00–17:30), deskripsi <b>20 frame</b> yang ditangkap, delapan chapter buatan pembuat video, dan deskripsi video. Tidak ada dokumentasi produk yang dirujuk: setiap pernyataan tentang perilaku Claude Code adalah klaim pembicara.</p>
+<ul>
+  <li><b>Terjemahan.</b> Halaman ini adalah terjemahan Bahasa Indonesia dari <a href="?lang=en" hreflang="en">entri versi Inggris</a>, yang tetap menjadi rujukan utama; struktur, angka, gambar, tautan dan pengungkapannya tidak diubah. <b>Semua kutipan dibiarkan dalam bahasa Inggris asli</b>, dengan bantuan terjemahan di luar tanda kutip ("Maksudnya:"). Pada gambar, label penjelas diterjemahkan; nama produk, kode, nama file, nama event hook, label UI (mis. "Merge when ready", "Done"), contoh prompt dan teks chat di slide tetap dalam bahasa Inggris.</li>
+  <li><b>Kutipan</b> verbatim dari trek caption, termasuk kekeliruannya ("a worse results", "the Claude", "that that's"). <b>[Kurung siku]</b> menandai koreksi atau sisipan: nama yang diacak caption — "Cloud Code"/"Cloud", "Cloud MD", "Opus 55"/"Opus 45", "doctor prompt audit", "or end file", "automo" — dikoreksi hanya bila judul video atau slide mengonfirmasi ejaannya, dan "[you]" (6:05) serta "[call]" (6:22) disisipkan. Timestamp di dalam teks menandai saat kata-kata yang dirujuk mulai diucapkan, hingga hitungan detik; indeks timestamp menunjuk awal chapter dan bagian.</li>
+  <li><b>Tidak terkonfirmasi.</b> Nomor versi Fable (0:20) dihilangkan — label grafiknya tertutup webcam dan slide orchestrator hanya mencetak "Fable". "Claude Code projects" terdengar dua kali, sekali teracak, dan tidak ada di slide mana pun: disebut sebagaimana terdengar. Flag yang melewati permission (1:09) tidak ada di slide dan tidak dieja di sini. "A Cloud session" (sejak 9:30) bisa berarti "Claude session" atau "cloud session"; dibaca sebagai cloud karena slide menampilkan ikon awan dan "Edit cloud environment", dan belakangan ia berkata "start in the cloud" (17:18).</li>
+  <li><b>Ucapan versus slide.</b> Dibiarkan terlihat, tidak digabung: tingkat review, kartu keempat "Out of the loop", dan angka 2,500 → 30,000 (hanya slide yang menyebut "merged" dan "monorepo"). <code>git reset --hard</code> dan nama event hook hanya ada di slide.</li>
+  <li><b>Gambar.</b> Enam SVG inline, tanpa screenshot: 1, 2, 3 dan 5 digambar ulang dari frame yang disebut di caption-nya; 6 gabungan dua frame plus dua anotasi dari ucapan; 4 dirakit dari ucapan.</li>
+  <li><b>Metadata.</b> 12 November 2026 adalah tanggal upload UTC; momen yang sama jatuh pada 11 November di waktu Pasifik AS, seperti yang ditampilkan halaman YouTube. Tidak ada event atau tanggal penyampaian yang disebut di mana pun — hanya "this morning". <code>source_type: conference-talk</code> adalah nilai terdekat di daftar tetap repositori ini untuk talk bergaya konferensi yang direkam di rumah setelah penyampaian live-nya terkendala masalah teknis; AI Engineer adalah kanal yang menerbitkannya, bukan tempat acara yang terkonfirmasi.</li>
+  <li><b>Kata-kata siapa.</b> Bagian bertanda "pembacaanku", "pengamatanku" atau "penilaianku", serta kolom "Jenis kontrol", adalah penilaian entri ini. Palet: berry <code>#A12F6A</code> di atas rose-grey pucat <code>#F7F3F4</code>, komponen rumah tidak diubah.</li>
+</ul>
+</div>
+
+</div>
+
+<script>
+/* Language toggle, progressive enhancement. Without JS the radios above still switch language (CSS only).
+   With JS: ?lang=id|en opens a language directly, the choice is remembered, and <html lang> / <title> follow it. */
+(function () {
+  var en = document.getElementById('lang-en'), id = document.getElementById('lang-id');
+  if (!en || !id) return;
+  var root = document.documentElement;
+  var titles = { en: document.title, id: root.getAttribute('data-title-id') || document.title };
+  function apply(l, fromUser) {
+    (l === 'id' ? id : en).checked = true;
+    root.lang = l;
+    document.title = titles[l];
+    if (!fromUser) return;
+    try { localStorage.setItem('sharing-knowledge-lang', l); } catch (e) {}
+    try {
+      var u = new URL(location.href);
+      if (l === 'id') u.searchParams.set('lang', 'id'); else u.searchParams.delete('lang');
+      history.replaceState(null, '', u);
+    } catch (e) {}
+  }
+  var q = null, s = null;
+  try { q = new URLSearchParams(location.search).get('lang'); } catch (e) {}
+  try { s = localStorage.getItem('sharing-knowledge-lang'); } catch (e) {}
+  apply(q === 'id' || q === 'en' ? q : (s === 'id' ? 'id' : 'en'), false);
+  en.addEventListener('change', function () { apply('en', true); });
+  id.addEventListener('change', function () { apply('id', true); });
+})();
+</script>
+</body>
+</html>
