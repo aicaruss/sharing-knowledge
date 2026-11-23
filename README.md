@@ -108,7 +108,7 @@ Named `index.html` on purpose: GitHub Pages then serves the entry at a clean
 | 03 | **[From Signal to PR: Anatomy of a Self-Improving Agent](topics/evaluation-and-observability/signal-to-pr/)**<br><sub>Observability stops being a dashboard you click and becomes machine input. The unlock is deliberately unglamorous — production traces written into the repo as files, because harnesses are magical with files and hopeless with a dashboard. The loop inverts (agent digs, you review), and so you should now log ten times more, not less.</sub><br><sub>[📄 notes](topics/evaluation-and-observability/signal-to-pr/README.md) · [📖 read](https://aicaruss.github.io/sharing-knowledge/topics/evaluation-and-observability/signal-to-pr/) · [↗ source](https://www.youtube.com/watch?v=9HbzAWnKbo4)</sub> | `evaluation-and-observability` | Jason Lopatecki<br><sub>Arize AI</sub> | Talk explainer<br><sub>20m35s</sub> | 2026-08-11 |
 | 04 | **[Verification Debt: Guide, Verify, Solve](topics/evaluation-and-observability/verification-debt/)**<br><sub>The productivity spike from AI coding tools expires in about three months; the static-analysis warnings and complexity it leaves behind do not. That residue is verification debt, and it scales with criticality — an agent's default quality is flat while the quality a project needs rises. Human review is a leaky backstop: people follow confidently wrong AI advice 79.8% of the time. The criterion worth keeping: verify with a *different* methodology than the one that generated the code, because a model grading its own output inherits its own blind spots. A vendor talk, and the entry says so.</sub><br><sub>[📄 notes](topics/evaluation-and-observability/verification-debt/README.md) · [📖 read](https://aicaruss.github.io/sharing-knowledge/topics/evaluation-and-observability/verification-debt/) · [↗ source](https://www.youtube.com/watch?v=03l29gJXpCE)</sub> | `evaluation-and-observability` | Anirban Chatterjee<br><sub>Sonar · AI Engineer World's Fair 2026</sub> | Talk explainer<br><sub>22m31s</sub> | 2026-08-11 |
 | 05 | **[Memory Layers for AI Agents](topics/agent-architecture/memory-layers/)**<br><sub>Every LLM call starts with amnesia — what makes ChatGPT or Claude seem to remember you is a memory system somebody built around the model, not the model. Three pillars: what a memory *is* (text, table, graph), how the agent *finds* it (do nothing, keyword, RAG, Graph RAG), and how you *keep it true* (retire rather than delete, attribute, reflect). Then four real stores raced on identical facts against a no-memory control that passes by correctly reporting ignorance. An n=1 benchmark by the author of the harness it runs in — the entry says so.</sub><br><sub>[📄 notes](topics/agent-architecture/memory-layers/README.md) · [📖 read](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/memory-layers/) · [🇮🇩 versi Indonesia](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/memory-layers/index.id.html) · [↗ source](https://www.youtube.com/watch?v=072eNztI06k)</sub> | `agent-architecture` | Shen Sean Chen<br><sub>Sean's AI Stories</sub> | Talk explainer<br><sub>30m26s</sub> | 2026-08-18 |
-| 06 | **[Rethinking Claude Code Best Practices](topics/agent-architecture/rethinking-claude-code/)**<br><sub>When Claude Code sessions run for hours unattended, the five jobs a developer did in the loop — steer, approve, say no, check, start — have to move to the model, the harness or the environment. The useful line is judgement versus guarantee: an auto-mode classifier blocked 89% of planted dangerous commands where people caught 14%, yet about one in ten still got through, so what you cannot take back goes under a deny rule and into a restricted environment. Correctness comes from pass/fail checkpoints enforced by hooks (exit 2, not exit 1) and CI. A vendor talk from the Claude Code team, and the entry says so.</sub><br><sub>[📄 notes](topics/agent-architecture/rethinking-claude-code/README.md) · [📖 read](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/rethinking-claude-code/) · [🇮🇩 versi Indonesia](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/rethinking-claude-code/index.id.html) · [↗ source](https://www.youtube.com/watch?v=vlfCjWuv4es)</sub> | `agent-architecture` | Lydia Hallie<br><sub>Anthropic · AI Engineer channel</sub> | Talk explainer<br><sub>17m31s</sub> | 2026-11-17 |
+| 06 | **[Rethinking Claude Code Best Practices](topics/agent-architecture/rethinking-claude-code/)**<br><sub>When Claude Code sessions run for hours unattended, the five jobs a developer did in the loop — steer, approve, say no, check, start — have to move to the model, the harness or the environment. The useful line is judgement versus guarantee: an auto-mode classifier blocked 89% of planted dangerous commands where people caught 14%, yet about one in ten still got through, so what you cannot take back goes under a deny rule and into a restricted environment. Correctness comes from pass/fail checkpoints enforced by hooks (exit 2, not exit 1) and CI. A vendor talk from the Claude Code team, and the entry says so.</sub><br><sub>[📄 notes](topics/agent-architecture/rethinking-claude-code/README.md) · [📖 read](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/rethinking-claude-code/) · [🇮🇩 versi Indonesia](https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/rethinking-claude-code/?lang=id) · [↗ source](https://www.youtube.com/watch?v=vlfCjWuv4es)</sub> | `agent-architecture` | Lydia Hallie<br><sub>Anthropic · AI Engineer channel</sub> | Talk explainer<br><sub>17m31s</sub> | 2026-11-17 |
 
 ---
 
@@ -240,7 +240,7 @@ just a line in a topic's "wanted" list.
 | Topic folder | kebab-case, plural or compound noun, from the fixed set of seven | `tool-use-and-protocols` |
 | Entry folder (slug) | kebab-case, 2–4 words, the memorable part of the title | `learning-on-the-job` |
 | Explainer file | always `index.html` | `index.html` |
-| Translation | `index.<lang>.html` beside it | `index.id.html` |
+| Translation | inside `index.html`, behind the language toggle | `index.html?lang=id` |
 | Entry metadata | always `README.md` | `README.md` |
 
 Slugs are permanent — they are part of every URL that gets shared. No dates, no author names, no
@@ -257,7 +257,8 @@ a generated catalog will eventually read it, so keep it valid.
 | `slug` | ✔ | Folder name. Must match the directory it sits in |
 | `topic` | ✔ | Exactly one of the seven topic folder names |
 | `type` | ✔ | `talk-explainer` · `paper-explainer` · `article-explainer` · `primer` · `case-study` · `notes` |
-| `language` | ✔ | Language of `index.html`. `en` unless stated otherwise |
+| `language` | ✔ | Default language of `index.html`. `en` unless stated otherwise |
+| `translations` |  | Other languages present in `index.html`, as a YAML list — e.g. `[id]`. Omit for a single-language entry |
 | `status` | ✔ | `draft` while in progress, `published` when ready |
 | `added` | ✔ | ISO date the entry landed in this repository |
 | `source_type` | ✔ | `conference-talk` · `paper` · `blog-post` · `documentation` · `podcast` · `book-chapter` |
@@ -290,9 +291,31 @@ In use so far — `agent-harness` · `agent-memory` · `agent-skills` · `agenti
 
 ### Translations
 
-`index.html` is English by default. An Indonesian version lives beside it as `index.id.html`, linked
-from both the explainer header and the entry README. The folder slug never changes and never carries a
-language suffix — the URL identifies the *entry*, not the language.
+Every language of an entry lives in **one** `index.html`. English is the default; Indonesian sits in
+the same file behind a language toggle in the explainer header. One URL per entry, and one file in which
+the two versions are kept side by side, so they are harder to let drift apart.
+
+- **Markup.** Each language's content is wrapped in an element carrying class `l-en` or `l-id` and the
+  matching `lang` attribute — in practice the header's title block, the header chips, and one
+  `<div class="wrap l-en" lang="en">` / `<div class="wrap l-id" lang="id">` per language for the body.
+- **Toggle.** Two radio inputs, `#lang-en` and `#lang-id`, styled as a switch. The CSS only ever *hides*
+  the other language (`body:has(#lang-id:checked) .l-en` and `body:not(:has(#lang-id:checked)) .l-id`),
+  so every component keeps its own `display`. It is CSS-only, so it works offline, as an email
+  attachment and with JavaScript off; a browser without `:has()` shows both languages rather than none.
+- **Deep links.** `index.html?lang=id` — or `…/<slug>/?lang=id` online — opens the Indonesian version.
+  A small inline script reads it, remembers the reader's choice, and keeps `<html lang>` and `<title>` in
+  step. Link to the Indonesian version this way from the entry README, the catalog and the home-page card.
+- **Ids stay unique.** Shared SVG symbols are defined once for both languages; nothing else that carries
+  an `id` may repeat across the two versions.
+
+The component lives in [`templates/explainer-template.html`](templates/explainer-template.html);
+[rethinking-claude-code](topics/agent-architecture/rethinking-claude-code/) is the worked example. The
+folder slug never changes and never carries a language suffix — the URL identifies the *entry*, not the
+language.
+
+> **Changed 2026-11-23.** Translations used to ship as a separate `index.id.html` beside the English page.
+> [memory-layers](topics/agent-architecture/memory-layers/) still uses that layout until it is migrated.
+> Do not add new `index.<lang>.html` files.
 
 ### Design system
 

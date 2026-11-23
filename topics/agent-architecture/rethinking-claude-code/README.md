@@ -4,6 +4,8 @@ slug: rethinking-claude-code
 topic: agent-architecture
 type: talk-explainer
 language: en
+translations:
+  - id
 status: published
 added: 2026-11-17
 source_type: conference-talk
@@ -26,7 +28,7 @@ tags:
 
 # Rethinking Claude Code Best Practices
 
-**[▶ Open the explainer](index.html)** · [Baca dalam Bahasa Indonesia](index.id.html) · [Watch the source talk ↗](https://www.youtube.com/watch?v=vlfCjWuv4es)
+**[▶ Open the explainer](index.html)** · [Baca dalam Bahasa Indonesia](index.html?lang=id) · [Watch the source talk ↗](https://www.youtube.com/watch?v=vlfCjWuv4es)
 
 > Reading online? → <https://aicaruss.github.io/sharing-knowledge/topics/agent-architecture/rethinking-claude-code/>
 
@@ -212,7 +214,8 @@ repository's closed list for that; AI Engineer is the publishing channel, not a 
 **Whose words.** Passages marked "my reading", "my observation" or "my assessment", the second half of
 **Still open**, and the explainer table's "Kind of control" column are this entry's judgement.
 
-**Translation.** [`index.id.html`](index.id.html) translates the English explainer, which stays the
+**Translation.** The Indonesian version lives in the same `index.html`, behind the English / Bahasa Indonesia
+toggle in the header ([open it directly](index.html?lang=id)). It translates the English explainer, which stays the
 reference: same structure, numbers, figures and disclosures; quotes stay in the speaker's English with
 glosses outside the quotation marks; figure labels are translated, product names, code and on-slide UI and
 prompts are not.

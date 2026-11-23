@@ -11,7 +11,8 @@ title: ""                     # Full title, in quotes. Matches the <h1> of index
 slug: ""                      # Folder name. kebab-case, short, no dates, no language suffix.
 topic: ""                     # Exactly one of the seven folder names under topics/.
 type: ""                      # talk-explainer | paper-explainer | article-explainer | primer | case-study | notes
-language: en                  # Language of index.html. Translations get their own field entry below.
+language: en                  # Default language of index.html.
+translations: [id]            # Other languages inside the same index.html (toggle). Delete if English-only.
 status: draft                 # draft | published
 added: YYYY-MM-DD             # Date this entry landed in the repo.
 source_type: ""               # conference-talk | paper | blog-post | documentation | podcast | book-chapter
@@ -27,7 +28,7 @@ tags: []                      # 4–8 kebab-case tags. Reuse existing ones befor
 
 # {{Title}}
 
-**[▶ Open the explainer](index.html)** · [{{Watch/read the source}} ↗]({{SOURCE_URL}})
+**[▶ Open the explainer](index.html)** · [Baca dalam Bahasa Indonesia](index.html?lang=id) · [{{Watch/read the source}} ↗]({{SOURCE_URL}})
 
 > Reading online? → <https://aicaruss.github.io/sharing-knowledge/topics/{{topic}}/{{slug}}/>
 

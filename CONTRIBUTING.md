@@ -126,6 +126,9 @@ behave the same.
 - [ ] Source box present, with author, venue, date and canonical URL
 - [ ] Provenance note explains how the summary was produced
 - [ ] Readable at 375px wide (open your browser's device toolbar and check the tables and SVGs)
+- [ ] If bilingual: still one `index.html`; the toggle switches every block, figures and header
+      included; `?lang=id` opens Indonesian; no `id` repeats across the two languages; 375px checked in
+      both
 
 **The entry README**
 
@@ -137,6 +140,8 @@ behave the same.
 - [ ] `source_published` is the date the **source was published**, not the date a talk was delivered.
       A delivery date belongs in `source_event`
 - [ ] `added` is today
+- [ ] `translations` lists every extra language in `index.html` (omit the field if there is none), and
+      the Indonesian link points at `index.html?lang=id`
 - [ ] `status: published`
 - [ ] Tags reuse existing vocabulary where one already fits
 
@@ -177,9 +182,11 @@ Two dates are not one date. `source_published` is when the **source** went out; 
 are for cross-cutting themes that don't deserve their own topic (`grpo`, `reward-hacking`, `mcp`,
 `cost`); the topic folder already carries the primary categorisation.
 
-**Translations.** The default `index.html` is English. An Indonesian version goes next to it as
-`index.id.html`, linked from both the explainer header and the entry README. The folder slug never
-changes, and never carries a language suffix.
+**Translations.** Every language lives in the one `index.html`: English by default, Indonesian behind
+the language toggle in the explainer header, deep-linked as `index.html?lang=id`. List the extra
+languages in the README's `translations:` field. Do not add a separate `index.id.html` — that older
+layout survives only in `memory-layers` until it is migrated. The folder slug never changes, and never
+carries a language suffix. Markup and toggle: [README.md → Translations](README.md#translations).
 
 **Sources you cannot link publicly.** Don't add the entry. This repository is public and every claim in
 it has to be checkable against something a reader can open.

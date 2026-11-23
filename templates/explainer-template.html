@@ -9,7 +9,11 @@
   Two rules that keep this repo coherent:
     1. SELF-CONTAINED. No external CSS, JS, fonts, or images. Everything inline.
        Diagrams are hand-written inline <svg>, never screenshots.
-    2. DON'T EDIT THE :root PALETTE. It is the shared design system. Component
+    2. ONE FILE, EVERY LANGUAGE. An Indonesian version lives in this same file,
+       behind the language toggle: wrap each language in .l-en / .l-id with a
+       matching lang attribute. For an English-only entry, delete the toggle
+       markup, the BILINGUAL CSS block and the script at the end.
+    3. DON'T EDIT THE :root PALETTE. It is the shared design system. Component
        classes below cover almost everything; add new ones rather than
        redefining the colours.
   ============================================================================
@@ -98,6 +102,18 @@
   .srcbox p{margin:8px 0 0; font-size:14.5px}
   .srcbox a{word-break:break-all}
   text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
+
+  /* ---- BILINGUAL: language toggle (delete for an English-only entry) ----
+     CSS-only, so it works offline and with JS off. It only ever HIDES the other language, so each
+     component keeps its own display value. Browsers without :has() show both languages. */
+  .langswitch{display:inline-flex; margin-top:20px; border:1px solid #574C43; border-radius:10px; overflow:hidden}
+  .langswitch input{position:absolute; opacity:0; width:1px; height:1px; margin:0; pointer-events:none}
+  .langswitch label{padding:10px 15px; color:#BFB2A2; font-size:14px; font-weight:600; cursor:pointer; user-select:none}
+  .langswitch label:hover{color:#FFD3B8}
+  .langswitch input:checked + label{background:var(--orange); color:#fff}
+  .langswitch input:focus-visible + label{outline:2px solid #FFD3B8; outline-offset:-3px}
+  body:has(#lang-id:checked) .l-en{display:none !important}
+  body:not(:has(#lang-id:checked)) .l-id{display:none !important}
 </style>
 </head>
 <body>
@@ -105,9 +121,17 @@
 <!-- ========================= HEADER ========================= -->
 <header>
   <div class="wrap">
-    <div class="kicker">{{EVENT OR PUBLICATION}} · {{DATE}}</div>
-    <h1>{{FULL TITLE}}</h1>
-    <p class="sub">{{AUTHOR}} — {{ORGANISATION}} · {{DURATION OR LENGTH}}</p>
+    <!-- One block per language. The page shows whichever the toggle selects. -->
+    <div class="l-en" lang="en">
+      <div class="kicker">{{EVENT OR PUBLICATION}} · {{DATE}}</div>
+      <h1>{{FULL TITLE}}</h1>
+      <p class="sub">{{AUTHOR}} — {{ORGANISATION}} · {{DURATION OR LENGTH}}</p>
+    </div>
+    <div class="l-id" lang="id">
+      <div class="kicker">{{ACARA ATAU PUBLIKASI}} · {{TANGGAL}}</div>
+      <h1>{{JUDUL LENGKAP}}</h1>
+      <p class="sub">{{AUTHOR}} — {{ORGANISASI}} · {{DURASI ATAU PANJANG}}</p>
+    </div>
 
     <!-- Source button. Swap the SVG for a generic link glyph if the source isn't a video. -->
     <a class="srclink" href="{{SOURCE_URL}}" target="_blank" rel="noopener">
@@ -115,8 +139,14 @@
         <rect x="0" y="0" width="20" height="14" rx="3.4" fill="#FF0000"/>
         <path d="M8 4 L13.4 7 L8 10 Z" fill="#fff"/>
       </svg>
-      {{Watch / read the source}} <span class="u">{{short-url}}</span>
+      <span class="l-en" lang="en">{{Watch / read the source}}</span><span class="l-id" lang="id">{{Tonton / baca sumbernya}}</span> <span class="u">{{short-url}}</span>
     </a>
+
+    <!-- BILINGUAL: language toggle. Deep link to Indonesian with index.html?lang=id. -->
+    <div class="langswitch" role="radiogroup" aria-label="Language / Bahasa">
+      <input type="radio" name="lang" id="lang-en" value="en" checked><label for="lang-en" lang="en">English</label>
+      <input type="radio" name="lang" id="lang-id" value="id"><label for="lang-id" lang="id">Bahasa Indonesia</label>
+    </div>
 
     <!-- Same values as `tags:` in the entry README, title-cased. Aim for 4–6. -->
     <div class="meta">
@@ -127,7 +157,10 @@
   </div>
 </header>
 
-<div class="wrap">
+<!-- English body. The Indonesian body follows it as a second <div class="wrap l-id" lang="id"> with the
+     same sections, figures and source box. Figures are duplicated per language: keep the geometry
+     identical and translate only the text. Shared SVG symbols, if any, are defined once for both. -->
+<div class="wrap l-en" lang="en">
 
 <!-- ===================== TL;DR (required) =====================
      The whole thing in 5–7 numbered points. Written so that a reader who
@@ -284,5 +317,37 @@ screenshot."}}
 </p>
 
 </div>
+
+<!-- BILINGUAL: Indonesian body goes here — <div class="wrap l-id" lang="id"> … </div> -->
+
+<!-- BILINGUAL: progressive enhancement for the toggle (delete for an English-only entry).
+     ?lang=id|en opens a language directly; the choice is remembered; <html lang> and <title> follow it.
+     Put the Indonesian <title> in <html data-title-id="…">. -->
+<script>
+(function () {
+  var en = document.getElementById('lang-en'), id = document.getElementById('lang-id');
+  if (!en || !id) return;
+  var root = document.documentElement;
+  var titles = { en: document.title, id: root.getAttribute('data-title-id') || document.title };
+  function apply(l, fromUser) {
+    (l === 'id' ? id : en).checked = true;
+    root.lang = l;
+    document.title = titles[l];
+    if (!fromUser) return;
+    try { localStorage.setItem('sharing-knowledge-lang', l); } catch (e) {}
+    try {
+      var u = new URL(location.href);
+      if (l === 'id') u.searchParams.set('lang', 'id'); else u.searchParams.delete('lang');
+      history.replaceState(null, '', u);
+    } catch (e) {}
+  }
+  var q = null, s = null;
+  try { q = new URLSearchParams(location.search).get('lang'); } catch (e) {}
+  try { s = localStorage.getItem('sharing-knowledge-lang'); } catch (e) {}
+  apply(q === 'id' || q === 'en' ? q : (s === 'id' ? 'id' : 'en'), false);
+  en.addEventListener('change', function () { apply('en', true); });
+  id.addEventListener('change', function () { apply('id', true); });
+})();
+</script>
 </body>
 </html>
